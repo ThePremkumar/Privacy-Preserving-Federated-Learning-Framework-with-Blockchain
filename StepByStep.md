@@ -70,26 +70,36 @@ Use these credentials to access the platform. Access levels are restricted based
 ### Super Admin (Full System Access)
 - **Specialist ID**: `superadmin`
 - **Secure Passcode**: `admin123`
-- *Note: Restricted from viewing raw patient data for compliance.*
+- *Note: Global control over all nodes, users, and training.*
+
+### System Admin (Registry Management)
+- **Specialist ID**: `admin`
+- **Secure Passcode**: `admin123`
+- *Note: Can manage hospital node registries and training monitoring.*
+
+### Hospital Node (Local Node Admin)
+- **Specialist ID**: `hospital`
+- **Secure Passcode**: `hospital123`
+- *Note: Can register doctors to their specific node and manage local data.*
 
 ### Clinical Doctor (Medical Access)
 - **Specialist ID**: `doctor_valerie`
 - **Secure Passcode**: `doctorpassword123`
-- *Note: Can view patients, predictions, and NLP insights.*
+- *Note: Can view patient predictions, anomalies, and NLP insights.*
 
 ---
 
 ## 4. Role Permissions Matrix
 
-| Module | Super Admin | Doctor | Hospital Admin |
-| :--- | :---: | :---: | :---: |
-| **Dashboard** | ✅ | ✅ | ✅ |
-| **Patient Records** | ❌ (RBAC Restricted) | ✅ | ❌ |
-| **Model Predictions** | ❌ | ✅ | ❌ |
-| **NLP Clinical Notes** | ❌ | ✅ | ❌ |
-| **Federated Training** | ✅ | ❌ | ✅ |
-| **Blockchain Audit** | ✅ | ❌ | ✅ |
-| **Model Health** | ✅ | ❌ | ❌ |
+| Module | Super Admin | Admin | Hospital Node | Doctor |
+| :--- | :---: | :---: | :---: | :---: |
+| **Manage Hospitals** | ✅ | ✅ | ❌ | ❌ |
+| **Manage Users** | ✅ | ❌ | ✅ (Doctors only) | ❌ |
+| **Federated Training** | ✅ | ✅ | ✅ | ❌ |
+| **Blockchain Audit** | ✅ | ✅ | ✅ | ❌ |
+| **Patient Predictions** | ❌ | ❌ | ❌ | ✅ |
+| **Anomalies & NLP** | ❌ | ❌ | ❌ | ✅ |
+| **Global Analytics** | ✅ | ✅ | ❌ | ❌ |
 
 ---
 

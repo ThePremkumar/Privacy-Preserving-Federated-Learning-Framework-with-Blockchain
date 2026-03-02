@@ -19,10 +19,10 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
 # Frontend Server  
 cd frontend
-python -m http.server 3000
+npm run dev
 
 # Access the Platform
-# Frontend: http://localhost:3000/rbac-dashboard.html
+# Frontend: http://localhost:3000
 # Backend: http://localhost:8001/docs
 ```
 
@@ -161,17 +161,17 @@ frontend/
 ### **🔐 Demo Credentials**
 | Role | Username | Password | Access Level | Permissions |
 |------|----------|----------|--------------|-------------|
-| **Super Admin** | `superadmin` | `admin123` | Full system control | All permissions |
-| **Admin** | `admin` | `admin123` | Hospital management | Hospital operations |
-| **Hospital** | `hospital` | `hospital123` | Data operations | Upload, train, submit |
-| **Doctor** | `doctor` | `doctor123` | Medical operations | View predictions, patients |
+| **Super Admin** | `superadmin` | `admin123` | Full system control | All permissions, Registry management |
+| **Admin** | `admin` | `admin123` | System management | Hospital & Node management |
+| **Hospital** | `hospital` | `hospital123` | Data operations | Node user management, Data upload |
+| **Doctor** | `doctor_valerie` | `doctorpassword123` | Medical operations | View predictions, patient analytics |
 
 ### **🔑 Permission Matrix**
 ```
 Permission               | Super Admin | Admin | Hospital | Doctor
 ------------------------|-------------|-------|----------|--------
-Manage Hospitals        | ✅          | ❌    | ❌       | ❌
-Manage Users            | ✅          | ❌    | ❌       | ❌
+Manage Hospitals        | ✅          | ✅    | ❌       | ❌
+Manage Users            | ✅          | ❌    | ✅       | ❌
 View Global Model       | ✅          | ✅    | ❌       | ❌
 Monitor Training        | ✅          | ✅    | ❌       | ❌
 Upload Data             | ❌          | ❌    | ✅       | ❌
@@ -246,10 +246,11 @@ redis-server
 ### **🔐 Authentication Endpoints**
 ```http
 POST /api/v1/auth/login
-POST /api/v1/auth/refresh
-POST /api/v1/auth/logout
 GET  /api/v1/auth/me
 POST /api/v1/auth/register
+POST /api/v1/auth/register-hospital
+GET  /api/v1/auth/users
+GET  /api/v1/auth/hospitals
 ```
 
 ### **📊 System Endpoints**
@@ -314,7 +315,7 @@ tail -f logs/audit.log
 ```
 
 ### **📈 Real-time Dashboards**
-- **🌐 Frontend Dashboard**: http://localhost:3000/rbac-dashboard.html
+- **🌐 Frontend Dashboard**: http://localhost:3000
 - **📊 Real-time Monitor**: http://localhost:3000/realtime-dashboard.html
 - **🖥️ Backend Metrics**: http://localhost:8001/api/v1/status/metrics
 
@@ -537,10 +538,10 @@ If you use this platform in your research, please cite:
 cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
 # Frontend  
-cd frontend && python -m http.server 3000
+cd frontend && npm run dev
 
 # Access
-# Frontend: http://localhost:3000/rbac-dashboard.html
+# Frontend: http://localhost:3000
 # Backend: http://localhost:8001/docs
 ```
 
