@@ -4,22 +4,18 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
-  Activity, 
+  BrainCircuit, 
   ShieldCheck, 
   Database, 
-  BrainCircuit, 
   Globe, 
-  ChevronRight,
-  TrendingUp,
-  Lock,
-  Hospital,
-  ArrowRight,
-  User,
-  Key,
+  Lock, 
+  User, 
+  Key, 
   AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
+import api from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,23 +24,32 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // Simulate login logic
-    setTimeout(() => {
-      if (username === 'superadmin' && password === 'admin123') {
-        // Success
-        router.push('/dashboard');
-      } else if (!username || !password) {
-        setError('Please enter both ID and Passcode.');
-      } else {
-        setError('Invalid credentials. Access denied.');
-      }
+    if (!username || !password) {
+      setError('Please enter both ID and Passcode.');
       setIsLoading(false);
-    }, 1200);
+      return;
+    }
+
+    try {
+      const response = await api.post('/auth/login', { username, password });
+      const { access_token } = response.data;
+      
+      // Store token in localStorage
+      localStorage.setItem('auth_token', access_token);
+      
+      // Success - redirect to dashboard
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const detail = err.response?.data?.detail || 'Invalid credentials. Access denied.';
+      setError(detail);
+      setIsLoading(false);
+    }
   };
 
   return (

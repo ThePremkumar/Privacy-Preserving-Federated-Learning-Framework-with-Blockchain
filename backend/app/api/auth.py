@@ -99,12 +99,24 @@ async def register_user(user_data: RegisterUserRequest, current_user: User = Dep
                 detail=f"Invalid role. Must be one of: {[r.value for r in UserRole]}"
             )
         
+        # Role-based registration restrictions
+        if current_user.role == UserRole.HOSPITAL:
+            if role != UserRole.DOCTOR:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Hospital nodes can only register doctor specialists."
+                )
+            # Hospital nodes must register to their own hospital
+            target_hospital_id = current_user.hospital_id
+        else:
+            target_hospital_id = user_data.hospital_id
+            
         user = auth_service.register_user(
             username=user_data.username,
             email=user_data.email,
             password=user_data.password,
             role=role,
-            hospital_id=user_data.hospital_id
+            hospital_id=target_hospital_id
         )
         
         return {
@@ -158,3 +170,40 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         "permissions": [p.value for p in current_user.permissions],
         "is_active": current_user.is_active
     }
+
+@router.get("/users")
+async def get_users(current_user: User = Depends(require_permission(Permission.MANAGE_USERS))):
+    """Get users (filtered based on role)"""
+    if current_user.role == UserRole.HOSPITAL:
+        users = auth_service.get_users_by_hospital(current_user.hospital_id)
+    else:
+        users = auth_service.get_all_users()
+        
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "role": u.role.value,
+            "hospital_id": u.hospital_id,
+            "is_active": u.is_active,
+            "created_at": u.created_at
+        }
+        for u in users
+    ]
+
+@router.get("/hospitals")
+async def get_hospitals(current_user: User = Depends(require_permission(Permission.MANAGE_HOSPITALS))):
+    """Get all hospitals (admin only)"""
+    hospitals = auth_service.get_all_hospitals()
+    return [
+        {
+            "id": h.id,
+            "name": h.name,
+            "contact_email": h.contact_email,
+            "address": h.address,
+            "is_active": h.is_active
+        }
+        for h in hospitals
+    ]
+

@@ -71,12 +71,14 @@ class User:
                 Permission.VERIFY_INTEGRITY
             ],
             UserRole.ADMIN: [
+                Permission.MANAGE_HOSPITALS,
                 Permission.VIEW_GLOBAL_MODEL,
                 Permission.MONITOR_TRAINING,
                 Permission.VIEW_AUDIT_TRAIL,
                 Permission.GENERATE_REPORTS
             ],
             UserRole.HOSPITAL: [
+                Permission.MANAGE_USERS,
                 Permission.UPLOAD_DATA,
                 Permission.TRAIN_MODEL,
                 Permission.SUBMIT_WEIGHTS,
@@ -404,6 +406,11 @@ class AuthenticationService:
     def get_all_hospitals(self) -> List[Hospital]:
         """Get all hospitals"""
         return list(self.hospitals.values())
+    
+    def get_all_users(self) -> List[User]:
+        """Get all users"""
+        return list(self.users.values())
+
     
     def get_users_by_role(self, role: UserRole) -> List[User]:
         """Get users by role"""

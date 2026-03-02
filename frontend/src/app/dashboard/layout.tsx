@@ -119,8 +119,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             
             <div className="flex items-center gap-4 cursor-pointer group">
               <div className="flex flex-col items-end">
-                <span className="text-xs font-black tracking-tight text-slate-900 uppercase group-hover:text-blue-600 transition-colors">{user?.name || 'Dr. Adrian Storm'}</span>
-                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-[0.15em] italic">{user?.role.replace('_', ' ') || 'Medical Admin'}</span>
+                <span className="text-xs font-black tracking-tight text-slate-900 uppercase group-hover:text-blue-600 transition-colors">{user?.username || 'GUEST-ID'}</span>
+                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-[0.15em] italic">{user?.role.replace('_', ' ') || 'UNAUTHORIZED'}</span>
               </div>
               <div className="relative">
                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 shadow-sm border border-slate-200 group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -129,6 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white" />
               </div>
             </div>
+
           </div>
         </header>
 

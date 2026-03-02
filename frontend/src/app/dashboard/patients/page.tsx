@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -48,6 +49,7 @@ export default function PatientsPage() {
   };
 
   return (
+    <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10 relative">
       {isGenerating && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md">
@@ -247,5 +249,6 @@ export default function PatientsPage() {
         </Card>
       </div>
     </div>
+    </RoleGuard>
   );
 }

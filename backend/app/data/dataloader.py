@@ -20,10 +20,36 @@ class FederatedDataLoader:
         elif self.dataset_name == 'cifar10':
             train_dataset = datasets.CIFAR10('./data', train=True, download=True, transform=self.transform)
             test_dataset = datasets.CIFAR10('./data', train=False, download=True, transform=self.transform)
+        elif self.dataset_name == 'synthetic_tabular':
+            # Create dummy data for testing
+            X = torch.randn(100, 20)
+            y = torch.randint(0, 10, (100,))
+            dataset = TensorDataset(X, y)
+            return dataset, dataset
         else:
             raise ValueError(f"Unsupported dataset: {self.dataset_name}")
         
         return train_dataset, test_dataset
+
+    def load_mnist(self, data_dir='./data', num_clients=10, alpha=1.0):
+        # Implementation for Simulation
+        train_data, test_data = self.load_data()
+        client_datasets = self.split_data(train_data)
+        client_loaders = {i: self.get_client_dataloader(d) for i, d in enumerate(client_datasets)}
+        return client_loaders, self.get_test_dataloader(test_data)
+
+    def load_cifar10(self, data_dir='./data', num_clients=10, alpha=1.0):
+        self.dataset_name = 'cifar10'
+        return self.load_mnist(data_dir, num_clients, alpha)
+
+    def load_synthetic_tabular(self, n_samples=1000, n_features=20, n_classes=10, num_clients=10, alpha=1.0):
+        X = torch.randn(n_samples, n_features)
+        y = torch.randint(0, n_classes, (n_samples,))
+        dataset = TensorDataset(X, y)
+        self.num_clients = num_clients
+        client_datasets = self.split_data(dataset)
+        client_loaders = {i: self.get_client_dataloader(d) for i, d in enumerate(client_datasets)}
+        return client_loaders, self.get_test_dataloader(dataset)
     
     def split_data(self, dataset):
         # Split dataset into non-iid partitions for federated learning

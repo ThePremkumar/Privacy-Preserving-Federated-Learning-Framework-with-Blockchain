@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 const ledgerData = [
   { id: 'tx-001', round: 12, hash: '0x7d92...f821', type: 'Aggregation', status: 'Confirmed', time: '12m ago', gas: '0.002ETH' },
@@ -31,6 +32,7 @@ export default function BlockchainAuditPage() {
   const [isVerifying, setIsVerifying] = React.useState(false);
 
   return (
+    <RoleGuard allowedRoles={['super_admin', 'admin', 'hospital']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
@@ -140,6 +142,7 @@ export default function BlockchainAuditPage() {
         </Card>
       </div>
     </div>
+    </RoleGuard>
   );
 }
 

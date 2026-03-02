@@ -1,4 +1,4 @@
-torch>=2.0.0# Production Requirements for Federated Learning Healthcare Platform
+torch>=2.0.0 # Production Requirements for Federated Learning Healthcare Platform
 # Enterprise SaaS Backend Dependencies
 
 # Core Framework

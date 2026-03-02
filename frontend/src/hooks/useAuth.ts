@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import api from '@/lib/api';
 
 export type UserRole = 'super_admin' | 'admin' | 'hospital' | 'doctor';
 
-interface User {
+export interface User {
   id: string;
+  username: string;
   name: string;
   role: UserRole;
   hospital_id?: string;
@@ -13,26 +15,57 @@ interface User {
 }
 
 export const useAuth = () => {
-  // Simple mock user for development
-  // In production, this would come from a Context provider connected to backend
-  const [user, setUser] = useState<User | null>({
-    id: 'u-1234',
-    name: 'Dr. Adrian Storm',
-    role: 'super_admin', // Toggle this to test different views
-    email: 'adrian.storm@hospital.net'
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const fetchUser = useCallback(async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
 
-  // Helper to check permissions
+    try {
+      const response = await api.get('/auth/me');
+      const userData = response.data;
+      setUser({
+        id: userData.id,
+        username: userData.username,
+        name: userData.username, // Using username as name for now
+        role: userData.role as UserRole,
+        hospital_id: userData.hospital_id,
+        email: userData.email,
+      });
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      localStorage.removeItem('auth_token');
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
   const hasRole = (roles: UserRole[]) => {
     return user ? roles.includes(user.role) : false;
+  };
+
+  const logout = () => {
+    localStorage.removeItem('auth_token');
+    setUser(null);
+    window.location.href = '/login';
   };
 
   return {
     user,
     isLoading,
     hasRole,
-    setUser
+    setUser,
+    logout,
+    refreshUser: fetchUser
   };
 };

@@ -35,6 +35,7 @@ import {
 } from 'recharts';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,6 +62,7 @@ const driftData = [
 
 export default function ModelHealthPage() {
   return (
+    <RoleGuard allowedRoles={['super_admin', 'admin']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
@@ -222,5 +224,6 @@ export default function ModelHealthPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

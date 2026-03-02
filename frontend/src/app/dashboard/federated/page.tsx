@@ -23,6 +23,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 const flData = [
   { round: 1, accuracy: 68, loss: 0.85 },
@@ -46,6 +47,7 @@ export default function FederatedTrainingPage() {
   const [isSyncing, setIsSyncing] = React.useState(false);
 
   return (
+    <RoleGuard allowedRoles={['super_admin', 'admin', 'hospital']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
@@ -127,6 +129,7 @@ export default function FederatedTrainingPage() {
          <ConfigItem label="Aggregator" value="FedAvg" icon={Cpu} desc="Aggregation algorithm" />
       </div>
     </div>
+    </RoleGuard>
   );
 }
 

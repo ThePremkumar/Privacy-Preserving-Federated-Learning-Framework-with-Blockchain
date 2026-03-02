@@ -14,7 +14,7 @@ class CNNModel(nn.Module):
         self.fc2 = nn.Linear(128, num_classes)
     
     def forward(self, x):
-        x = F.relu(self.conv1(x))
+        x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.dropout1(x)
         x = x.view(-1, 64 * 7 * 7)

@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,6 +67,7 @@ export default function PredictionsPage() {
   const [selectedPrediction, setSelectedPrediction] = useState(predictions[0]);
 
   return (
+    <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
@@ -249,5 +251,6 @@ export default function PredictionsPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

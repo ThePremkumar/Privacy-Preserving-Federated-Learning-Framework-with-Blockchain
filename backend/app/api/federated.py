@@ -56,7 +56,7 @@ async def submit_update(update: UpdateSubmission, current_user: Dict[str, Any] =
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/status")
-async def get_status(round_number: Optional[int] = None, current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_status(round_number: Optional[int] = None, current_user: Dict[str, Any] = Depends(require_permission("monitor_training"))):
     """Get status of the current or specified training round"""
     try:
         return await federated_service.get_round_status(round_number)
@@ -64,11 +64,11 @@ async def get_status(round_number: Optional[int] = None, current_user: Dict[str,
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.get("/history")
-async def get_history(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_history(current_user: Dict[str, Any] = Depends(require_permission("monitor_training"))):
     """Get history of completed training rounds"""
     return federated_service.round_history
 
 @router.get("/latest-model")
-async def get_latest_model(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_latest_model(current_user: Dict[str, Any] = Depends(require_permission("view_global_model"))):
     """Get current global model information"""
     return await federated_service.get_global_model_info()

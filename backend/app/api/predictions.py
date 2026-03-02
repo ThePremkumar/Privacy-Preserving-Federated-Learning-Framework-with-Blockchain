@@ -35,19 +35,16 @@ async def analyze_medical_note(request: AnalysisRequest, current_user: Dict[str,
     return {"id": analysis_id, "analysis": analysis}
 
 @router.get("/")
-async def list_predictions(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def list_predictions(current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
     """List all predictions/analyses for the current context"""
-    role = current_user.get("role")
-    if role in ["super_admin", "admin"]:
-        return await prediction_repo.find_many({})
-    
     hospital_id = current_user.get("hospital_id")
     return await prediction_repo.find_many({"hospital_id": hospital_id})
 
 @router.get("/anomalies")
-async def get_anomalies(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_anomalies(current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
     """Get detected anomalies (outliers)"""
+    hospital_id = current_user.get("hospital_id")
     # In a real app, this would filter by type='anomaly' or score threshold
-    all_records = await prediction_repo.find_many({})
+    all_records = await prediction_repo.find_many({"hospital_id": hospital_id})
     # Mocking anomaly filtering for demo
     return [r for r in all_records if r.get("results", {}).get("risk_assessment", {}).get("urgency_score", 0) > 7]

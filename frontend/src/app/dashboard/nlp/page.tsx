@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 export default function NLPPage() {
   const [note, setNote] = useState('');
@@ -36,6 +37,7 @@ export default function NLPPage() {
   };
 
   return (
+    <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10">
       <div>
         <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-tight">NLP <span className="text-blue-600">Clinical Insights</span></h1>
@@ -131,5 +133,6 @@ export default function NLPPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

@@ -2,9 +2,9 @@ import torch
 import time
 import logging
 from typing import Dict, List, Any, Optional
-from ..client.client import FederatedClient
-from ..server.server import FederatedServer
-from ..data.data_loader import FederatedDataLoader
+from ..services.federated.client import FederatedClient
+from ..services.federated.server import FederatedServer
+from ..data.dataloader import FederatedDataLoader
 from ..utils.utils import MetricsTracker, CommunicationCostTracker, set_random_seeds, create_experiment_directory
 
 class FederatedLearningSimulation:
