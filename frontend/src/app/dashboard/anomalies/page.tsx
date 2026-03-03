@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 
 const anomalies = [
   { id: 'AN-2401', patient: 'Sam Wilson', type: 'Spiked Bio-Sign', severity: 'High', score: -0.82, time: '2m ago' },
@@ -28,6 +29,7 @@ const anomalies = [
 
 export default function AnomaliesPage() {
   return (
+    <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
@@ -143,5 +145,6 @@ export default function AnomaliesPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

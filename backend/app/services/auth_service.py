@@ -134,19 +134,70 @@ class AuthenticationService:
         self._initialize_default_admin()
     
     def _initialize_default_admin(self):
-        """Initialize default super admin user"""
-        default_admin = User(
+        """Initialize default users for all roles (demo/dev mode)"""
+        self._password_hashes = {}
+        
+        # 1. Super Admin
+        super_admin = User(
             id="admin_001",
             username="superadmin",
             email="admin@federated-learning.com",
             role=UserRole.SUPER_ADMIN
         )
-        # Set default password (in production, this should be properly hashed)
-        default_password = self._hash_password("admin123")
+        self.users[super_admin.username] = super_admin
+        self._password_hashes[super_admin.username] = self._hash_password("admin123")
         
-        self.users[default_admin.username] = default_admin
-        # Store password hash separately (in production, use secure password storage)
-        self._password_hashes = {default_admin.username: default_password}
+        # 2. Admin
+        admin = User(
+            id="admin_002",
+            username="admin",
+            email="admin@healthconnect.io",
+            role=UserRole.ADMIN
+        )
+        self.users[admin.username] = admin
+        self._password_hashes[admin.username] = self._hash_password("admin123")
+        
+        # 3. Demo Hospital
+        demo_hospital = Hospital(
+            id="hospital_001",
+            name="Mayo Clinic Research",
+            contact_email="admin@mayo.edu",
+            address="Rochester, MN"
+        )
+        self.hospitals[demo_hospital.id] = demo_hospital
+        
+        # Second hospital
+        demo_hospital_2 = Hospital(
+            id="hospital_002",
+            name="Johns Hopkins Medical",
+            contact_email="fl-admin@jhmi.edu",
+            address="Baltimore, MD"
+        )
+        self.hospitals[demo_hospital_2.id] = demo_hospital_2
+        
+        # 4. Hospital Admin
+        hospital_admin = User(
+            id="user_003",
+            username="hospital_admin",
+            email="admin@mayo.edu",
+            role=UserRole.HOSPITAL,
+            hospital_id="hospital_001"
+        )
+        self.users[hospital_admin.username] = hospital_admin
+        self._password_hashes[hospital_admin.username] = self._hash_password("admin123")
+        
+        # 5. Doctor
+        doctor = User(
+            id="user_004",
+            username="dr_chen",
+            email="v.chen@mayo.edu",
+            role=UserRole.DOCTOR,
+            hospital_id="hospital_001"
+        )
+        self.users[doctor.username] = doctor
+        self._password_hashes[doctor.username] = self._hash_password("admin123")
+        
+        logger.info("Demo users initialized: superadmin, admin, hospital_admin, dr_chen (all password: admin123)")
     
     def _hash_password(self, password: str) -> str:
         """Hash password using bcrypt"""
