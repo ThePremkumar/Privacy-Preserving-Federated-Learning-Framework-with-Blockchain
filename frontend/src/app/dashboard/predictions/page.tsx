@@ -30,38 +30,16 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const predictions = [
-  { 
-    id: 'P-9421', 
-    patient: 'Sam Wilson', 
-    condition: 'Type 2 Diabetes', 
-    score: 92, 
-    risk: 'High', 
-    time: '10m ago',
-    explanations: [
-      { feature: 'Glucose Levels', contribution: 42, impact: 'High', baseline: '95 mg/dL', current: '210 mg/dL' },
-      { feature: 'HbA1c', contribution: 28, impact: 'High', baseline: '< 5.7%', current: '8.4%' },
-      { feature: 'BMI', contribution: 15, impact: 'Moderate', baseline: '22.0', current: '31.5' },
-      { feature: 'Age Factor', contribution: 10, impact: 'Low', baseline: 'N/A', current: '58' },
-    ],
-    confidence: 96.4
-  },
-  { 
-    id: 'P-9422', 
-    patient: 'Sarah Lee', 
-    condition: 'Hypertension', 
-    score: 45, 
-    risk: 'Medium', 
-    time: '1h ago',
-    explanations: [
-      { feature: 'Systolic BP', contribution: 55, impact: 'High', baseline: '120 mmHg', current: '145 mmHg' },
-      { feature: 'Sodium Intake', contribution: 20, impact: 'Moderate', baseline: '2.3g', current: '4.1g' },
-    ],
-    confidence: 88.2
-  },
-  { id: 'P-9423', patient: 'Michael Brown', condition: 'Asthma', score: 18, risk: 'Low', time: '2h ago', explanations: [], confidence: 91.0 },
-  { id: 'P-9424', patient: 'Emma Watson', condition: 'Cardiovascular Risk', score: 78, risk: 'High', time: '4h ago', explanations: [], confidence: 93.5 },
-];
+// Predictions are loaded from the API — see the predictions service
+// The structure expected per prediction:
+// { id, patient, condition, score, risk, time, explanations: [{ feature, contribution, impact, baseline, current }], confidence }
+
+const predictions: {
+  id: string; patient: string; condition: string; score: number; risk: string; time: string;
+  explanations: { feature: string; contribution: number; impact: string; baseline: string; current: string }[];
+  confidence: number;
+}[] = [];
+// In production, populate this from: GET /predictions/
 
 export default function PredictionsPage() {
   const [selectedPrediction, setSelectedPrediction] = useState(predictions[0]);

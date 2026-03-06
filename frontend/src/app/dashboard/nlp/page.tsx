@@ -21,19 +21,20 @@ export default function NLPPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setIsAnalyzing(true);
-    // Simulate API call to backend NLP service
-    setTimeout(() => {
-      setResult({
-        symptoms: ['Fever', 'Cough', 'Shortness of Breath'],
-        entities: ['Pneumonia', 'Oxygen Saturation', 'Antibiotics'],
-        sentiment: 'Negative/Critical',
-        urgency: 9,
-        summary: "Patient shows acute respiratory symptoms and declining stability. Immediate review suggested."
+    try {
+      const { default: api } = await import('@/lib/api');
+      const res = await api.post('/predictions/analyze-note', {
+        patient_id: 'CURRENT_PATIENT',
+        clinical_note: note,
       });
+      setResult(res.data.analysis);
+    } catch {
+      setResult(null);
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
   };
 
   return (

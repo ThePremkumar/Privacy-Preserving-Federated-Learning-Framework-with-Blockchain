@@ -441,7 +441,7 @@ async def detect_anomalies(patient_data: PatientDataRequest,
             'lab_results': lab_results
         }
         
-        # For demo purposes, fit the detector on the data
+        # Fit the detector on the provided data
         # In production, this would be pre-trained
         anomaly_detector.fit_vital_signs(vital_signs)
         anomaly_detector.fit_lab_results(lab_results)

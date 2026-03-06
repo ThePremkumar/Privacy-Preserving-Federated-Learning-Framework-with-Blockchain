@@ -20,13 +20,9 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 
-const ledgerData = [
-  { id: 'tx-001', round: 12, hash: '0x7d92...f821', type: 'Aggregation', status: 'Confirmed', time: '12m ago', gas: '0.002ETH' },
-  { id: 'tx-002', round: 12, hash: '0x3a1b...e924', type: 'Node Submit', status: 'Confirmed', time: '18m ago', gas: '0.001ETH' },
-  { id: 'tx-003', round: 11, hash: '0x92f1...c283', type: 'Aggregation', status: 'Confirmed', time: '1h ago', gas: '0.002ETH' },
-  { id: 'tx-004', round: 11, hash: '0x1c82...d912', type: 'Node Submit', status: 'Confirmed', time: '1.2h ago', gas: '0.001ETH' },
-  { id: 'tx-005', round: 11, hash: '0x5e23...a928', type: 'Node Submit', status: 'Confirmed', time: '1.5h ago', gas: '0.001ETH' },
-];
+// Ledger data should be fetched from the blockchain audit API
+const ledgerData: { id: string; round: number; hash: string; type: string; status: string; time: string; gas: string }[] = [];
+// In production, populate from: GET /blockchain/audit-trail
 
 export default function BlockchainAuditPage() {
   const [isVerifying, setIsVerifying] = React.useState(false);
@@ -50,10 +46,10 @@ export default function BlockchainAuditPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-         <ChainStat label="Current Block" value="#24,812" icon={Network} />
-         <ChainStat label="Smart Contract" value="v2.4.1" icon={Lock} />
-         <ChainStat label="Chain Integrity" value="100% OK" icon={CheckCircle2} />
-         <ChainStat label="Gas Efficiency" value="99.2%" icon={Activity} />
+         <ChainStat label="Current Block" value="—" icon={Network} />
+         <ChainStat label="Smart Contract" value="—" icon={Lock} />
+         <ChainStat label="Chain Integrity" value="—" icon={CheckCircle2} />
+         <ChainStat label="Gas Efficiency" value="—" icon={Activity} />
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -113,11 +109,11 @@ export default function BlockchainAuditPage() {
            <CardContent className="relative space-y-8">
                <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Compliance Score</span>
-                  <span className="text-4xl font-black text-blue-400 italic">99.8</span>
+                   <span className="text-4xl font-black text-blue-400 italic">—</span>
                </div>
                <div className="space-y-4">
                   <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                     <div className="h-full w-[99.8%] bg-blue-500 shadow-lg shadow-blue-500/50" />
+                      <div className="h-full w-0 bg-blue-500 shadow-lg shadow-blue-500/50" />
                   </div>
                   <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase tracking-widest">
                      Calculated using multi-party computation proof and verified against blockchain state.

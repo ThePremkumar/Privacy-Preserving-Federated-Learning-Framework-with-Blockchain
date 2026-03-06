@@ -202,21 +202,8 @@ CREATE TRIGGER update_hospitals_updated_at BEFORE UPDATE ON hospitals
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON patients
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert default super admin user (password: admin123)
-INSERT INTO users (username, email, password_hash, role) 
-VALUES (
-    'superadmin',
-    'admin@federated-learning.com',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj6hsxq9w5KS', -- bcrypt hash of 'admin123'
-    'super_admin'
-) ON CONFLICT (username) DO NOTHING;
-
--- Insert sample hospitals
-INSERT INTO hospitals (name, contact_email, address) VALUES
-    ('General Hospital', 'contact@general-hospital.com', '123 Main St, City, State 12345'),
-    ('Medical Center', 'info@medical-center.com', '456 Oak Ave, City, State 67890'),
-    ('University Hospital', 'admin@university-hospital.edu', '789 Campus Blvd, City, State 11111')
-ON CONFLICT DO NOTHING;
+-- Initial seed data is managed by the application (see SEED_ADMIN_* env vars)
+-- Hospitals and users should be created via the API after the system is running
 
 -- Create views for common queries
 CREATE OR REPLACE VIEW hospital_summary AS

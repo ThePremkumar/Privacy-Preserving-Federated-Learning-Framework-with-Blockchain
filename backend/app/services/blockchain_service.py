@@ -62,7 +62,7 @@ class BlockchainService:
     async def _load_contract(self):
         """Load smart contract"""
         try:
-            # Contract ABI (simplified for demo)
+            # Contract ABI (simplified for development)
             contract_abi = [
                 {
                     "inputs": [

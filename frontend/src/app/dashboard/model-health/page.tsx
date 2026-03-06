@@ -41,24 +41,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const accuracyData = [
-  { name: 'Rd 470', accuracy: 0.912, loss: 0.231 },
-  { name: 'Rd 471', accuracy: 0.918, loss: 0.215 },
-  { name: 'Rd 472', accuracy: 0.925, loss: 0.201 },
-  { name: 'Rd 473', accuracy: 0.922, loss: 0.208 },
-  { name: 'Rd 474', accuracy: 0.931, loss: 0.185 },
-  { name: 'Rd 475', accuracy: 0.938, loss: 0.172 },
-  { name: 'Rd 476', accuracy: 0.948, loss: 0.155 },
-];
+// Model health data should be fetched from the MLOps monitoring API
+const accuracyData: { name: string; accuracy: number; loss: number }[] = [];
+// In production, populate from: GET /federated/training-history
 
-const driftData = [
-  { name: 'Jan', featureDrift: 0.05, labelDrift: 0.02 },
-  { name: 'Feb', featureDrift: 0.08, labelDrift: 0.03 },
-  { name: 'Mar', featureDrift: 0.12, labelDrift: 0.05 },
-  { name: 'Apr', featureDrift: 0.15, labelDrift: 0.07 },
-  { name: 'May', featureDrift: 0.14, labelDrift: 0.06 },
-  { name: 'Jun', featureDrift: 0.18, labelDrift: 0.09 },
-];
+const driftData: { name: string; featureDrift: number; labelDrift: number }[] = [];
+// In production, populate from: GET /federated/drift-analysis
 
 export default function ModelHealthPage() {
   return (
@@ -86,10 +74,10 @@ export default function ModelHealthPage() {
         <Card className="lg:col-span-12 border-none shadow-2xl shadow-slate-100/50 p-8 bg-white">
            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 divide-x divide-slate-100">
               {[
-                { label: 'Model Accuracy', value: '94.8%', icon: ShieldCheck, color: 'text-emerald-600', trend: '+2.4%', up: true },
-                { label: 'Feature Drift Index', value: '0.18', icon: AlertTriangle, color: 'text-amber-600', trend: '+0.04', up: false },
-                { label: 'Active Nodes', value: '182', icon: Server, color: 'text-blue-600', trend: '+12', up: true },
-                { label: 'Latency (Agg)', value: '142ms', icon: Clock, color: 'text-slate-900', trend: '-8ms', up: true },
+                { label: 'Model Accuracy', value: '—', icon: ShieldCheck, color: 'text-emerald-600', trend: '—', up: true },
+                { label: 'Feature Drift Index', value: '—', icon: AlertTriangle, color: 'text-amber-600', trend: '—', up: false },
+                { label: 'Active Nodes', value: '—', icon: Server, color: 'text-blue-600', trend: '—', up: true },
+                { label: 'Latency (Agg)', value: '—', icon: Clock, color: 'text-slate-900', trend: '—', up: true },
               ].map((stat, i) => (
                 <div key={i} className={cn("flex flex-col items-center justify-center space-y-2 px-8", i === 0 ? "pl-0" : "")}>
                    <stat.icon size={28} className={stat.color} />
@@ -112,7 +100,7 @@ export default function ModelHealthPage() {
               <div className="flex items-center gap-8">
                  <div className="flex flex-col">
                     <CardTitle className="text-white text-2xl font-black italic">Training <span className="text-blue-500 underline decoration-blue-900 underline-offset-8">Convergence</span></CardTitle>
-                    <CardDescription className="text-white/40 font-bold uppercase tracking-widest text-[10px] mt-2">LSTM Architecture v2.4 (Round 470-476)</CardDescription>
+                     <CardDescription className="text-white/40 font-bold uppercase tracking-widest text-[10px] mt-2">Training convergence over recent rounds</CardDescription>
                  </div>
                  <div className="h-10 w-[1px] bg-white/10" />
                  <div className="flex gap-4">
@@ -178,8 +166,8 @@ export default function ModelHealthPage() {
                  <div className="space-y-4">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Critical Drift Alerts</h4>
                     {[
-                      { msg: 'Significant drift detected in glucose distribution', severity: 'High', time: '12m ago' },
-                      { msg: 'Age-related bias shift on Clinical Node 102', severity: 'Medium', time: '4h ago' },
+                      { msg: 'Significant drift detected in feature distribution', severity: 'High', time: 'Recent' },
+                      { msg: 'Age-related bias shift detected on a clinical node', severity: 'Medium', time: 'Recent' },
                     ].map((alert, i) => (
                       <div key={i} className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-blue-100 transition-all">
                          <div className={cn("h-10 w-10 flex items-center justify-center rounded-xl bg-white shadow-sm shrink-0 transition-transform group-hover:scale-110", alert.severity === 'High' ? "text-red-500" : "text-amber-500")}>
@@ -207,7 +195,7 @@ export default function ModelHealthPage() {
         <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-8 pb-10">
            {[
              { label: 'Layer Correlation', icon: Dna, desc: 'Synapse weight alignment across nodes' },
-             { label: 'Privacy Budget Consumption', icon: Database, desc: 'ε-δ cumulative reach for round #476' },
+              { label: 'Privacy Budget Consumption', icon: Database, desc: 'ε-δ cumulative reach for recent rounds' },
              { label: 'Bias Stratification', icon: BarChart3, desc: 'Demographic parity and fairness metrics' }
            ].map((sub, i) => (
              <Card key={i} className="border-none shadow-xl shadow-slate-100 p-8 group cursor-pointer hover:bg-slate-50 transition-all border border-transparent hover:border-blue-100">

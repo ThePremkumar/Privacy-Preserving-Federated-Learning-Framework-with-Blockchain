@@ -56,9 +56,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   const alerts = [
-    { title: 'High-Risk Prediction', msg: 'Sam Wilson alert (92% risk)', type: 'error', time: '2m' },
-    { title: 'Model Drift Detected', msg: 'Glucose distribution shift @ Node 4', type: 'warning', time: '14m' },
-    { title: 'Blockchain Verified', msg: 'Round #482 immutably stored', type: 'success', time: '1h' },
+    { title: 'High-Risk Prediction', msg: 'Risk prediction alert detected', type: 'error', time: 'Recent' },
+    { title: 'Model Drift Detected', msg: 'Feature distribution shift on a node', type: 'warning', time: 'Recent' },
+    { title: 'Blockchain Verified', msg: 'Latest round immutably stored', type: 'success', time: 'Recent' },
   ];
 
   return (

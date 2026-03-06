@@ -13,7 +13,7 @@ class NLPService:
     """Enterprise NLP service for clinical text analysis"""
     
     def __init__(self):
-        # Basic clinical dictionary for demo purposes
+        # Basic clinical keyword dictionary (extend for production use)
         # In production, use specialized tools like MetaMap, cTAKES, or BioBERT
         self.symptom_keywords = {
             'fever', 'cough', 'dyspnea', 'fatigue', 'headache', 'nausea', 

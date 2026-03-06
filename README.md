@@ -161,7 +161,7 @@ frontend/
 ### **🔐 Demo Credentials**
 | Role | Username | Password | Access Level | Permissions |
 |------|----------|----------|--------------|-------------|
-| **Super Admin** | `superadmin` | `admin123` | Full system control | All permissions, Registry management |
+| **Super Admin** | `superadmin` | `changeme` | Full system control | All permissions, Registry management |
 | **Admin** | `admin` | `admin123` | System management | Hospital & Node management |
 | **Hospital** | `hospital` | `hospital123` | Data operations | Node user management, Data upload |
 | **Doctor** | `doctor_valerie` | `doctorpassword123` | Medical operations | View predictions, patient analytics |

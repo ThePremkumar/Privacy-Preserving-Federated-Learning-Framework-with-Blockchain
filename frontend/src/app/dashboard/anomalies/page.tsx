@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   AlertTriangle, 
   Activity, 
@@ -19,15 +19,38 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { RoleGuard } from '@/components/guards/RoleGuard';
+import api from '@/lib/api';
 
-const anomalies = [
-  { id: 'AN-2401', patient: 'Sam Wilson', type: 'Spiked Bio-Sign', severity: 'High', score: -0.82, time: '2m ago' },
-  { id: 'AN-2402', patient: 'Sarah Lee', type: 'Abnormal Glucose', severity: 'Critical', score: -0.94, time: '14m ago' },
-  { id: 'AN-2403', patient: 'Michael Brown', type: 'Heart Rate Dip', severity: 'Moderate', score: -0.56, time: '1h ago' },
-  { id: 'AN-2404', patient: 'Emma Watson', type: 'Atypical BP Pattern', severity: 'Monitoring', score: -0.32, time: '3h ago' },
-];
+interface Anomaly {
+  id: string;
+  patient_id: string;
+  type: string;
+  severity: string;
+  score: number;
+  time: string;
+}
 
 export default function AnomaliesPage() {
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+
+  const fetchAnomalies = useCallback(async () => {
+    try {
+      const res = await api.get('/predictions/anomalies');
+      setAnomalies(res.data.map((r: any) => ({
+        id: r.id || r._id || 'N/A',
+        patient_id: r.patient_id || 'Unknown',
+        type: r.results?.risk_assessment?.primary_risk || 'Unclassified',
+        severity: (r.results?.risk_assessment?.urgency_score || 0) > 8 ? 'Critical' : 'High',
+        score: -(r.results?.risk_assessment?.urgency_score || 0) / 10,
+        time: r.created_at ? new Date(r.created_at).toLocaleString() : 'N/A',
+      })));
+    } catch {
+      setAnomalies([]);
+    }
+  }, []);
+
+  useEffect(() => { fetchAnomalies(); }, [fetchAnomalies]);
+
   return (
     <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10">
@@ -55,15 +78,21 @@ export default function AnomaliesPage() {
            </CardHeader>
            <CardContent className="p-0">
               <div className="divide-y divide-slate-50">
-                 {anomalies.map(anom => (
+                 {anomalies.length === 0 ? (
+                   <div className="px-8 py-16 text-center">
+                     <AlertTriangle size={40} className="mx-auto text-slate-200 mb-4" />
+                     <p className="text-lg font-black text-slate-900">No Active Anomalies</p>
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Anomalies will appear here when the detection engine identifies outlier patterns in patient data.</p>
+                   </div>
+                 ) : anomalies.map(anom => (
                     <div key={anom.id} className="flex items-center justify-between px-8 py-7 hover:bg-red-50/20 transition-colors cursor-pointer group">
                        <div className="flex items-center gap-6">
-                          <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${anom.severity === 'Critical' ? 'bg-red-600 text-white shadow-xl shadow-red-200' : anom.severity === 'High' ? 'bg-red-100 text-red-600 shadow-lg shadow-red-50' : 'bg-amber-100 text-amber-600'}`}>
+                          <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${anom.severity === 'Critical' ? 'bg-red-600 text-white shadow-xl shadow-red-200' : 'bg-red-100 text-red-600 shadow-lg shadow-red-50'}`}>
                              <AlertTriangle size={24} className="group-hover:scale-110 transition-transform" />
                           </div>
                           <div>
                              <p className="text-lg font-black text-slate-900 leading-tight flex items-center gap-2">
-                               {anom.patient} {anom.severity === 'Critical' && <span className="h-2 w-2 rounded-full bg-red-600 animate-ping" />}
+                               Patient {anom.patient_id} {anom.severity === 'Critical' && <span className="h-2 w-2 rounded-full bg-red-600 animate-ping" />}
                              </p>
                              <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{anom.id}</span>
@@ -76,11 +105,11 @@ export default function AnomaliesPage() {
                        <div className="flex items-center gap-12">
                           <div className="flex flex-col items-center">
                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Outlier Score</span>
-                             <span className={`text-xl font-black ${anom.severity === 'Critical' ? 'text-red-700 underline decoration-red-100' : 'text-slate-900 font-mono italic'}`}>{anom.score}</span>
+                             <span className={`text-xl font-black ${anom.severity === 'Critical' ? 'text-red-700 underline decoration-red-100' : 'text-slate-900 font-mono italic'}`}>{anom.score.toFixed(2)}</span>
                           </div>
                           
                           <div className="flex flex-col items-end min-w-[100px]">
-                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 font-black">{anom.time}</span>
+                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{anom.time}</span>
                              <div className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${anom.severity === 'Critical' ? 'bg-red-700 text-white border-red-800 shadow-lg shadow-red-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                                 {anom.severity} Priority
                              </div>
@@ -124,7 +153,7 @@ export default function AnomaliesPage() {
                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Privacy Budget</span>
                         </div>
                         <div className="flex flex-col items-end">
-                           <span className="text-sm font-black text-emerald-400 italic">100% OK</span>
+                           <span className="text-sm font-black text-emerald-400 italic">OK</span>
                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Integrity Proof</span>
                         </div>
                      </div>
@@ -138,7 +167,7 @@ export default function AnomaliesPage() {
                     <Fingerprint size={32} />
                  </div>
                  <h3 className="text-xl font-black text-slate-900">Security Profile</h3>
-                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Your account has high-level clearances for patient data access on clinical node 102.</p>
+                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Your account has clinical-level clearances for patient data access on this node.</p>
                  <Button className="w-full h-12 bg-slate-900 font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200">View Node Certificate</Button>
               </CardContent>
            </Card>

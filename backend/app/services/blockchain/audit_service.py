@@ -64,14 +64,14 @@ class BlockchainAuditService:
         if contract_address:
             self._initialize_contract()
         
-        # Local storage for demo purposes (in production, use actual blockchain)
+        # Local storage fallback (in production, use actual blockchain)
         self.local_audit_trail = []
         self.model_hash_history = {}
         
     def _initialize_contract(self):
         """Initialize smart contract connection"""
         # This would contain the actual smart contract ABI and address
-        # For demo purposes, we'll use a simplified approach
+        # Simplified approach — use web3 in production for on-chain writes
         contract_abi = [
             {
                 "inputs": [
@@ -146,7 +146,7 @@ class BlockchainAuditService:
                 'anomaly_count': round_data.anomaly_count
             }
             
-            # Store in local audit trail (demo)
+            # Store in local audit trail (fallback)
             self.local_audit_trail.append(transaction_data)
             self.model_hash_history[round_data.round_number] = round_data.model_hash
             
@@ -156,7 +156,7 @@ class BlockchainAuditService:
                 logger.info(f"Training round {round_data.round_number} logged to blockchain: {tx_hash}")
                 return tx_hash
             else:
-                # Generate mock transaction hash for demo
+                # Generate mock transaction hash when blockchain is unavailable
                 mock_tx_hash = hashlib.sha256(
                     f"{round_data.round_number}{round_data.timestamp}".encode()
                 ).hexdigest()
@@ -189,7 +189,7 @@ class BlockchainAuditService:
                 'metadata': update_data.metadata
             }
             
-            # Store in local audit trail (demo)
+            # Store in local audit trail (fallback)
             self.local_audit_trail.append(transaction_data)
             
             # If blockchain is available, submit transaction
@@ -198,7 +198,7 @@ class BlockchainAuditService:
                 logger.info(f"Model update {update_data.update_id} logged to blockchain: {tx_hash}")
                 return tx_hash
             else:
-                # Generate mock transaction hash for demo
+                # Generate mock transaction hash when blockchain is unavailable
                 mock_tx_hash = hashlib.sha256(
                     f"{update_data.update_id}{update_data.timestamp}".encode()
                 ).hexdigest()

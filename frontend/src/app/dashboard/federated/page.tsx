@@ -25,23 +25,12 @@ import {
 } from 'recharts';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 
-const flData = [
-  { round: 1, accuracy: 68, loss: 0.85 },
-  { round: 2, accuracy: 72, loss: 0.72 },
-  { round: 3, accuracy: 78, loss: 0.61 },
-  { round: 4, accuracy: 81, loss: 0.52 },
-  { round: 5, accuracy: 84, loss: 0.44 },
-  { round: 6, accuracy: 88, loss: 0.38 },
-  { round: 7, accuracy: 91, loss: 0.31 },
-  { round: 8, accuracy: 94, loss: 0.26 },
-];
+// Federated training data should be fetched from the API
+const flData: { round: number; accuracy: number; loss: number }[] = [];
+// In production, populate from: GET /federated/training-history
 
-const nodes = [
-  { name: 'Node-101 (Mayo)', status: 'Active', latency: '24ms', contribution: 450 },
-  { name: 'Node-112 (Hopkins)', status: 'Active', latency: '42ms', contribution: 820 },
-  { name: 'Node-142 (Stanford)', status: 'Active', latency: '18ms', contribution: 310 },
-  { name: 'Node-156 (Cleveland)', status: 'Idle', latency: '-', contribution: 200 },
-];
+const nodes: { name: string; status: string; latency: string; contribution: number }[] = [];
+// In production, populate from: GET /auth/hospitals or GET /federated/nodes
 
 export default function FederatedTrainingPage() {
   const [isSyncing, setIsSyncing] = React.useState(false);
@@ -124,7 +113,7 @@ export default function FederatedTrainingPage() {
       {/* Global Configuration Grid */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
          <ConfigItem label="Privacy Budget" value="ε = 1.0" icon={ShieldCheck} desc="Differential Privacy Budget" />
-         <ConfigItem label="Min Nodes" value="5 / 12" icon={Layers} desc="Required for aggregation" />
+         <ConfigItem label="Min Nodes" value="—" icon={Layers} desc="Required for aggregation" />
          <ConfigItem label="Epochs / Round" value="3" icon={RefreshCcw} desc="Local training passes" />
          <ConfigItem label="Aggregator" value="FedAvg" icon={Cpu} desc="Aggregation algorithm" />
       </div>

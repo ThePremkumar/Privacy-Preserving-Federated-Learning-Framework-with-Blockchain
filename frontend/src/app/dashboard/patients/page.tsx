@@ -29,12 +29,13 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const initialPatients = [
-  { id: 'PAT-1082', name: 'Sam Wilson', age: 58, gender: 'Male', consent: 'Approved', expiry: '2026-12-14', lastVisit: '2d ago', risk: 'High' },
-  { id: 'PAT-1083', name: 'Sarah Lee', age: 42, gender: 'Female', consent: 'Pending', expiry: 'N/A', lastVisit: '5d ago', risk: 'Medium' },
-  { id: 'PAT-1084', name: 'Michael Brown', age: 31, gender: 'Male', consent: 'Expired', expiry: '2024-01-20', lastVisit: '1w ago', risk: 'Low' },
-  { id: 'PAT-1085', name: 'Emma Watson', age: 64, gender: 'Female', consent: 'Approved', expiry: '2027-05-10', lastVisit: '3h ago', risk: 'High' },
-];
+// Patient data is loaded from the backend API
+// Expected structure: { id, name, age, gender, consent, expiry, lastVisit, risk }
+const initialPatients: {
+  id: string; name: string; age: number; gender: string;
+  consent: string; expiry: string; lastVisit: string; risk: string;
+}[] = [];
+// In production, populate from: GET /patients/
 
 export default function PatientsPage() {
   const [patients] = useState(initialPatients);
@@ -88,9 +89,9 @@ export default function PatientsPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         {/* Statistics Cards */}
         {[
-          { label: 'Total Patients', value: '1,240', icon: Users, color: 'text-slate-900', bg: 'bg-white' },
-          { label: 'Consent Approved', value: '1,192', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Action Required', value: '48', icon: ShieldQuestion, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Total Patients', value: patients.length > 0 ? patients.length : '—', icon: Users, color: 'text-slate-900', bg: 'bg-white' },
+          { label: 'Consent Approved', value: patients.filter(p => p.consent === 'Approved').length || '—', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Action Required', value: patients.filter(p => p.consent !== 'Approved').length || '—', icon: ShieldQuestion, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Privacy Breaches', value: '0', icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, i) => (
           <Card key={i} className={cn("border-none shadow-xl shadow-slate-100/50 p-6", stat.bg)}>
@@ -205,7 +206,7 @@ export default function PatientsPage() {
               </tbody>
            </table>
            <div className="p-8 border-t border-slate-50 flex items-center justify-between">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {patients.length} out of 1,240 enterprise records</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {patients.length} records</p>
               <div className="flex gap-2">
                  <Button variant="outline" size="sm" className="h-10 border-2 font-black text-[10px] uppercase">Previous</Button>
                  <Button variant="outline" size="sm" className="h-10 border-2 font-black text-[10px] uppercase text-blue-600 border-blue-100">Next Page</Button>
@@ -233,17 +234,17 @@ export default function PatientsPage() {
               </div>
            </div>
         </Card>
-        
+
         <Card className="border-none shadow-2xl shadow-slate-100 p-8 flex flex-col justify-center items-center text-center space-y-6">
            <div className="h-20 w-20 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
               <ShieldQuestion size={44} />
            </div>
            <div>
               <h4 className="text-2xl font-black italic italic">Consent <span className="text-blue-600">Re-Certification</span></h4>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2 italic italic">48 Patient records require urgent review</p>
+               <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2 italic italic">Patient records requiring review will appear here</p>
            </div>
            <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-sm">
-              Multiple patient consents are nearing expiry or have changed status. Audit required to maintain node inclusion in federated round #482.
+               Multiple patient consents may be nearing expiry or have changed status. Audit where required to maintain node inclusion in federated training rounds.
            </p>
            <Button className="w-full h-14 bg-slate-900 shadow-2xl shadow-slate-200 font-black uppercase tracking-[0.3em] text-[10px]">Start Audit Workflow</Button>
         </Card>

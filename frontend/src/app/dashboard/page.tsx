@@ -45,22 +45,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const chartData = [
-  { name: 'Mon', accuracy: 82, loss: 0.45 },
-  { name: 'Tue', accuracy: 84, loss: 0.42 },
-  { name: 'Wed', accuracy: 83, loss: 0.43 },
-  { name: 'Thu', accuracy: 86, loss: 0.38 },
-  { name: 'Fri', accuracy: 89, loss: 0.34 },
-  { name: 'Sat', accuracy: 91, loss: 0.31 },
-  { name: 'Sun', accuracy: 94, loss: 0.28 },
-];
+// Dashboard data should be fetched from relevant APIs
+const chartData: { name: string; accuracy: number; loss: number }[] = [];
+// In production, populate from: GET /federated/training-history
 
-const riskDistribution = [
-  { name: 'Critical', value: 12, color: '#ef4444' },
-  { name: 'High', value: 34, color: '#f97316' },
-  { name: 'Medium', value: 85, color: '#f59e0b' },
-  { name: 'Low', value: 412, color: '#10b981' },
-];
+const riskDistribution: { name: string; value: number; color: string }[] = [];
+// In production, populate from: GET /predictions/risk-distribution
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -85,7 +75,7 @@ export default function DashboardPage() {
              <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
           </h1>
           <p className="mt-4 text-sm font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-             <Calendar size={16} className="text-blue-600" /> Quarter 1, 2024 • {user.role.replace('_', ' ')} Portal
+             <Calendar size={16} className="text-blue-600" /> {user.role.replace('_', ' ')} Portal
           </p>
         </div>
         <div className="flex gap-4">
@@ -99,24 +89,24 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {(isSuperAdmin || isAdmin) ? (
           <>
-            <StatCard label="Global Model Accuracy" value="94.8%" icon={BrainCircuit} trend="+2.4%" />
-            <StatCard label="Participating Nodes" value="112" icon={Hospital} trend="+4" />
-            <StatCard label="Blockchain Tx" value="2,412" icon={ShieldCheck} trend="+124" />
-            <StatCard label="Privacy Compliance" value="HIPAA L3" icon={ShieldCheck} trend="Verified" />
+            <StatCard label="Global Model Accuracy" value="—" icon={BrainCircuit} trend="—" />
+            <StatCard label="Participating Nodes" value="—" icon={Hospital} trend="—" />
+            <StatCard label="Blockchain Tx" value="—" icon={ShieldCheck} trend="—" />
+            <StatCard label="Privacy Compliance" value="—" icon={ShieldCheck} trend="Pending" />
           </>
         ) : isHospital ? (
           <>
-            <StatCard label="Local Model Accuracy" value="89.2%" icon={Activity} trend="+1.2%" />
-            <StatCard label="Hospital Records" value="48.2k" icon={Database} trend="+842" />
-            <StatCard label="Updates Submitted" value="12" icon={BrainCircuit} trend="Verified" />
-            <StatCard label="Privacy Budget" value="84%" icon={ShieldCheck} trend="Good" />
+            <StatCard label="Local Model Accuracy" value="—" icon={Activity} trend="—" />
+            <StatCard label="Hospital Records" value="—" icon={Database} trend="—" />
+            <StatCard label="Updates Submitted" value="—" icon={BrainCircuit} trend="—" />
+            <StatCard label="Privacy Budget" value="—" icon={ShieldCheck} trend="—" />
           </>
         ) : (
           <>
-            <StatCard label="Clinical Risk Alerts" value="14" icon={AlertTriangle} trend="Critical" danger />
-            <StatCard label="Diagnostic Predictions" value="1,245" icon={BrainCircuit} trend="+42" />
-            <StatCard label="Patient Anomalies" value="8" icon={Activity} trend="Review" danger />
-            <StatCard label="NLP Reports Sync" value="99%" icon={FileSearch} trend="Active" />
+            <StatCard label="Clinical Risk Alerts" value="—" icon={AlertTriangle} trend="—" danger />
+            <StatCard label="Diagnostic Predictions" value="—" icon={BrainCircuit} trend="—" />
+            <StatCard label="Patient Anomalies" value="—" icon={Activity} trend="—" danger />
+            <StatCard label="NLP Reports Sync" value="—" icon={FileSearch} trend="—" />
           </>
         )}
       </div>
@@ -162,11 +152,11 @@ export default function DashboardPage() {
               <div className="flex gap-8">
                  <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Converged Accuracy</span>
-                    <span className="text-xl font-black italic">94.8%</span>
+                    <span className="text-xl font-black italic">—</span>
                  </div>
                  <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aggregation Latency</span>
-                    <span className="text-xl font-black italic">142ms</span>
+                    <span className="text-xl font-black italic">—</span>
                  </div>
               </div>
               <Button size="sm" variant="outline" className="h-10 border-2 font-black uppercase tracking-widest text-[9px]">Full Meta Report <ArrowRight size={14} className="ml-1" /></Button>
@@ -228,7 +218,7 @@ export default function DashboardPage() {
                  </div>
               </div>
               <p className="text-xs font-medium text-white/60 leading-relaxed mb-6">
-                 Your clinical node is participating in training round #482. Local gradients are currently being noise-injected for total patient anonymity.
+                 Your clinical node is participating in the current training round. Local gradients are noise-injected for total patient anonymity.
               </p>
               <div className="flex items-center justify-between pt-6 border-t border-white/10">
                  <div className="flex flex-col">

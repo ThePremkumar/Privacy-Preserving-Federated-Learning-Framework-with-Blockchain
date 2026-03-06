@@ -42,23 +42,6 @@ interface HospitalNode {
   is_active: boolean;
 }
 
-// Demo data enrichment
-const orgStats = {
-  total: 12,
-  active: 9,
-  pending: 2,
-  suspended: 1,
-};
-
-const demoOrgs = [
-  { id: 'ORG-101', name: 'Mayo Clinic Research', email: 'admin@mayo.edu', address: 'Rochester, MN', status: 'Active', doctors: 42, patients: '12.4k', contribution: '28%', lastActive: '2m ago' },
-  { id: 'ORG-112', name: 'Johns Hopkins Medical', email: 'fl-admin@jhmi.edu', address: 'Baltimore, MD', status: 'Active', doctors: 38, patients: '18.2k', contribution: '34%', lastActive: '5m ago' },
-  { id: 'ORG-142', name: 'Stanford Health', email: 'research@stanford.edu', address: 'Palo Alto, CA', status: 'Active', doctors: 25, patients: '8.1k', contribution: '15%', lastActive: '12m ago' },
-  { id: 'ORG-156', name: 'Cleveland Clinic', email: 'admin@clevelandclinic.org', address: 'Cleveland, OH', status: 'Pending', doctors: 0, patients: '0', contribution: '0%', lastActive: 'N/A' },
-  { id: 'ORG-170', name: 'Mass General Brigham', email: 'datascience@mgb.org', address: 'Boston, MA', status: 'Active', doctors: 31, patients: '9.8k', contribution: '18%', lastActive: '1h ago' },
-  { id: 'ORG-188', name: 'UCSF Medical Center', email: 'admin@ucsf.edu', address: 'San Francisco, CA', status: 'Suspended', doctors: 14, patients: '4.2k', contribution: '5%', lastActive: '3d ago' },
-];
-
 export default function OrganizationsPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,10 +72,13 @@ export default function OrganizationsPage() {
     }
   };
 
-  const filteredOrgs = demoOrgs.filter(org =>
+  const filteredHospitals = hospitals.filter(org =>
     org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     org.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const activeCount = hospitals.filter(h => h.is_active).length;
+  const inactiveCount = hospitals.filter(h => !h.is_active).length;
 
   return (
     <RoleGuard allowedRoles={['super_admin', 'admin']}>
@@ -111,12 +97,11 @@ export default function OrganizationsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {[
-          { label: 'Total Organizations', value: orgStats.total, icon: Building2, color: 'text-slate-900', bg: 'bg-white' },
-          { label: 'Active Nodes', value: orgStats.active, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Pending Approval', value: orgStats.pending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Suspended', value: orgStats.suspended, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
+          { label: 'Total Organizations', value: hospitals.length, icon: Building2, color: 'text-slate-900', bg: 'bg-white' },
+          { label: 'Active Nodes', value: activeCount, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Inactive', value: inactiveCount, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, i) => (
           <Card key={i} className={cn("border-none shadow-lg shadow-slate-100/50 p-5", stat.bg)}>
             <div className="flex justify-between items-start">
@@ -156,15 +141,18 @@ export default function OrganizationsPage() {
                  <tr className="bg-slate-50/50 border-b border-slate-50">
                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Organization</th>
                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Doctors</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Patients</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Contribution</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Activity</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Contact</th>
                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Actions</th>
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                 {filteredOrgs.map(org => (
+                 {filteredHospitals.length === 0 ? (
+                   <tr>
+                     <td colSpan={4} className="px-6 py-12 text-center text-sm font-bold text-slate-400">
+                       No organizations registered yet. Click "Add Organization" to onboard a hospital node.
+                     </td>
+                   </tr>
+                 ) : filteredHospitals.map(org => (
                     <tr key={org.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
                        <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
@@ -180,47 +168,20 @@ export default function OrganizationsPage() {
                        <td className="px-6 py-5">
                           <div className={cn(
                              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                             org.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                             org.status === 'Pending' ? "bg-amber-50 text-amber-700 border-amber-100" :
-                             "bg-red-50 text-red-700 border-red-100"
+                             org.is_active ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-red-50 text-red-700 border-red-100"
                           )}>
-                             {org.status === 'Active' ? <CheckCircle2 size={10} /> : 
-                              org.status === 'Pending' ? <Clock size={10} /> : <XCircle size={10} />}
-                             {org.status}
+                             {org.is_active ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+                             {org.is_active ? 'Active' : 'Inactive'}
                           </div>
                        </td>
                        <td className="px-6 py-5">
-                          <span className="text-sm font-black text-slate-900">{org.doctors}</span>
-                       </td>
-                       <td className="px-6 py-5">
-                          <span className="text-sm font-black text-slate-900">{org.patients}</span>
-                       </td>
-                       <td className="px-6 py-5">
-                          <div className="flex items-center gap-2">
-                             <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-600 rounded-full" style={{ width: org.contribution }} />
-                             </div>
-                             <span className="text-[10px] font-black text-blue-600">{org.contribution}</span>
-                          </div>
-                       </td>
-                       <td className="px-6 py-5">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">{org.lastActive}</span>
+                          <span className="text-xs font-bold text-slate-500">{org.contact_email}</span>
                        </td>
                        <td className="px-6 py-5">
                           <div className="flex items-center gap-1">
-                             {org.status === 'Pending' && (
-                               <Button size="sm" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest">Approve</Button>
-                             )}
-                             {org.status === 'Active' && (
-                               <Button size="sm" variant="outline" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest border text-slate-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50">
-                                 <Pause size={10} className="mr-1" /> Suspend
-                               </Button>
-                             )}
-                             {org.status === 'Suspended' && (
-                               <Button size="sm" variant="outline" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest border text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100">
-                                 <Play size={10} className="mr-1" /> Reactivate
-                               </Button>
-                             )}
+                             <Button size="sm" variant="outline" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest border text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50">
+                               Details
+                             </Button>
                           </div>
                        </td>
                     </tr>
@@ -228,7 +189,7 @@ export default function OrganizationsPage() {
               </tbody>
            </table>
            <div className="p-6 border-t border-slate-50 flex items-center justify-between">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {filteredOrgs.length} organizations</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {filteredHospitals.length} organizations</p>
            </div>
         </CardContent>
       </Card>
@@ -252,7 +213,7 @@ export default function OrganizationsPage() {
                     required type="text" value={newHospital.name}
                     onChange={(e) => setNewHospital({...newHospital, name: e.target.value})}
                     className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                    placeholder="e.g. City General Hospital"
+                    placeholder="Hospital or research institution name"
                   />
                </div>
                <div className="space-y-2">

@@ -1,5 +1,5 @@
 """
-Synthetic Medical Data Generator for Healthcare Platform Demo
+Synthetic Medical Data Generator for Healthcare Platform
 Enterprise-grade GAN-inspired synthetic data generation
 """
 
@@ -10,13 +10,13 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any
 
 class SyntheticDataService:
-    """Service to generate realistic synthetic medical data for testing and demo"""
+    """Service to generate realistic synthetic medical data for testing"""
     
     def __init__(self):
         self.conditions = ["Type 2 Diabetes", "Hypertension", "Asthma", "Cardiovascular Risk", "Chronic Kidney Disease"]
         self.symptoms = ["fatigue", "high glucose", "shortness of breath", "chest pain", "joint pain", "blurred vision"]
         self.genders = ["Male", "Female", "Other"]
-        self.hospitals = ["General Hospital Alpha", "City Medical Center", "University Health Hub"]
+        self.hospitals = ["Hospital Node A", "Hospital Node B", "Hospital Node C"]
 
     def generate_patient(self) -> Dict[str, Any]:
         """Generate a single realistic patient profile"""

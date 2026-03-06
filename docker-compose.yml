@@ -7,8 +7,8 @@ services:
     container_name: federated_postgres
     environment:
       POSTGRES_DB: federated_learning
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your .env}
     ports:
       - "5432:5432"
     volumes:
@@ -23,8 +23,8 @@ services:
     image: mongo:7
     container_name: federated_mongodb
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: mongodb123
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in your .env}
       MONGO_INITDB_DATABASE: audit_logs
     ports:
       - "27017:27017"
@@ -58,7 +58,7 @@ services:
       --port 8545
       --accounts 10
       --defaultBalanceEther 1000
-      --mnemonic "federated learning healthcare blockchain audit trail"
+      --mnemonic "${GANACHE_MNEMONIC:-test test test test test test test test test test test junk}"
     volumes:
       - blockchain_data:/ganache-data
     networks:
@@ -72,13 +72,16 @@ services:
       dockerfile: Dockerfile.backend
     container_name: federated_backend
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/federated_learning
-      - MONGODB_URL=mongodb://admin:mongodb123@mongodb:27017/audit_logs?authSource=admin
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/federated_learning
+      - MONGODB_URL=mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD}@mongodb:27017/audit_logs?authSource=admin
       - REDIS_URL=redis://redis:6379
       - BLOCKCHAIN_URL=http://blockchain:8545
-      - JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
-      - CONTRACT_ADDRESS=0x1234567890123456789012345678901234567890
-      - BLOCKCHAIN_PRIVATE_KEY=0x1234567890123456789012345678901234567890123456789012345678901234
+      - JWT_SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in your .env}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS:-}
+      - BLOCKCHAIN_PRIVATE_KEY=${BLOCKCHAIN_PRIVATE_KEY:-}
+      - SEED_ADMIN_USERNAME=${SEED_ADMIN_USERNAME:-superadmin}
+      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL:-admin@your-domain.com}
+      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in your .env}
     ports:
       - "8000:8000"
     depends_on:
@@ -125,7 +128,7 @@ services:
     container_name: hospital_node_1
     environment:
       - HOSPITAL_ID=hospital_001
-      - HOSPITAL_NAME=General Hospital
+      - HOSPITAL_NAME=Hospital Node 1
       - SERVER_URL=http://backend:8000
       - DATA_PATH=/app/data/hospital_1
     ports:
@@ -147,7 +150,7 @@ services:
     container_name: hospital_node_2
     environment:
       - HOSPITAL_ID=hospital_002
-      - HOSPITAL_NAME=Medical Center
+      - HOSPITAL_NAME=Hospital Node 2
       - SERVER_URL=http://backend:8000
       - DATA_PATH=/app/data/hospital_2
     ports:
@@ -169,7 +172,7 @@ services:
     container_name: hospital_node_3
     environment:
       - HOSPITAL_ID=hospital_003
-      - HOSPITAL_NAME=University Hospital
+      - HOSPITAL_NAME=Hospital Node 3
       - SERVER_URL=http://backend:8000
       - DATA_PATH=/app/data/hospital_3
     ports:
@@ -225,7 +228,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards

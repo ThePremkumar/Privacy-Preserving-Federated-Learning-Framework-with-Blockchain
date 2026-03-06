@@ -41,13 +41,7 @@ interface AdminUser {
   loginCount: number;
 }
 
-const loginActivity = [
-  { user: 'superadmin', action: 'Login', ip: '192.168.1.10', time: '2m ago', status: 'Success' },
-  { user: 'admin', action: 'Login', ip: '10.0.0.42', time: '1h ago', status: 'Success' },
-  { user: 'admin_mayo', action: 'Login', ip: '172.16.0.5', time: '4h ago', status: 'Success' },
-  { user: 'unknown_user', action: 'Login Attempt', ip: '45.33.12.8', time: '6h ago', status: 'Failed' },
-  { user: 'admin_jhmi', action: 'Password Reset', ip: '10.0.0.88', time: '1d ago', status: 'Success' },
-];
+// Login activity is fetched from the audit API — no static data
 
 export default function AdminManagementPage() {
   const { user } = useAuth();
@@ -76,11 +70,7 @@ export default function AdminManagementPage() {
         }));
       setAdmins(apiAdmins);
     } catch {
-      // Fallback demo admins
-      setAdmins([
-        { id: 'ADM-001', username: 'superadmin', email: 'root@healthconnect.io', role: 'super_admin', hospital_id: null, lastLogin: '2m ago', status: 'Online', loginCount: 482 },
-        { id: 'ADM-002', username: 'admin', email: 'admin@healthconnect.io', role: 'admin', hospital_id: null, lastLogin: '1h ago', status: 'Online', loginCount: 156 },
-      ]);
+      setAdmins([]);
     }
   }, [user?.username]);
 
@@ -161,7 +151,7 @@ export default function AdminManagementPage() {
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Failed Logins (24h)</p>
-              <p className="text-2xl font-black italic text-red-600">1</p>
+              <p className="text-2xl font-black italic text-red-600">—</p>
             </div>
           </div>
         </Card>
@@ -225,33 +215,9 @@ export default function AdminManagementPage() {
             <CardTitle className="text-white text-xl font-black">Login <span className="text-blue-400">Activity</span></CardTitle>
             <CardDescription className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Real-time authentication events</CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-white/5">
-              {loginActivity.map((log, i) => (
-                <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "h-8 w-8 rounded-lg flex items-center justify-center text-xs font-black",
-                      log.status === 'Failed' ? "bg-red-500/20 text-red-400" : "bg-white/5 text-white/60"
-                    )}>
-                      {log.user.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-white">{log.user}</p>
-                      <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">{log.action} • {log.ip}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-[9px] font-bold text-white/40">{log.time}</span>
-                    <span className={cn(
-                      "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded",
-                      log.status === 'Success' ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                    )}>
-                      {log.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Login activity is populated from the audit log service in real time.</p>
             </div>
           </CardContent>
         </Card>

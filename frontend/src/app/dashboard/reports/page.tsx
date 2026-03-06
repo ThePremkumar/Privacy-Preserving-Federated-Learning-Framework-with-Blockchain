@@ -33,31 +33,15 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const monthlyData = [
-  { month: 'Sep', predictions: 1240, patients: 842 },
-  { month: 'Oct', predictions: 1420, patients: 918 },
-  { month: 'Nov', predictions: 1680, patients: 1042 },
-  { month: 'Dec', predictions: 1520, patients: 980 },
-  { month: 'Jan', predictions: 1890, patients: 1180 },
-  { month: 'Feb', predictions: 2140, patients: 1340 },
-];
+// Report data should be fetched from the analytics API
+const monthlyData: { month: string; predictions: number; patients: number }[] = [];
+// In production, populate from: GET /analytics/monthly
 
-const diseaseDistribution = [
-  { name: 'Diabetes', value: 35, color: '#3b82f6' },
-  { name: 'Cardiovascular', value: 28, color: '#ef4444' },
-  { name: 'Hypertension', value: 22, color: '#f59e0b' },
-  { name: 'Respiratory', value: 10, color: '#10b981' },
-  { name: 'Other', value: 5, color: '#94a3b8' },
-];
+const diseaseDistribution: { name: string; value: number; color: string }[] = [];
+// In production, populate from: GET /analytics/disease-distribution
 
-const nodeContributions = [
-  { node: 'Mayo', samples: 12400 },
-  { node: 'Hopkins', samples: 18200 },
-  { node: 'Stanford', samples: 8100 },
-  { node: 'Cleveland', samples: 5400 },
-  { node: 'MGH', samples: 9800 },
-  { node: 'UCSF', samples: 4200 },
-];
+const nodeContributions: { node: string; samples: number }[] = [];
+// In production, populate from: GET /analytics/node-contributions
 
 export default function ReportsPage() {
   const { user } = useAuth();
@@ -88,10 +72,10 @@ export default function ReportsPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Total Predictions', value: '9,890', trend: '+12%', up: true, icon: BrainCircuit },
-          { label: 'Active Patients', value: '6,302', trend: '+8%', up: true, icon: Users },
-          { label: 'Risk Alerts', value: '124', trend: '-5%', up: true, icon: Activity },
-          { label: 'Compliance Score', value: '99.8%', trend: 'Verified', up: true, icon: ShieldCheck },
+          { label: 'Total Predictions', value: '—', trend: '—', up: true, icon: BrainCircuit },
+          { label: 'Active Patients', value: '—', trend: '—', up: true, icon: Users },
+          { label: 'Risk Alerts', value: '—', trend: '—', up: true, icon: Activity },
+          { label: 'Compliance Score', value: '—', trend: 'Pending', up: true, icon: ShieldCheck },
         ].map((stat, i) => (
           <Card key={i} className="border-none shadow-lg shadow-slate-100/50 p-5">
             <div className="flex items-center justify-between mb-3">

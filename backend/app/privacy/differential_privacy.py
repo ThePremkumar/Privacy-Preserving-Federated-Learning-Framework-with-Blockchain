@@ -101,7 +101,7 @@ class SecureAggregation:
         Apply masking to parameters for secure aggregation
         """
         # In a real implementation, this would use cryptographic techniques
-        # For demonstration, we'll apply a simple random mask
+        # Apply a random mask for secure aggregation
         masked_parameters = []
         
         for param in parameters:
@@ -117,7 +117,7 @@ class SecureAggregation:
         Remove masks from aggregated parameters
         """
         # In a real implementation, this would involve cryptographic unmasking
-        # For demonstration, we'll average the masked parameters
+        # Average the masked parameters for aggregation
         if not masked_parameters:
             return []
         

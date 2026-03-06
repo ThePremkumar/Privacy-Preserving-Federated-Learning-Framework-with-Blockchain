@@ -21,7 +21,7 @@ class FederatedDataLoader:
             train_dataset = datasets.CIFAR10('./data', train=True, download=True, transform=self.transform)
             test_dataset = datasets.CIFAR10('./data', train=False, download=True, transform=self.transform)
         elif self.dataset_name == 'synthetic_tabular':
-            # Create dummy data for testing
+            # Create synthetic data for testing
             X = torch.randn(100, 20)
             y = torch.randint(0, 10, (100,))
             dataset = TensorDataset(X, y)

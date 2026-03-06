@@ -29,12 +29,14 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const demoDoctors = [
-  { id: 'DOC-001', name: 'Dr. Valerie Chen', email: 'v.chen@mayo.edu', specialty: 'Endocrinology', access: 'Full Access', patients: 42, predictions: 218, lastActive: '10m ago', status: 'Online' },
-  { id: 'DOC-002', name: 'Dr. James Miller', email: 'j.miller@mayo.edu', specialty: 'Cardiology', access: 'Full Access', patients: 38, predictions: 156, lastActive: '1h ago', status: 'Online' },
-  { id: 'DOC-003', name: 'Dr. Sarah Kim', email: 's.kim@mayo.edu', specialty: 'Pulmonology', access: 'Prediction Only', patients: 24, predictions: 89, lastActive: '4h ago', status: 'Offline' },
-  { id: 'DOC-004', name: 'Dr. Robert Shah', email: 'r.shah@mayo.edu', specialty: 'Neurology', access: 'Full Access', patients: 31, predictions: 134, lastActive: '2h ago', status: 'Offline' },
-];
+interface DoctorUser {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  hospital_id: string | null;
+  is_active: boolean;
+}
 
 export default function DoctorManagementPage() {
   const { user } = useAuth();
@@ -43,6 +45,28 @@ export default function DoctorManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [newDoctor, setNewDoctor] = useState({ username: '', email: '', password: '' });
   const [successMsg, setSuccessMsg] = useState('');
+  const [doctors, setDoctors] = useState<DoctorUser[]>([]);
+
+  const fetchDoctors = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/users');
+      const doctorUsers: DoctorUser[] = res.data
+        .filter((u: any) => u.role === 'doctor' && u.hospital_id === user?.hospital_id)
+        .map((u: any) => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          role: u.role,
+          hospital_id: u.hospital_id,
+          is_active: u.is_active !== false,
+        }));
+      setDoctors(doctorUsers);
+    } catch {
+      setDoctors([]);
+    }
+  }, [user?.hospital_id]);
+
+  useEffect(() => { fetchDoctors(); }, [fetchDoctors]);
 
   const handleCreateDoctor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,16 +79,19 @@ export default function DoctorManagementPage() {
       setSuccessMsg('Doctor registered successfully');
       setShowAddModal(false);
       setNewDoctor({ username: '', email: '', password: '' });
+      fetchDoctors();
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error('Failed to register doctor:', err);
     }
   };
 
-  const filteredDoctors = demoDoctors.filter(d =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDoctors = doctors.filter(d =>
+    d.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const activeCount = doctors.filter(d => d.is_active).length;
 
   return (
     <RoleGuard allowedRoles={['hospital']}>
@@ -95,7 +122,7 @@ export default function DoctorManagementPage() {
             <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100"><Users size={22} /></div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Doctors</p>
-              <p className="text-2xl font-black italic text-slate-900">{demoDoctors.length}</p>
+              <p className="text-2xl font-black italic text-slate-900">{doctors.length}</p>
             </div>
           </div>
         </Card>
@@ -103,8 +130,8 @@ export default function DoctorManagementPage() {
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><Activity size={22} /></div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Online Now</p>
-              <p className="text-2xl font-black italic text-emerald-600">{demoDoctors.filter(d => d.status === 'Online').length}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Active</p>
+              <p className="text-2xl font-black italic text-emerald-600">{activeCount}</p>
             </div>
           </div>
         </Card>
@@ -112,8 +139,8 @@ export default function DoctorManagementPage() {
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100"><Stethoscope size={22} /></div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Predictions</p>
-              <p className="text-2xl font-black italic text-indigo-600">{demoDoctors.reduce((a, d) => a + d.predictions, 0)}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Inactive</p>
+              <p className="text-2xl font-black italic text-indigo-600">{doctors.length - activeCount}</p>
             </div>
           </div>
         </Card>
@@ -136,46 +163,39 @@ export default function DoctorManagementPage() {
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-50">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Doctor</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Specialty</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Access Level</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Patients</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Hospital Node</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredDoctors.map(doctor => (
+              {filteredDoctors.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm font-bold text-slate-400">
+                    No doctors registered yet. Click "Add Doctor" to onboard clinical staff.
+                  </td>
+                </tr>
+              ) : filteredDoctors.map(doctor => (
                 <tr key={doctor.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">
-                        {doctor.name.split(' ')[1]?.charAt(0) || doctor.name.charAt(0)}
+                        {doctor.username.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-900">{doctor.name}</p>
+                        <p className="text-sm font-black text-slate-900">{doctor.username}</p>
                         <p className="text-[10px] font-bold text-slate-400">{doctor.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-xs font-bold text-slate-600">{doctor.specialty}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className={cn(
-                      "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                      doctor.access === 'Full Access' ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-amber-50 text-amber-700 border-amber-100"
-                    )}>
-                      {doctor.access}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-sm font-black text-slate-900">{doctor.patients}</span>
-                  </td>
-                  <td className="px-6 py-5">
                     <div className="flex items-center gap-1.5">
-                      <div className={cn("h-2 w-2 rounded-full", doctor.status === 'Online' ? "bg-emerald-500" : "bg-slate-300")} />
-                      <span className="text-[10px] font-bold text-slate-400">{doctor.status}</span>
+                      <div className={cn("h-2 w-2 rounded-full", doctor.is_active ? "bg-emerald-500" : "bg-slate-300")} />
+                      <span className="text-[10px] font-bold text-slate-400">{doctor.is_active ? 'Active' : 'Inactive'}</span>
                     </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <span className="text-xs font-bold text-slate-500">{doctor.hospital_id || '—'}</span>
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex gap-2">
@@ -203,7 +223,7 @@ export default function DoctorManagementPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Doctor Username</label>
                 <input required type="text" value={newDoctor.username} onChange={e => setNewDoctor({...newDoctor, username: e.target.value})}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="e.g. dr_chen" />
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Unique username for the doctor" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>

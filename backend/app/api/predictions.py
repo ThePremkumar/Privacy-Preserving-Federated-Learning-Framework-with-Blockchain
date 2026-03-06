@@ -46,5 +46,5 @@ async def get_anomalies(current_user: Dict[str, Any] = Depends(require_role(["do
     hospital_id = current_user.get("hospital_id")
     # In a real app, this would filter by type='anomaly' or score threshold
     all_records = await prediction_repo.find_many({"hospital_id": hospital_id})
-    # Mocking anomaly filtering for demo
+    # Filter records with high urgency scores as anomalies
     return [r for r in all_records if r.get("results", {}).get("risk_assessment", {}).get("urgency_score", 0) > 7]
