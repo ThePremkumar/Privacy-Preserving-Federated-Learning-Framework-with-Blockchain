@@ -16,7 +16,7 @@ from typing import Dict, Any
 # Core imports
 from app.core.config import settings
 from app.core.database import init_db, get_db
-from app.api import auth, federated, blockchain, predictions, admin, hospital, doctor, patients
+from app.api import auth, federated, blockchain, predictions, admin, hospital, doctor, patients, data_upload, training
 from app.services.blockchain_service import blockchain_service
 from app.services.federated_service import federated_service
 from app.services.auth_service import auth_service
@@ -100,6 +100,8 @@ app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["Pred
 app.include_router(hospital.router, prefix="/api/v1/hospital", tags=["Hospital Operations"])
 app.include_router(doctor.router, prefix="/api/v1/doctor", tags=["Doctor Operations"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administration"])
+app.include_router(data_upload.router, prefix="/api/v1/data", tags=["Data Upload"])
+app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
 
 # Health check endpoints
 @app.get("/api/v1/status/health", tags=["System"])

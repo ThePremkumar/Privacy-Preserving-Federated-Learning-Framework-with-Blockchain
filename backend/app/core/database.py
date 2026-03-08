@@ -36,8 +36,8 @@ def get_db():
 def init_db():
     """Initialize database tables"""
     try:
-        # Import models here to register them with Base
-        # from .models import User, Hospital...
+        # Import models to register them with Base before creating tables
+        from app.core import db_models  # noqa: F401 – registers User, Hospital, AuditLog, DatasetUpload, DatasetRecord
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables initialized successfully")
     except Exception as e:

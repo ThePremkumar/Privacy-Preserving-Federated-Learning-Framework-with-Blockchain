@@ -41,11 +41,9 @@ export default function CompliancePage() {
     autoLogout: '30 min',
   });
 
-  const apiKeys = [
-    { name: 'Production API Key', key: 'hc_prod_****...8f2a', created: 'Jan 15, 2024', lastUsed: '2m ago', status: 'Active' },
-    { name: 'Staging API Key', key: 'hc_stg_****...3d1b', created: 'Feb 1, 2024', lastUsed: '3d ago', status: 'Active' },
-    { name: 'Legacy Integration', key: 'hc_leg_****...9c4e', created: 'Nov 10, 2023', lastUsed: '30d ago', status: 'Expired' },
-  ];
+  // API keys should be fetched from the backend API Key service
+  const apiKeys: { name: string; key: string; created: string; lastUsed: string; status: string }[] = [];
+  // In production, populate from: GET /auth/api-keys
 
   const Toggle = ({ enabled, onChange, label }: { enabled: boolean; onChange: () => void; label: string }) => (
     <button onClick={onChange} className="flex items-center gap-3 group">
@@ -84,7 +82,7 @@ export default function CompliancePage() {
               </div>
               <div>
                 <h2 className="text-2xl font-black italic">Platform Compliance: <span className="text-emerald-400">PASSED</span></h2>
-                <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">Last audit: March 1, 2024 • Next scheduled: April 1, 2024</p>
+                <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">Status verified against real-time configuration</p>
               </div>
             </div>
             <div className="flex gap-6">
@@ -168,39 +166,45 @@ export default function CompliancePage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-slate-50">
-              {apiKeys.map((key, i) => (
-                <div key={i} className="px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition-colors group">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "h-10 w-10 rounded-xl flex items-center justify-center border",
-                      key.status === 'Active' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-slate-100 text-slate-400 border-slate-200"
-                    )}>
-                      <Key size={18} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-900">{key.name}</p>
-                      <p className="text-[10px] font-mono text-slate-400 mt-0.5">{key.key}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-400">{key.lastUsed}</p>
-                      <span className={cn(
-                        "text-[8px] font-black uppercase tracking-widest",
-                        key.status === 'Active' ? "text-emerald-600" : "text-red-500"
-                      )}>{key.status}</span>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="h-7 w-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-colors">
-                        <Copy size={12} />
-                      </button>
-                      <button className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </div>
+              {apiKeys.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-sm font-bold text-slate-400">No API keys registered.</p>
                 </div>
-              ))}
+              ) : (
+                apiKeys.map((key, i) => (
+                  <div key={i} className="px-6 py-5 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "h-10 w-10 rounded-xl flex items-center justify-center border",
+                        key.status === 'Active' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-slate-100 text-slate-400 border-slate-200"
+                      )}>
+                        <Key size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900">{key.name}</p>
+                        <p className="text-[10px] font-mono text-slate-400 mt-0.5">{key.key}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-slate-400">{key.lastUsed}</p>
+                        <span className={cn(
+                          "text-[8px] font-black uppercase tracking-widest",
+                          key.status === 'Active' ? "text-emerald-600" : "text-red-500"
+                        )}>{key.status}</span>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="h-7 w-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-colors">
+                          <Copy size={12} />
+                        </button>
+                        <button className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors">
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

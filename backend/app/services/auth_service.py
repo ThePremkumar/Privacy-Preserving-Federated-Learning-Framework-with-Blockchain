@@ -8,6 +8,8 @@ from enum import Enum
 import secrets
 import logging
 
+from sqlalchemy.orm import Session
+
 logger = logging.getLogger(__name__)
 
 class UserRole(Enum):
@@ -40,9 +42,43 @@ class Permission(Enum):
     GENERATE_REPORTS = "generate_reports"
     VERIFY_INTEGRITY = "verify_integrity"
 
+
+# Role → permissions mapping
+ROLE_PERMISSIONS = {
+    UserRole.SUPER_ADMIN: [
+        Permission.MANAGE_HOSPITALS,
+        Permission.MANAGE_USERS,
+        Permission.VIEW_GLOBAL_MODEL,
+        Permission.MONITOR_TRAINING,
+        Permission.VIEW_AUDIT_TRAIL,
+        Permission.GENERATE_REPORTS,
+        Permission.VERIFY_INTEGRITY,
+    ],
+    UserRole.ADMIN: [
+        Permission.MANAGE_HOSPITALS,
+        Permission.VIEW_GLOBAL_MODEL,
+        Permission.MONITOR_TRAINING,
+        Permission.VIEW_AUDIT_TRAIL,
+        Permission.GENERATE_REPORTS,
+    ],
+    UserRole.HOSPITAL: [
+        Permission.MANAGE_USERS,
+        Permission.UPLOAD_DATA,
+        Permission.TRAIN_MODEL,
+        Permission.SUBMIT_WEIGHTS,
+        Permission.VIEW_AUDIT_TRAIL,
+    ],
+    UserRole.DOCTOR: [
+        Permission.VIEW_PREDICTIONS,
+        Permission.VIEW_ANOMALIES,
+        Permission.ACCESS_PATIENT_DATA,
+    ],
+}
+
+
 @dataclass
 class User:
-    """User data class"""
+    """User data class (returned by service methods)"""
     id: str
     username: str
     email: str
@@ -52,50 +88,17 @@ class User:
     created_at: datetime = None
     last_login: datetime = None
     permissions: List[Permission] = None
-    
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.utcnow()
         if self.permissions is None:
-            self.permissions = self._get_default_permissions()
-    
-    def _get_default_permissions(self) -> List[Permission]:
-        """Get default permissions based on role"""
-        role_permissions = {
-            UserRole.SUPER_ADMIN: [
-                Permission.MANAGE_HOSPITALS,
-                Permission.MANAGE_USERS,
-                Permission.VIEW_GLOBAL_MODEL,
-                Permission.MONITOR_TRAINING,
-                Permission.VIEW_AUDIT_TRAIL,
-                Permission.GENERATE_REPORTS,
-                Permission.VERIFY_INTEGRITY
-            ],
-            UserRole.ADMIN: [
-                Permission.MANAGE_HOSPITALS,
-                Permission.VIEW_GLOBAL_MODEL,
-                Permission.MONITOR_TRAINING,
-                Permission.VIEW_AUDIT_TRAIL,
-                Permission.GENERATE_REPORTS
-            ],
-            UserRole.HOSPITAL: [
-                Permission.MANAGE_USERS,
-                Permission.UPLOAD_DATA,
-                Permission.TRAIN_MODEL,
-                Permission.SUBMIT_WEIGHTS,
-                Permission.VIEW_AUDIT_TRAIL
-            ],
-            UserRole.DOCTOR: [
-                Permission.VIEW_PREDICTIONS,
-                Permission.VIEW_ANOMALIES,
-                Permission.ACCESS_PATIENT_DATA
-            ]
-        }
-        return role_permissions.get(self.role, [])
+            self.permissions = ROLE_PERMISSIONS.get(self.role, [])
+
 
 @dataclass
 class Hospital:
-    """Hospital data class"""
+    """Hospital data class (returned by service methods)"""
     id: str
     name: str
     contact_email: str
@@ -103,199 +106,249 @@ class Hospital:
     is_active: bool = True
     created_at: datetime = None
     compliance_certificates: List[str] = None
-    
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.utcnow()
         if self.compliance_certificates is None:
             self.compliance_certificates = []
 
+
+# ---------------------------------------------------------------------------
+# Helper: convert SQLAlchemy row → dataclass
+# ---------------------------------------------------------------------------
+
+def _db_user_to_dataclass(db_user) -> User:
+    """Convert a db_models.User row to the service-level User dataclass."""
+    role = UserRole(db_user.role.value if hasattr(db_user.role, 'value') else db_user.role)
+    return User(
+        id=db_user.id,
+        username=db_user.username,
+        email=db_user.email,
+        role=role,
+        hospital_id=db_user.hospital_id,
+        is_active=db_user.is_active,
+        created_at=db_user.created_at,
+        last_login=db_user.last_login,
+    )
+
+
+def _db_hospital_to_dataclass(db_hosp) -> Hospital:
+    """Convert a db_models.Hospital row to the service-level Hospital dataclass."""
+    return Hospital(
+        id=db_hosp.id,
+        name=db_hosp.name,
+        contact_email=db_hosp.contact_email,
+        address=db_hosp.address or "",
+        is_active=db_hosp.is_active,
+        created_at=db_hosp.created_at,
+    )
+
+
 class AuthenticationService:
     """
-    Authentication and authorization service for federated learning
+    Authentication and authorization service backed by SQLAlchemy / SQLite.
+    All mutations are persisted to the database so data survives server restarts.
     """
-    
+
     def __init__(self, secret_key: str, token_expiry_hours: int = 24):
-        """
-        Initialize authentication service
-        
-        Args:
-            secret_key: Secret key for JWT tokens
-            token_expiry_hours: Token expiry time in hours
-        """
         self.secret_key = secret_key
         self.token_expiry = timedelta(hours=token_expiry_hours)
-        
-        # In-memory storage (in production, use database)
-        self.users: Dict[str, User] = {}
-        self.hospitals: Dict[str, Hospital] = {}
+
+        # In-memory token store (these are ephemeral by design)
         self.refresh_tokens: Dict[str, str] = {}
-        
-        # Initialize default admin user
+
+        # Seed the default super admin (idempotent)
         self._initialize_default_admin()
-    
+
+    # ------------------------------------------------------------------
+    # Database session helper
+    # ------------------------------------------------------------------
+
+    def _get_db(self) -> Session:
+        """Return a new SQLAlchemy session."""
+        from app.core.database import SessionLocal
+        return SessionLocal()
+
+    # ------------------------------------------------------------------
+    # Seeding
+    # ------------------------------------------------------------------
+
     def _initialize_default_admin(self):
-        """Initialize the default super admin from environment variables.
-        
-        Additional users and hospitals should be created via the
-        registration API endpoints after the system is running.
-        """
-        self._password_hashes = {}
-        
+        """Seed the default super admin if it doesn't already exist."""
+        from app.core.db_models import User as DBUser, UserRole as DBUserRole
+
         seed_username = os.getenv("SEED_ADMIN_USERNAME", "superadmin")
         seed_email = os.getenv("SEED_ADMIN_EMAIL", "admin@your-domain.com")
         seed_password = os.getenv("SEED_ADMIN_PASSWORD", "changeme")
-        
-        super_admin = User(
-            id="admin_001",
-            username=seed_username,
-            email=seed_email,
-            role=UserRole.SUPER_ADMIN
-        )
-        self.users[super_admin.username] = super_admin
-        self._password_hashes[super_admin.username] = self._hash_password(seed_password)
-        
-        logger.info(f"Seed super admin '{seed_username}' initialized. Change password on first login.")
-    
-    def _hash_password(self, password: str) -> str:
-        """Hash password using bcrypt"""
-        salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return hashed.decode('utf-8')
-    
-    def _verify_password(self, password: str, hashed: str) -> bool:
-        """Verify password against hash"""
-        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
-    
-    def register_user(self, username: str, email: str, password: str, 
-                     role: UserRole, hospital_id: str = None) -> User:
-        """
-        Register a new user
-        
-        Args:
-            username: Username
-            email: Email address
-            password: Plain text password
-            role: User role
-            hospital_id: Hospital ID (required for hospital and doctor roles)
-            
-        Returns:
-            Created user object
-        """
-        # Validate input
-        if username in self.users:
-            raise ValueError("Username already exists")
-        
-        if role in [UserRole.HOSPITAL, UserRole.DOCTOR] and not hospital_id:
-            raise ValueError("Hospital ID is required for this role")
-        
-        if role == UserRole.HOSPITAL and hospital_id not in self.hospitals:
-            raise ValueError("Hospital does not exist")
-        
-        # Create user
-        user = User(
-            id=f"user_{len(self.users) + 1:03d}",
-            username=username,
-            email=email,
-            role=role,
-            hospital_id=hospital_id
-        )
-        
-        # Hash and store password
-        hashed_password = self._hash_password(password)
-        self._password_hashes = getattr(self, '_password_hashes', {})
-        self._password_hashes[username] = hashed_password
-        
-        # Store user
-        self.users[username] = user
-        
-        logger.info(f"User registered: {username} with role {role.value}")
-        return user
-    
-    def authenticate(self, username: str, password: str) -> Optional[Dict[str, Any]]:
-        """
-        Authenticate user and return tokens
-        
-        Args:
-            username: Username
-            password: Plain text password
-            
-        Returns:
-            Dictionary with tokens and user info, or None if authentication fails
-        """
-        # Get user
-        user = self.users.get(username)
-        if not user or not user.is_active:
-            return None
-        
-        # Verify password
-        password_hashes = getattr(self, '_password_hashes', {})
-        hashed_password = password_hashes.get(username)
-        if not hashed_password or not self._verify_password(password, hashed_password):
-            return None
-        
-        # Update last login
-        user.last_login = datetime.utcnow()
-        
-        # Generate tokens
-        access_token = self._generate_access_token(user)
-        refresh_token = self._generate_refresh_token(user)
-        
-        # Store refresh token
-        self.refresh_tokens[refresh_token] = username
-        
-        return {
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'token_type': 'bearer',
-            'expires_in': int(self.token_expiry.total_seconds()),
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'role': user.role.value,
-                'hospital_id': user.hospital_id,
-                'permissions': [p.value for p in user.permissions]
-            }
-        }
-    
-    def _generate_access_token(self, user: User) -> str:
-        """Generate JWT access token"""
-        payload = {
-            'user_id': user.id,
-            'username': user.username,
-            'role': user.role.value,
-            'hospital_id': user.hospital_id,
-            'permissions': [p.value for p in user.permissions],
-            'exp': datetime.utcnow() + self.token_expiry,
-            'iat': datetime.utcnow(),
-            'type': 'access'
-        }
-        return jwt.encode(payload, self.secret_key, algorithm='HS256')
-    
-    def _generate_refresh_token(self, user: User) -> str:
-        """Generate refresh token"""
-        payload = {
-            'user_id': user.id,
-            'username': user.username,
-            'exp': datetime.utcnow() + timedelta(days=30),
-            'iat': datetime.utcnow(),
-            'type': 'refresh'
-        }
-        return jwt.encode(payload, self.secret_key, algorithm='HS256')
-    
-    def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
-        """
-        Verify JWT token and return payload
-        
-        Args:
-            token: JWT token
-            
-        Returns:
-            Token payload if valid, None otherwise
-        """
+
+        db = self._get_db()
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])
+            existing = db.query(DBUser).filter(DBUser.username == seed_username).first()
+            if existing:
+                logger.info(f"Seed super admin '{seed_username}' already exists in DB.")
+                return
+
+            hashed = self._hash_password(seed_password)
+            admin = DBUser(
+                id="admin_001",
+                username=seed_username,
+                email=seed_email,
+                password_hash=hashed,
+                role=DBUserRole.SUPER_ADMIN,
+                is_active=True,
+            )
+            db.add(admin)
+            db.commit()
+            logger.info(f"Seed super admin '{seed_username}' created. Change password on first login.")
+        except Exception as exc:
+            db.rollback()
+            logger.error(f"Failed to seed admin: {exc}")
+        finally:
+            db.close()
+
+    # ------------------------------------------------------------------
+    # Password helpers
+    # ------------------------------------------------------------------
+
+    def _hash_password(self, password: str) -> str:
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+        return hashed.decode("utf-8")
+
+    def _verify_password(self, password: str, hashed: str) -> bool:
+        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+
+    # ------------------------------------------------------------------
+    # User registration (persisted)
+    # ------------------------------------------------------------------
+
+    def register_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        role: UserRole,
+        hospital_id: str = None,
+    ) -> User:
+        from app.core.db_models import User as DBUser, UserRole as DBUserRole
+
+        db = self._get_db()
+        try:
+            # Validate uniqueness
+            if db.query(DBUser).filter(DBUser.username == username).first():
+                raise ValueError("Username already exists")
+
+            if role in [UserRole.HOSPITAL, UserRole.DOCTOR] and not hospital_id:
+                raise ValueError("Hospital ID is required for this role")
+
+            if role == UserRole.HOSPITAL and hospital_id:
+                from app.core.db_models import Hospital as DBHospital
+                if not db.query(DBHospital).filter(DBHospital.id == hospital_id).first():
+                    raise ValueError("Hospital does not exist")
+
+            import uuid
+            hashed_password = self._hash_password(password)
+            db_user = DBUser(
+                id=str(uuid.uuid4()),
+                username=username,
+                email=email,
+                password_hash=hashed_password,
+                role=DBUserRole(role.value),
+                hospital_id=hospital_id,
+                is_active=True,
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+            logger.info(f"User registered: {username} with role {role.value}")
+            return _db_user_to_dataclass(db_user)
+        except ValueError:
+            db.rollback()
+            raise
+        except Exception as exc:
+            db.rollback()
+            logger.error(f"register_user error: {exc}")
+            raise
+        finally:
+            db.close()
+
+    # ------------------------------------------------------------------
+    # Authentication (reads from DB)
+    # ------------------------------------------------------------------
+
+    def authenticate(self, username: str, password: str) -> Optional[Dict[str, Any]]:
+        from app.core.db_models import User as DBUser
+
+        db = self._get_db()
+        try:
+            db_user = db.query(DBUser).filter(DBUser.username == username).first()
+            if not db_user or not db_user.is_active:
+                return None
+
+            if not self._verify_password(password, db_user.password_hash):
+                return None
+
+            # Update last login
+            db_user.last_login = datetime.utcnow()
+            db.commit()
+
+            user = _db_user_to_dataclass(db_user)
+
+            access_token = self._generate_access_token(user)
+            refresh_token = self._generate_refresh_token(user)
+            self.refresh_tokens[refresh_token] = username
+
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "expires_in": int(self.token_expiry.total_seconds()),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role.value,
+                    "hospital_id": user.hospital_id,
+                    "permissions": [p.value for p in user.permissions],
+                },
+            }
+        except Exception as exc:
+            logger.error(f"authenticate error: {exc}")
+            return None
+        finally:
+            db.close()
+
+    # ------------------------------------------------------------------
+    # Token generation / verification
+    # ------------------------------------------------------------------
+
+    def _generate_access_token(self, user: User) -> str:
+        payload = {
+            "user_id": user.id,
+            "username": user.username,
+            "role": user.role.value,
+            "hospital_id": user.hospital_id,
+            "permissions": [p.value for p in user.permissions],
+            "exp": datetime.utcnow() + self.token_expiry,
+            "iat": datetime.utcnow(),
+            "type": "access",
+        }
+        return jwt.encode(payload, self.secret_key, algorithm="HS256")
+
+    def _generate_refresh_token(self, user: User) -> str:
+        payload = {
+            "user_id": user.id,
+            "username": user.username,
+            "exp": datetime.utcnow() + timedelta(days=30),
+            "iat": datetime.utcnow(),
+            "type": "refresh",
+        }
+        return jwt.encode(payload, self.secret_key, algorithm="HS256")
+
+    def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=["HS256"])
             return payload
         except jwt.ExpiredSignatureError:
             logger.warning("Token expired")
@@ -303,231 +356,204 @@ class AuthenticationService:
         except jwt.InvalidTokenError:
             logger.warning("Invalid token")
             return None
-    
+
     def refresh_access_token(self, refresh_token: str) -> Optional[str]:
-        """
-        Refresh access token using refresh token
-        
-        Args:
-            refresh_token: Refresh token
-            
-        Returns:
-            New access token if valid, None otherwise
-        """
         payload = self.verify_token(refresh_token)
-        if not payload or payload.get('type') != 'refresh':
+        if not payload or payload.get("type") != "refresh":
             return None
-        
-        # Check if refresh token is still valid
         username = self.refresh_tokens.get(refresh_token)
         if not username:
             return None
-        
-        user = self.users.get(username)
+        user = self.get_user(username)
         if not user or not user.is_active:
             return None
-        
-        # Generate new access token
         return self._generate_access_token(user)
-    
+
     def logout(self, refresh_token: str) -> bool:
-        """
-        Logout user by invalidating refresh token
-        
-        Args:
-            refresh_token: Refresh token to invalidate
-            
-        Returns:
-            True if successful, False otherwise
-        """
         if refresh_token in self.refresh_tokens:
             del self.refresh_tokens[refresh_token]
             return True
         return False
-    
-    def get_user(self, username: str) -> Optional[User]:
-        """Get user by username"""
-        return self.users.get(username)
-    
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
-        """Get user by ID"""
-        for user in self.users.values():
-            if user.id == user_id:
-                return user
-        return None
-    
-    def check_permission(self, user: User, permission: Permission) -> bool:
-        """
-        Check if user has specific permission
-        
-        Args:
-            user: User object
-            permission: Permission to check
-            
-        Returns:
-            True if user has permission, False otherwise
-        """
-        return permission in user.permissions
-    
-    def check_role_access(self, user: User, required_roles: List[UserRole]) -> bool:
-        """
-        Check if user has any of the required roles
-        
-        Args:
-            user: User object
-            required_roles: List of required roles
-            
-        Returns:
-            True if user has required role, False otherwise
-        """
-        return user.role in required_roles
-    
-    def register_hospital(self, name: str, contact_email: str, address: str) -> Hospital:
-        """
-        Register a new hospital
-        
-        Args:
-            name: Hospital name
-            contact_email: Contact email
-            address: Hospital address
-            
-        Returns:
-            Created hospital object
-        """
-        hospital_id = f"hospital_{len(self.hospitals) + 1:03d}"
-        
-        hospital = Hospital(
-            id=hospital_id,
-            name=name,
-            contact_email=contact_email,
-            address=address
-        )
-        
-        self.hospitals[hospital_id] = hospital
-        
-        logger.info(f"Hospital registered: {name} with ID {hospital_id}")
-        return hospital
-    
-    def get_hospital(self, hospital_id: str) -> Optional[Hospital]:
-        """Get hospital by ID"""
-        return self.hospitals.get(hospital_id)
-    
-    def get_all_hospitals(self) -> List[Hospital]:
-        """Get all hospitals"""
-        return list(self.hospitals.values())
-    
-    def get_all_users(self) -> List[User]:
-        """Get all users"""
-        return list(self.users.values())
 
-    
+    # ------------------------------------------------------------------
+    # Query helpers (all from DB)
+    # ------------------------------------------------------------------
+
+    def get_user(self, username: str) -> Optional[User]:
+        from app.core.db_models import User as DBUser
+        db = self._get_db()
+        try:
+            db_user = db.query(DBUser).filter(DBUser.username == username).first()
+            return _db_user_to_dataclass(db_user) if db_user else None
+        finally:
+            db.close()
+
+    def get_user_by_id(self, user_id: str) -> Optional[User]:
+        from app.core.db_models import User as DBUser
+        db = self._get_db()
+        try:
+            db_user = db.query(DBUser).filter(DBUser.id == user_id).first()
+            return _db_user_to_dataclass(db_user) if db_user else None
+        finally:
+            db.close()
+
+    def check_permission(self, user: User, permission: Permission) -> bool:
+        return permission in user.permissions
+
+    def check_role_access(self, user: User, required_roles: List[UserRole]) -> bool:
+        return user.role in required_roles
+
+    # ------------------------------------------------------------------
+    # Hospital registration (persisted)
+    # ------------------------------------------------------------------
+
+    def register_hospital(self, name: str, contact_email: str, address: str) -> Hospital:
+        from app.core.db_models import Hospital as DBHospital
+        import uuid
+
+        db = self._get_db()
+        try:
+            hospital_id = str(uuid.uuid4())
+            db_hosp = DBHospital(
+                id=hospital_id,
+                name=name,
+                contact_email=contact_email,
+                address=address,
+                is_active=True,
+            )
+            db.add(db_hosp)
+            db.commit()
+            db.refresh(db_hosp)
+            logger.info(f"Hospital registered: {name} with ID {hospital_id}")
+            return _db_hospital_to_dataclass(db_hosp)
+        except Exception as exc:
+            db.rollback()
+            logger.error(f"register_hospital error: {exc}")
+            raise
+        finally:
+            db.close()
+
+    def get_hospital(self, hospital_id: str) -> Optional[Hospital]:
+        from app.core.db_models import Hospital as DBHospital
+        db = self._get_db()
+        try:
+            db_hosp = db.query(DBHospital).filter(DBHospital.id == hospital_id).first()
+            return _db_hospital_to_dataclass(db_hosp) if db_hosp else None
+        finally:
+            db.close()
+
+    def get_all_hospitals(self) -> List[Hospital]:
+        from app.core.db_models import Hospital as DBHospital
+        db = self._get_db()
+        try:
+            rows = db.query(DBHospital).all()
+            return [_db_hospital_to_dataclass(r) for r in rows]
+        finally:
+            db.close()
+
+    def get_all_users(self) -> List[User]:
+        from app.core.db_models import User as DBUser
+        db = self._get_db()
+        try:
+            rows = db.query(DBUser).all()
+            return [_db_user_to_dataclass(r) for r in rows]
+        finally:
+            db.close()
+
     def get_users_by_role(self, role: UserRole) -> List[User]:
-        """Get users by role"""
-        return [user for user in self.users.values() if user.role == role]
-    
+        from app.core.db_models import User as DBUser, UserRole as DBUserRole
+        db = self._get_db()
+        try:
+            rows = db.query(DBUser).filter(DBUser.role == DBUserRole(role.value)).all()
+            return [_db_user_to_dataclass(r) for r in rows]
+        finally:
+            db.close()
+
     def get_users_by_hospital(self, hospital_id: str) -> List[User]:
-        """Get users by hospital"""
-        return [user for user in self.users.values() if user.hospital_id == hospital_id]
-    
+        from app.core.db_models import User as DBUser
+        db = self._get_db()
+        try:
+            rows = db.query(DBUser).filter(DBUser.hospital_id == hospital_id).all()
+            return [_db_user_to_dataclass(r) for r in rows]
+        finally:
+            db.close()
+
     def update_user_role(self, username: str, new_role: UserRole) -> bool:
-        """
-        Update user role
-        
-        Args:
-            username: Username
-            new_role: New role
-            
-        Returns:
-            True if successful, False otherwise
-        """
-        user = self.users.get(username)
-        if not user:
+        from app.core.db_models import User as DBUser, UserRole as DBUserRole
+        db = self._get_db()
+        try:
+            db_user = db.query(DBUser).filter(DBUser.username == username).first()
+            if not db_user:
+                return False
+            db_user.role = DBUserRole(new_role.value)
+            db.commit()
+            logger.info(f"User {username} role updated to {new_role.value}")
+            return True
+        except Exception:
+            db.rollback()
             return False
-        
-        user.role = new_role
-        user.permissions = user._get_default_permissions()
-        
-        logger.info(f"User {username} role updated to {new_role.value}")
-        return True
-    
+        finally:
+            db.close()
+
     def deactivate_user(self, username: str) -> bool:
-        """
-        Deactivate user account
-        
-        Args:
-            username: Username
-            
-        Returns:
-            True if successful, False otherwise
-        """
-        user = self.users.get(username)
-        if not user:
+        from app.core.db_models import User as DBUser
+        db = self._get_db()
+        try:
+            db_user = db.query(DBUser).filter(DBUser.username == username).first()
+            if not db_user:
+                return False
+            db_user.is_active = False
+            db.commit()
+            # Also invalidate refresh tokens
+            tokens_to_remove = [t for t, u in self.refresh_tokens.items() if u == username]
+            for t in tokens_to_remove:
+                del self.refresh_tokens[t]
+            logger.info(f"User {username} deactivated")
+            return True
+        except Exception:
+            db.rollback()
             return False
-        
-        user.is_active = False
-        
-        # Invalidate all refresh tokens for this user
-        tokens_to_remove = []
-        for token, user_name in self.refresh_tokens.items():
-            if user_name == username:
-                tokens_to_remove.append(token)
-        
-        for token in tokens_to_remove:
-            del self.refresh_tokens[token]
-        
-        logger.info(f"User {username} deactivated")
-        return True
+        finally:
+            db.close()
 
 
 class RBACMiddleware:
-    """
-    RBAC middleware for FastAPI
-    """
-    
+    """RBAC middleware for FastAPI"""
+
     def __init__(self, auth_service: AuthenticationService):
         self.auth_service = auth_service
-    
+
     def require_permission(self, permission: Permission):
-        """Decorator to require specific permission"""
         def decorator(func):
             def wrapper(*args, **kwargs):
-                # This would be implemented as FastAPI middleware
-                # For now, return the function as-is
                 return func(*args, **kwargs)
             return wrapper
         return decorator
-    
+
     def require_role(self, roles: List[UserRole]):
-        """Decorator to require specific role"""
         def decorator(func):
             def wrapper(*args, **kwargs):
-                # This would be implemented as FastAPI middleware
-                # For now, return the function as-is
                 return func(*args, **kwargs)
             return wrapper
         return decorator
-    
+
     def extract_user_from_token(self, token: str) -> Optional[User]:
-        """Extract user from JWT token"""
         payload = self.auth_service.verify_token(token)
         if not payload:
             return None
-        
-        return self.auth_service.get_user_by_id(payload.get('user_id'))
+        return self.auth_service.get_user_by_id(payload.get("user_id"))
 
 
-# Utility functions for FastAPI integration
+# Utility functions
 def create_auth_dependency(auth_service: AuthenticationService):
-    """Create FastAPI dependency for authentication"""
     def get_current_user(token: str) -> Optional[User]:
         payload = auth_service.verify_token(token)
         if not payload:
             return None
-        return auth_service.get_user_by_id(payload.get('user_id'))
+        return auth_service.get_user_by_id(payload.get("user_id"))
     return get_current_user
 
 def create_permission_dependency(auth_service: AuthenticationService, permission: Permission):
-    """Create FastAPI dependency for permission checking"""
     def check_permission(current_user: User = None) -> bool:
         if not current_user:
             return False

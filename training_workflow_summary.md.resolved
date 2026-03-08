@@ -1,0 +1,79 @@
+# Federated Learning Training Workflow
+
+## Complete End-to-End Flow
+
+```mermaid
+graph LR
+    A["🏥 Hospital<br>Uploads CSV"] --> B["🧠 Start<br>Training"]
+    B --> C["✅ Training<br>Complete"]
+    C --> D["📤 Submit<br>for Review"]
+    D --> E["👨‍💼 Admin<br>Reviews"]
+    E -->|Approve| F["✅ Approved"]
+    E -->|Reject| G["❌ Rejected"]
+    F --> H["⚡ Super Admin<br>Aggregates"]
+    H --> I["🌐 Global Model<br>Updated"]
+    I --> J["🔗 Blockchain<br>Hash Recorded"]
+```
+
+## What Was Built
+
+### Backend API ([training.py](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/backend/app/api/training.py))
+
+| Endpoint | Role | Purpose |
+|----------|------|---------|
+| `POST /training/start` | Hospital | Start local model training on uploaded CSV |
+| `POST /training/{id}/submit-for-review` | Hospital | Submit completed training for admin review |
+| `GET /training/my-jobs` | Hospital | List own training jobs |
+| `GET /training/pending-reviews` | Admin/SuperAdmin | List submitted jobs awaiting review |
+| `POST /training/{id}/review` | Admin/SuperAdmin | Approve or reject a training submission |
+| `GET /training/all-jobs` | Admin/SuperAdmin | List all training jobs across hospitals |
+| `POST /training/aggregate` | SuperAdmin | FedAvg aggregate approved jobs into global model |
+| `GET /training/aggregation-history` | Admin/SuperAdmin | View all aggregation rounds |
+
+### Database Models ([db_models.py](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/backend/app/core/db_models.py))
+
+- **[TrainingJob](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/frontend/src/app/dashboard/federated/page.tsx#34-50)** – Tracks each local training run (status, accuracy, loss, weights hash, review notes)
+- **[AggregationRound](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/frontend/src/app/dashboard/federated/page.tsx#51-64)** – Tracks each global aggregation (participating hospitals, global accuracy, blockchain tx hash)
+
+### Frontend Pages
+
+| Page | Role | What it does |
+|------|------|-------------|
+| [data-upload/page.tsx](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/frontend/src/app/dashboard/data-upload/page.tsx) | Hospital | Upload CSV → Start Training → See results → Submit for review |
+| [model-governance/page.tsx](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/frontend/src/app/dashboard/model-governance/page.tsx) | Admin/SuperAdmin | Review pending submissions, approve/reject, aggregate into global model |
+| [federated/page.tsx](file:///d:/Final%20Year%20Project/Project%20-%20windscrf/frontend/src/app/dashboard/federated/page.tsx) | All | View training jobs, convergence charts, global model stats |
+
+## Test Results
+
+### Hospital Workflow (hospital_node1)
+| Step | Result |
+|------|--------|
+| Upload CSV (55,500 records) | ✅ Success |
+| Start Training (3 epochs) | ✅ Accuracy: 92.1%, Loss: 0.2671 |
+| Submit for Admin Review | ✅ Status → "submitted" |
+
+### Super Admin Workflow (superadmin)
+| Step | Result |
+|------|--------|
+| View pending reviews | ✅ 1 submission visible |
+| Approve training job | ✅ Status → "approved" |
+| Aggregate into global model | ✅ Round #2 created |
+| Global Model Accuracy | ✅ 94.1% |
+| Blockchain Hash | ✅ `0x0139509f64815c363...` |
+
+## Screenshots
+
+````carousel
+![Model Governance - Pending Reviews with Approve/Reject buttons](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/model_governance_page_1772952191684.png)
+<!-- slide -->
+![Training History showing completed and submitted jobs](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/submission_complete_1772952099542.png)
+<!-- slide -->
+![Model Participation page with stats](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/model_participation_page_1772952107797.png)
+<!-- slide -->
+![Aggregation History with Round #1 and #2](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/aggregation_history_1772952228915.png)
+````
+
+## Video Recordings
+
+- ![Hospital Training Flow](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/test_training_flow_1772952029777.webp)
+- ![Super Admin Aggregation Flow](C:/Users/prem/.gemini/antigravity/brain/5e0e36a0-d84b-4881-b96b-9a5a5e02946e/test_admin_aggregate_1772952150506.webp)

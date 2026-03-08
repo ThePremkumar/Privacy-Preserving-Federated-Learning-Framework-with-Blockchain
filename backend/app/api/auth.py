@@ -18,9 +18,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 security = HTTPBearer()
 
-# Initialize auth service (in a real app, use dependency injection or singleton)
-secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
-auth_service = AuthenticationService(secret_key)
+# Use the global singleton (same secret key as security.py)
+from app.services.auth_service import auth_service
 
 # Pydantic models
 class LoginRequest(BaseModel):

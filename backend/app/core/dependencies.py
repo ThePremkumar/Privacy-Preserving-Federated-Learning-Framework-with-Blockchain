@@ -25,8 +25,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
         )
     
     # Return user data from token payload
+    # auth_service stores 'user_id' (not 'sub') in the JWT
     return {
-        "user_id": payload.get("sub"),
+        "user_id": payload.get("user_id") or payload.get("sub"),
         "username": payload.get("username"),
         "email": payload.get("email"),
         "role": payload.get("role"),

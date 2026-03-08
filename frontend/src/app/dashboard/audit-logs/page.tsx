@@ -29,18 +29,9 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const auditLogs = [
-  { id: 'LOG-001', user: 'Dr. Chen', action: 'Patient Record Accessed', resource: 'Patient #P-2481', time: '2m ago', severity: 'info', ip: '192.168.1.15' },
-  { id: 'LOG-002', user: 'Dr. Miller', action: 'Prediction Generated', resource: 'Sam Wilson Risk Assessment', time: '14m ago', severity: 'info', ip: '192.168.1.22' },
-  { id: 'LOG-003', user: 'Hospital Admin', action: 'Data Upload Completed', resource: 'patient_vitals_feb.csv', time: '1h ago', severity: 'success', ip: '10.0.0.1' },
-  { id: 'LOG-004', user: 'System', action: 'Failed Login Attempt', resource: 'Unknown user', time: '3h ago', severity: 'error', ip: '45.33.12.8' },
-  { id: 'LOG-005', user: 'Dr. Kim', action: 'Consent Status Updated', resource: 'Patient #P-1842', time: '4h ago', severity: 'warning', ip: '192.168.1.30' },
-  { id: 'LOG-006', user: 'System', action: 'Blockchain Hash Recorded', resource: 'Round #482 Aggregation', time: '5h ago', severity: 'success', ip: 'Node Internal' },
-  { id: 'LOG-007', user: 'Dr. Shah', action: 'Patient Discharged', resource: 'Patient #P-2105', time: '6h ago', severity: 'info', ip: '192.168.1.44' },
-  { id: 'LOG-008', user: 'Hospital Admin', action: 'Doctor Added', resource: 'Dr. Emma Watson', time: '1d ago', severity: 'success', ip: '10.0.0.1' },
-  { id: 'LOG-009', user: 'System', action: 'Model Update Applied', resource: 'LSTM v2.4.1', time: '1d ago', severity: 'info', ip: 'Federated Server' },
-  { id: 'LOG-010', user: 'Dr. Chen', action: 'Export Request', resource: 'Monthly Report PDF', time: '2d ago', severity: 'warning', ip: '192.168.1.15' },
-];
+// Audit logs should be fetched from the backend audit service API
+const auditLogs: { id: string; user: string; action: string; resource: string; time: string; severity: string; ip: string }[] = [];
+// In production, populate from: GET /audit/logs
 
 export default function AuditLogsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -130,36 +121,42 @@ export default function AuditLogsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-50">
-            {filteredLogs.map(log => (
-              <div key={log.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors group">
-                <div className="flex items-center gap-4">
-                  <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center border", severityBadge(log.severity))}>
-                    {severityIcon(log.severity)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-black text-slate-900">{log.action}</span>
-                      <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border", severityBadge(log.severity))}>
-                        {log.severity}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{log.id}</span>
-                      <span className="h-1 w-1 rounded-full bg-slate-300" />
-                      <span className="text-[10px] font-bold text-blue-600">{log.user}</span>
-                      <span className="h-1 w-1 rounded-full bg-slate-300" />
-                      <span className="text-[10px] font-bold text-slate-400">{log.resource}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400">{log.time}</p>
-                    <p className="text-[9px] font-mono text-slate-300">{log.ip}</p>
-                  </div>
-                </div>
+            {filteredLogs.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-sm font-bold text-slate-400">No audit logs found.</p>
               </div>
-            ))}
+            ) : (
+              filteredLogs.map(log => (
+                <div key={log.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center border", severityBadge(log.severity))}>
+                      {severityIcon(log.severity)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-slate-900">{log.action}</span>
+                        <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border", severityBadge(log.severity))}>
+                          {log.severity}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{log.id}</span>
+                        <span className="h-1 w-1 rounded-full bg-slate-300" />
+                        <span className="text-[10px] font-bold text-blue-600">{log.user}</span>
+                        <span className="h-1 w-1 rounded-full bg-slate-300" />
+                        <span className="text-[10px] font-bold text-slate-400">{log.resource}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-slate-400">{log.time}</p>
+                      <p className="text-[9px] font-mono text-slate-300">{log.ip}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <div className="p-6 border-t border-slate-50 flex items-center justify-between">
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {filteredLogs.length} of {auditLogs.length} events</p>
