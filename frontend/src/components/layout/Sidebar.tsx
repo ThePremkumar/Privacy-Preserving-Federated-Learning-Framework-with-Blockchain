@@ -69,7 +69,7 @@ const superAdminNav: NavSection[] = [
     title: 'Platform Governance',
     items: [
       { name: 'Organizations', icon: Building2, href: '/dashboard/organizations' },
-      { name: 'Admin Management', icon: UserCog, href: '/dashboard/admin-management' },
+      { name: 'User Management', icon: UserCog, href: '/dashboard/admin-management' },
       { name: 'Model Governance', icon: GitBranch, href: '/dashboard/model-governance' },
     ]
   },

@@ -1,157 +1,248 @@
 'use client';
 
-import React from 'react';
-import { 
-  ShieldCheck, 
-  Database, 
-  ExternalLink, 
-  Lock, 
-  Fingerprint, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  ShieldCheck,
+  Database,
+  ExternalLink,
+  Lock,
+  Fingerprint,
   Clock,
   Server,
   Network,
   Globe,
   CheckCircle2,
   AlertTriangle,
-  RefreshCcw,
-  Search
+  RefreshCw,
+  Search,
+  Loader2,
+  Hash,
+  Layers,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { RoleGuard } from '@/components/guards/RoleGuard';
+import api from '@/lib/api';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-// Ledger data should be fetched from the blockchain audit API
-const ledgerData: { id: string; round: number; hash: string; type: string; status: string; time: string; gas: string }[] = [];
-// In production, populate from: GET /blockchain/audit-trail
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+interface LedgerEntry {
+  id: string;
+  type: string;
+  round: number;
+  hash: string;
+  tx_hash: string;
+  status: string;
+  hospitals: string[];
+  samples: number;
+  accuracy: string;
+  loss: string;
+  epsilon: string;
+  timestamp: string;
+}
 
 export default function BlockchainAuditPage() {
-  const [isVerifying, setIsVerifying] = React.useState(false);
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/admin/blockchain/audit-trail');
+      setEntries(res.data);
+    } catch { setEntries([]); }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const filteredEntries = entries.filter(e => {
+    const matchSearch = searchTerm === '' || e.hash.includes(searchTerm) || e.tx_hash.includes(searchTerm) || e.id.includes(searchTerm);
+    const matchType = typeFilter === 'all' || e.type === typeFilter;
+    return matchSearch && matchType;
+  });
+
+  const totalAggregations = entries.filter(e => e.type === 'aggregation').length;
+  const totalSubmissions = entries.filter(e => e.type === 'training_submission').length;
+  const totalSamples = entries.reduce((sum, e) => sum + (e.samples || 0), 0);
 
   return (
-    <RoleGuard allowedRoles={['super_admin', 'admin', 'hospital']}>
-    <div className="space-y-10">
+    <RoleGuard allowedRoles={['super_admin', 'admin']}>
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-tight">Immutable <span className="text-blue-600">Audit Ledger</span></h1>
-          <p className="mt-2 text-base font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-             <ShieldCheck size={16} className="text-blue-600" /> Decentralized Integrity Verification
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight">Blockchain <span className="text-blue-600">Audit Trail</span></h1>
+          <p className="mt-1 text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <ShieldCheck size={14} className="text-blue-600" /> Immutable Integrity Verification Records
           </p>
         </div>
-        <div className="flex gap-4">
-           <Button variant="outline" className="h-12 border-2 px-6" onClick={() => setIsVerifying(true)}>
-              {isVerifying ? <RefreshCcw className="animate-spin mr-2" size={18} /> : <ShieldCheck className="mr-2" size={18} />} Verify Entire Chain
-           </Button>
-           <Button className="h-12 px-8 shadow-xl shadow-blue-200">Export Compliance Report <Database size={18} className="ml-2" /></Button>
+        <Button variant="outline" className="h-11 px-6 border-2" onClick={fetchData}>
+          <RefreshCw size={16} className="mr-2" /> Refresh
+        </Button>
+      </div>
+
+      {/* Chain Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <ChainStat label="Chain Status" value="Operational" icon={Globe} color="emerald" />
+        <ChainStat label="Aggregation Rounds" value={totalAggregations.toString()} icon={Layers} color="blue" />
+        <ChainStat label="Training Submissions" value={totalSubmissions.toString()} icon={Database} color="amber" />
+        <ChainStat label="Total Samples Verified" value={totalSamples.toLocaleString()} icon={Fingerprint} color="purple" />
+      </div>
+
+      {/* Network Overview Card */}
+      <Card className="border-none shadow-2xl shadow-slate-100 bg-slate-900 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-12 text-white/5"><Lock size={250} /></div>
+        <CardContent className="p-8 relative">
+          <div className="flex items-center gap-6">
+            <div className="h-16 w-16 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center border border-emerald-600/30">
+              <ShieldCheck size={32} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black italic">Blockchain Network</h2>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
+                Mock Chain (Development) • Chain ID: 1337 • {entries.length} Transactions Recorded
+              </p>
+            </div>
+            <div className="ml-auto flex gap-6">
+              <div className="text-center">
+                <p className="text-2xl font-black text-emerald-400">{totalAggregations}</p>
+                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">On-Chain Rounds</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-black text-blue-400 font-mono">{entries.length > 0 ? entries[0].hash.substring(0, 8) + '...' : '—'}</p>
+                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Latest Hash</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search & Filter */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Search by hash, tx hash, or ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-600 focus:ring-0 outline-none" />
         </div>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-4 py-3 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-600 focus:ring-0 outline-none bg-white">
+          <option value="all">All Types</option>
+          <option value="aggregation">Aggregation</option>
+          <option value="training_submission">Training Submission</option>
+        </select>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-         <ChainStat label="Current Block" value="—" icon={Network} />
-         <ChainStat label="Smart Contract" value="—" icon={Lock} />
-         <ChainStat label="Chain Integrity" value="—" icon={CheckCircle2} />
-         <ChainStat label="Gas Efficiency" value="—" icon={Activity} />
-      </div>
+      {/* Ledger */}
+      <Card className="border-none shadow-2xl shadow-slate-100 overflow-hidden">
+        <CardHeader className="border-b border-slate-50 pb-5 p-6">
+          <CardTitle className="text-xl font-black">Immutable <span className="text-blue-600">Ledger</span></CardTitle>
+          <CardDescription className="text-sm font-bold text-slate-400">{filteredEntries.length} records</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-12 text-center"><Loader2 size={32} className="animate-spin mx-auto text-blue-600" /></div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="p-12 text-center">
+              <Database size={32} className="mx-auto text-slate-300 mb-3" />
+              <p className="text-sm font-bold text-slate-400">No audit records yet</p>
+              <p className="text-[10px] font-bold text-slate-300 mt-1">Records will appear after training submissions and aggregation rounds</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-50">
+              {filteredEntries.map((entry) => (
+                <div key={entry.id} className="px-6 py-5 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center border",
+                        entry.type === 'aggregation' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-amber-50 text-amber-600 border-amber-100"
+                      )}>
+                        {entry.type === 'aggregation' ? <Globe size={18} /> : <Server size={18} />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-black text-slate-900">
+                            {entry.type === 'aggregation' ? `Aggregation Round #${entry.round}` : 'Training Submission'}
+                          </p>
+                          <span className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border",
+                            entry.status === 'confirmed' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                            entry.status === 'aggregated' ? "bg-purple-50 text-purple-700 border-purple-100" :
+                            "bg-amber-50 text-amber-700 border-amber-100"
+                          )}>
+                            {entry.status}
+                          </span>
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">
+                          {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '—'} • {entry.samples.toLocaleString()} samples • ε = {entry.epsilon}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-xs font-black text-emerald-600">Acc: {entry.accuracy ? (parseFloat(entry.accuracy) * 100).toFixed(1) + '%' : '—'}</p>
+                        <p className="text-[10px] font-bold text-slate-400">Loss: {entry.loss || '—'}</p>
+                      </div>
+                      <button onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)} className="h-8 w-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center transition-colors">
+                        <Eye size={14} />
+                      </button>
+                    </div>
+                  </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Ledger Table */}
-        <Card className="lg:col-span-2 border-none shadow-2xl shadow-slate-100 h-full">
-           <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 pb-6">
-              <div>
-                <CardTitle className="text-2xl font-black">Audit <span className="text-blue-600">Transactions</span></CardTitle>
-                <CardDescription className="text-base font-bold text-slate-400">Low-level blockchain activity log</CardDescription>
-              </div>
-              <div className="relative">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                 <input className="h-9 w-48 rounded-lg bg-slate-50 pl-8 pr-4 text-[10px] font-black uppercase tracking-widest border border-slate-100" placeholder="Tx Hash Search..." />
-              </div>
-           </CardHeader>
-           <CardContent className="p-0 overflow-x-auto">
-              <table className="w-full text-left">
-                 <thead>
-                    <tr className="border-b border-slate-50 bg-slate-50/30">
-                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Transaction ID</th>
-                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
-                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Round</th>
-                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Merkle Hash</th>
-                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                    </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-50">
-                    {ledgerData.map(tx => (
-                       <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
-                          <td className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-900">{tx.id}</td>
-                          <td className="px-6 py-4">
-                             <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${tx.type === 'Aggregation' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{tx.type}</span>
-                          </td>
-                          <td className="px-6 py-4 text-xs font-black text-slate-600">R-{tx.round}</td>
-                          <td className="px-6 py-4 font-mono text-[10px] text-slate-400 group-hover:text-blue-600 transition-colors cursor-pointer">{tx.hash}</td>
-                          <td className="px-6 py-4">
-                             <div className="flex items-center gap-1.5 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
-                                <CheckCircle2 size={12} /> {tx.status}
-                             </div>
-                          </td>
-                       </tr>
-                    ))}
-                 </tbody>
-              </table>
-           </CardContent>
-        </Card>
-
-        {/* Node Verification Panel */}
-        <Card className="border-none shadow-2xl shadow-slate-100 bg-slate-900 text-white overflow-hidden relative">
-           <div className="absolute top-0 right-0 p-8 text-blue-500/10">
-              <ShieldCheck size={200} />
-           </div>
-           <CardHeader className="relative border-b border-white/5 pb-8 mb-8">
-              <CardTitle className="text-white text-2xl font-black">Node <span className="text-blue-400">Trust Index</span></CardTitle>
-              <CardDescription className="text-white/40 font-bold uppercase tracking-widest text-xs">Cryptographic verification</CardDescription>
-           </CardHeader>
-           <CardContent className="relative space-y-8">
-               <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Compliance Score</span>
-                   <span className="text-4xl font-black text-blue-400 italic">—</span>
-               </div>
-               <div className="space-y-4">
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full w-0 bg-blue-500 shadow-lg shadow-blue-500/50" />
-                  </div>
-                  <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase tracking-widest">
-                     Calculated using multi-party computation proof and verified against blockchain state.
-                  </p>
-               </div>
-               <div className="pt-8 grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                     <p className="text-xs font-black text-blue-400 italic">Validated</p>
-                     <p className="text-[10px] font-bold text-white/40 uppercase mt-1">Proof Type</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
-                     <p className="text-xs font-black text-emerald-400 italic">Active</p>
-                     <p className="text-[10px] font-bold text-white/40 uppercase mt-1">Smart Monitor</p>
-                  </div>
-               </div>
-           </CardContent>
-           <div className="p-6 relative mt-auto">
-              <Button className="w-full bg-white text-slate-900 hover:bg-white/90 h-14 font-black text-sm uppercase tracking-[0.2em] rounded-2xl shadow-2xl shadow-white/5">
-                 Run Full Verifier
-              </Button>
-           </div>
-        </Card>
-      </div>
+                  {expandedId === entry.id && (
+                    <div className="mt-4 p-4 bg-slate-900 rounded-xl text-white space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Hash size={12} className="text-blue-400" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Model Hash</span>
+                      </div>
+                      <p className="font-mono text-xs text-blue-400 break-all">{entry.hash || 'N/A'}</p>
+                      {entry.tx_hash && (
+                        <>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Fingerprint size={12} className="text-emerald-400" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Transaction Hash</span>
+                          </div>
+                          <p className="font-mono text-xs text-emerald-400 break-all">{entry.tx_hash}</p>
+                        </>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        <Network size={12} className="text-amber-400" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Participating Hospitals</span>
+                      </div>
+                      <p className="text-xs text-white/60">{entry.hospitals.join(', ') || 'N/A'}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
     </RoleGuard>
   );
 }
 
-const ChainStat = ({ label, value, icon: Icon }: any) => (
-  <Card className="border-none shadow-xl shadow-slate-100 hover:shadow-2xl transition-all duration-300">
-     <CardContent className="p-6">
-        <div className="mb-4 p-2 bg-blue-50 text-blue-600 rounded-lg w-fit border border-blue-100">
-           <Icon size={18} />
+function ChainStat({ label, value, icon: Icon, color }: any) {
+  const colors: Record<string, string> = {
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+    purple: 'bg-purple-50 text-purple-600 border-purple-100',
+  };
+  return (
+    <Card className="border-none shadow-xl shadow-slate-100 hover:shadow-2xl transition-all">
+      <CardContent className="p-6">
+        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center border mb-4", colors[color])}>
+          <Icon size={20} />
         </div>
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">{label}</h4>
-        <p className="text-xl font-black text-slate-900 leading-none mt-2 tracking-tight">{value}</p>
-     </CardContent>
-  </Card>
-);
-
-const Activity = ({ size }: any) => <Globe size={size} />;
+        <p className="text-3xl font-black text-slate-900">{value}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{label}</p>
+      </CardContent>
+    </Card>
+  );
+}
