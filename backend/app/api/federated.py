@@ -14,7 +14,7 @@ from app.services.federated_service import federated_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/fl", tags=["federated-learning"])
+router = APIRouter(tags=["federated-learning"])
 
 class StartRoundRequest(BaseModel):
     min_participants: int = 3

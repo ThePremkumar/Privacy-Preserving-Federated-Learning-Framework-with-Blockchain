@@ -452,8 +452,29 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
 
 // ═══════════════════════════════════════════
 // DOCTOR DASHBOARD
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════// Doctor Dashboard
 function DoctorDashboard() {
+  const [summary, setSummary] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function getSummary() {
+      try {
+        const res = await api.get('/doctor/summary');
+        setSummary(res.data);
+      } catch (err) {
+        console.error('Failed to fetch doctor summary', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getSummary();
+  }, []);
+
+  if (isLoading) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
+
+  const s = summary || { total_patients: 0, anomaly_count: 0, active_predictions: 0, latest_accuracy: '0.00', recent_activity: [] };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -462,48 +483,86 @@ function DoctorDashboard() {
             Clinical <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
           </h1>
           <p className="mt-3 text-sm font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Calendar size={16} className="text-blue-600" /> Doctor Portal
+            <Calendar size={16} className="text-blue-600" /> Medical Practitioner Portal
           </p>
         </div>
-        <Link href="/dashboard/patients">
-          <Button className="h-12 px-8 shadow-xl shadow-blue-200">View Patients <Plus size={18} className="ml-2" /></Button>
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/dashboard/patients">
+            <Button variant="outline" className="h-12 px-6 border-2 font-black border-slate-200">Patient List</Button>
+          </Link>
+          <Link href="/dashboard/data-upload">
+            <Button className="h-12 px-8 shadow-xl shadow-blue-200">Add Patient Data <Plus size={18} className="ml-2" /></Button>
+          </Link>
+        </div>
       </div>
 
+      {/* Doctor Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="AI Predictions" value="Ready" icon={BrainCircuit} trend="Available" color="blue" />
-        <StatCard label="Patient Records" value="View" icon={Activity} trend="Access enabled" color="emerald" />
-        <StatCard label="Risk Alerts" value="—" icon={AlertTriangle} trend="Monitoring" color="amber" />
-        <StatCard label="NLP Insights" value="Active" icon={FileSearch} trend="Enabled" color="purple" />
+        <StatCard label="Total Patients" value={s.total_patients.toString()} icon={Users} trend="Active records" color="blue" />
+        <StatCard label="Critical Anomalies" value={s.anomaly_count.toString()} icon={AlertTriangle} trend="Immediate attention" color={s.anomaly_count > 0 ? 'red' : 'emerald'} />
+        <StatCard label="AI Predictions" value={s.active_predictions.toString()} icon={BrainCircuit} trend="Recent analyses" color="purple" />
+        <StatCard label="Global Model Acc" value={`${(parseFloat(s.latest_accuracy) * 100).toFixed(1)}%`} icon={ShieldCheck} trend="Health record AI" color="emerald" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <QuickAction href="/dashboard/patients" icon={Users} title="Patient Management" desc="View and manage patients" color="blue" />
-        <QuickAction href="/dashboard/predictions" icon={BrainCircuit} title="AI Predictions" desc="Disease classification & risk" color="purple" />
-        <QuickAction href="/dashboard/audit-logs" icon={ShieldCheck} title="Audit Logs" desc="Access and compliance logs" color="emerald" />
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Recent Activity */}
+        <Card className="lg:col-span-8 border-none shadow-2xl shadow-slate-100">
+          <CardHeader className="border-b border-slate-50 pb-5">
+            <CardTitle className="text-xl font-black">Recent <span className="text-blue-600">Clinical Activity</span></CardTitle>
+            <CardDescription className="text-sm font-bold text-slate-400">Latest AI predictions and clinical notes</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-slate-50">
+              {s.recent_activity.length === 0 ? (
+                <div className="p-12 text-center text-slate-400 font-bold">
+                  <Activity size={40} className="mx-auto text-slate-200 mb-3" />
+                  No recent activity found.
+                </div>
+              ) : (
+                s.recent_activity.map((act: any) => (
+                  <div key={act.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("p-2 rounded-lg", act.type === 'nlp_analysis' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600')}>
+                        {act.type === 'nlp_analysis' ? <FileSearch size={18} /> : <BrainCircuit size={18} />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900 capitalize">{act.type.replace('_', ' ')}</p>
+                        <p className="text-[10px] font-bold text-slate-400">Patient ID: {act.patient_id}</p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] font-black italic text-slate-400 uppercase tracking-tighter">
+                      {new Date(act.timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="bg-slate-50/30 p-4">
+             <Link href="/dashboard/predictions" className="w-full">
+               <Button variant="ghost" className="w-full font-black text-xs uppercase tracking-widest text-slate-400 hover:text-blue-600">View All Predictions <ArrowRight size={14} className="ml-2" /></Button>
+             </Link>
+          </CardFooter>
+        </Card>
 
-      {/* Privacy Card */}
-      <Card className="border-none shadow-2xl shadow-slate-100 bg-slate-900 text-white p-8">
-        <div className="flex items-center gap-4 mb-5">
-          <div className="h-12 w-12 rounded-2xl bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-600/30">
-            <ShieldCheck size={24} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-black italic">Node Protected</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Differential Privacy Level 4</span>
-          </div>
+        {/* Quick Actions */}
+        <div className="lg:col-span-4 space-y-6">
+          <QuickAction href="/dashboard/predictions" icon={Zap} title="Run Prediction" desc="Classify disease from metrics" color="blue" />
+          <QuickAction href="/dashboard/anomalies" icon={AlertTriangle} title="Anomaly Detection" desc="View flagged high-risk patients" color="emerald" />
+          <QuickAction href="/dashboard/nlp" icon={BrainCircuit} title="NLP Analysis" desc="Analyze medical notes & summaries" color="purple" />
+          
+          <Card className="border-none shadow-2xl shadow-slate-100 bg-blue-600 text-white p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12"><Stethoscope size={80} /></div>
+            <div className="relative z-10">
+              <h3 className="font-black italic text-lg leading-tight mb-2">Federated<br/>Contribution</h3>
+              <p className="text-[10px] font-medium text-blue-100 mb-4">Your clinical decisions contribute to the global model's accuracy through anonymized local updates.</p>
+              <Link href="/dashboard/federated">
+                <Button size="sm" className="bg-white text-blue-600 hover:bg-blue-50 font-black text-[10px] h-8 shadow-none border-none">Node Status</Button>
+              </Link>
+            </div>
+          </Card>
         </div>
-        <p className="text-xs font-medium text-white/60 leading-relaxed mb-5">
-          Your clinical node is participating in the current training round. All patient data is privacy-protected with differential privacy guarantees.
-        </p>
-        <div className="flex items-center justify-between pt-5 border-t border-white/10">
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-emerald-400 italic">SECURE</span>
-            <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Privacy Budget ε = 1.0</span>
-          </div>
-        </div>
-      </Card>
+      </div>
     </div>
   );
 }

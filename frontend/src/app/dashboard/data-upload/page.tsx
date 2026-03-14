@@ -174,7 +174,7 @@ export default function DataUploadPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={['hospital']}>
+    <RoleGuard allowedRoles={['hospital', 'doctor']}>
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>

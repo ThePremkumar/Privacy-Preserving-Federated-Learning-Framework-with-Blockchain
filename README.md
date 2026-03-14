@@ -131,7 +131,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | 👑 **Super Admin** | `superadmin` | `changeme` | Platform Governance, Model Governance, Aggregation |
 | 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | Organizations, Model Review, Network Monitor |
 | 🏥 **Hospital Node** | `hospital_node1` | `test1234` | Data Upload, Training, Model Participation |
-| 🩺 **Doctor** | *(created by hospital)* | *(set at creation)* | Patients, Predictions, NLP Insights |
+| 🩺 **Doctor** | `Harish Raj` | `Harish` | Patients Registry, Diagnostics, Clinical Docs |
 
 ### Permission Matrix
 
@@ -149,8 +149,9 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | View Aggregation History | ✅ | ✅ | ❌ | ❌ |
 | View Network Monitor | ✅ | ✅ | ❌ | ❌ |
 | View Model Participation | ❌ | ❌ | ✅ | ❌ |
-| View Predictions | ❌ | ❌ | ❌ | ✅ |
-| Access Patient Data | ❌ | ❌ | ❌ | ✅ |
+| Run AI Predictions | ❌ | ❌ | ❌ | ✅ |
+| Register Patients (Vitals + Docs) | ❌ | ❌ | ❌ | ✅ |
+| Upload Medical Reports (PDF) | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
@@ -273,10 +274,20 @@ GET  /api/v1/fl/history                  # Get round history
 GET  /api/v1/fl/latest-model             # Get global model info
 ```
 
-### System
+### Patient Management
 ```http
-GET  /api/v1/status/health               # Health check
-GET  /api/v1/status/metrics              # System metrics
+POST /api/v1/patients/                  # Register new patient (vitals + notes)
+GET  /api/v1/patients/                  # List hospital patients
+GET  /api/v1/patients/{id}              # Get detailed patient clinical file
+POST /api/v1/patients/{id}/upload-report # Upload medical PDF/scan to record
+```
+
+### Predictions & AI Analysis
+```http
+POST /api/v1/predictions/run            # Run AI disease prediction
+POST /api/v1/predictions/analyze-note   # Run NLP clinical note analysis
+GET  /api/v1/predictions/               # Fetch all clinical diagnostic history
+GET  /api/v1/predictions/anomalies      # Get high-risk clinical alerts
 ```
 
 ### Interactive Documentation
@@ -337,6 +348,8 @@ pending → training → completed → submitted → approved → aggregated
 ### Compliance
 - HIPAA-like audit trails with complete access logging
 - Privacy budget enforcement with automated tracking
+- **Clinical Data Registry**: Structured vital signs (BP, Sugar, HR, Temp) + Symptoms + History
+- **Multi-File Support**: Secure storage for clinical datasets (CSV) and medical reports (PDF/JPG)
 - Hospital-level data isolation (multi-tenancy)
 - Patient data protection via zero-trust architecture
 

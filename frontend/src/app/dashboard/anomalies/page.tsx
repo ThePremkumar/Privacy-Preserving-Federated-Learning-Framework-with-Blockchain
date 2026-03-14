@@ -38,11 +38,11 @@ export default function AnomaliesPage() {
       const res = await api.get('/predictions/anomalies');
       setAnomalies(res.data.map((r: any) => ({
         id: r.id || r._id || 'N/A',
-        patient_id: r.patient_id || 'Unknown',
-        type: r.results?.risk_assessment?.primary_risk || 'Unclassified',
-        severity: (r.results?.risk_assessment?.urgency_score || 0) > 8 ? 'Critical' : 'High',
-        score: -(r.results?.risk_assessment?.urgency_score || 0) / 10,
-        time: r.created_at ? new Date(r.created_at).toLocaleString() : 'N/A',
+        patient_id: r.patient_name || r.patient_id || 'Unknown',
+        type: r.results?.prediction || (r.results?.summary ? 'Clinical Note' : 'General Anomaly'),
+        severity: (r.results?.risk_score || r.results?.urgency || 0) > 8 ? 'Critical' : 'High',
+        score: r.results?.risk_score || r.results?.urgency || 0,
+        time: r.timestamp ? new Date(r.timestamp).toLocaleString() : 'N/A',
       })));
     } catch {
       setAnomalies([]);

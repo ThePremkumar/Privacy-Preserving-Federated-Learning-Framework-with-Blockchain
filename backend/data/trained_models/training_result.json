@@ -1,0 +1,810 @@
+{
+  "status": "completed",
+  "timestamp": "2026-03-14T05:06:32.856144",
+  "csv_path": "D:\\Final Year Project\\Project - windscrf\\backend\\data\\healthcare_dataset.csv",
+  "dataset": {
+    "total_samples": 55500,
+    "total_columns": 15,
+    "num_features": 30,
+    "num_classes": 6,
+    "class_names": [
+      "Arthritis",
+      "Asthma",
+      "Cancer",
+      "Diabetes",
+      "Hypertension",
+      "Obesity"
+    ],
+    "feature_names": [
+      "Age",
+      "Gender",
+      "Blood Type_A+",
+      "Blood Type_A-",
+      "Blood Type_AB+",
+      "Blood Type_AB-",
+      "Blood Type_B+",
+      "Blood Type_B-",
+      "Blood Type_O+",
+      "Blood Type_O-",
+      "admission_month",
+      "admission_dayofweek",
+      "admission_quarter",
+      "Insurance Provider_Aetna",
+      "Insurance Provider_Blue Cross",
+      "Insurance Provider_Cigna",
+      "Insurance Provider_Medicare",
+      "Insurance Provider_UnitedHealthcare",
+      "Billing Amount",
+      "Room Number",
+      "Admission Type_Elective",
+      "Admission Type_Emergency",
+      "Admission Type_Urgent",
+      "length_of_stay",
+      "Medication_Aspirin",
+      "Medication_Ibuprofen",
+      "Medication_Lipitor",
+      "Medication_Paracetamol",
+      "Medication_Penicillin",
+      "Test Results"
+    ]
+  },
+  "column_detection": {
+    "columns": {
+      "Name": {
+        "role": "drop",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 49992,
+        "top_values": {
+          "DAvId muNoZ": 3,
+          "AlYSSA LoPeZ": 2,
+          "kaTheRIne WeBSTer": 2,
+          "DAvid JohNSon": 2,
+          "DONnA vELASQuEz": 2,
+          "miCHELLE tAyLoR": 2,
+          "HENrY RYAn": 2,
+          "adrIENNE bEll": 2,
+          "sArAH BRYAnT": 2,
+          "rOBERT FUeNtEs": 2
+        }
+      },
+      "Age": {
+        "role": "numerical",
+        "dtype": "int64",
+        "null_count": 0,
+        "unique": 77,
+        "min": 13.0,
+        "max": 89.0,
+        "mean": 51.53945945945946,
+        "std": 19.602453808514348
+      },
+      "Gender": {
+        "role": "binary",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 2,
+        "top_values": {
+          "Male": 27774,
+          "Female": 27726
+        }
+      },
+      "Blood Type": {
+        "role": "categorical",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 8,
+        "top_values": {
+          "A-": 6969,
+          "A+": 6956,
+          "AB+": 6947,
+          "AB-": 6945,
+          "B+": 6945,
+          "B-": 6944,
+          "O+": 6917,
+          "O-": 6877
+        }
+      },
+      "Medical Condition": {
+        "role": "target",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 6,
+        "top_values": {
+          "Arthritis": 9308,
+          "Diabetes": 9304,
+          "Hypertension": 9245,
+          "Obesity": 9231,
+          "Cancer": 9227,
+          "Asthma": 9185
+        }
+      },
+      "Date of Admission": {
+        "role": "date_admission",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 1827,
+        "top_values": {
+          "2024-03-16": 50,
+          "2022-07-24": 49,
+          "2020-10-22": 49,
+          "2021-12-28": 48,
+          "2021-01-03": 48,
+          "2020-04-03": 48,
+          "2022-07-01": 47,
+          "2023-08-10": 47,
+          "2019-11-04": 47,
+          "2022-01-09": 47
+        }
+      },
+      "Doctor": {
+        "role": "drop",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 40341,
+        "top_values": {
+          "Michael Smith": 27,
+          "John Smith": 22,
+          "Robert Smith": 22,
+          "James Smith": 20,
+          "Michael Johnson": 20,
+          "David Smith": 19,
+          "Robert Johnson": 19,
+          "Michael Williams": 18,
+          "John Johnson": 17,
+          "Matthew Smith": 17
+        }
+      },
+      "Hospital": {
+        "role": "drop",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 39876,
+        "top_values": {
+          "LLC Smith": 44,
+          "Ltd Smith": 39,
+          "Johnson PLC": 38,
+          "Smith Ltd": 37,
+          "Smith PLC": 36,
+          "Smith Group": 36,
+          "Johnson Inc": 35,
+          "Smith Inc": 34,
+          "Group Smith": 32,
+          "Smith LLC": 32
+        }
+      },
+      "Insurance Provider": {
+        "role": "categorical",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 5,
+        "top_values": {
+          "Cigna": 11249,
+          "Medicare": 11154,
+          "UnitedHealthcare": 11125,
+          "Blue Cross": 11059,
+          "Aetna": 10913
+        }
+      },
+      "Billing Amount": {
+        "role": "numerical",
+        "dtype": "float64",
+        "null_count": 0,
+        "unique": 50000,
+        "min": -2008.4921398591305,
+        "max": 52764.276736469175,
+        "mean": 25539.316097211795,
+        "std": 14211.454430864414
+      },
+      "Room Number": {
+        "role": "numerical",
+        "dtype": "int64",
+        "null_count": 0,
+        "unique": 400,
+        "min": 101.0,
+        "max": 500.0,
+        "mean": 301.1348288288288,
+        "std": 115.2430687009733
+      },
+      "Admission Type": {
+        "role": "categorical",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 3,
+        "top_values": {
+          "Elective": 18655,
+          "Urgent": 18576,
+          "Emergency": 18269
+        }
+      },
+      "Discharge Date": {
+        "role": "date_discharge",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 1856,
+        "top_values": {
+          "2020-03-15": 53,
+          "2021-12-13": 51,
+          "2023-04-29": 51,
+          "2020-12-02": 51,
+          "2020-08-11": 50,
+          "2019-09-10": 49,
+          "2021-01-28": 49,
+          "2020-09-03": 48,
+          "2022-02-25": 48,
+          "2023-07-09": 47
+        }
+      },
+      "Medication": {
+        "role": "categorical",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 5,
+        "top_values": {
+          "Lipitor": 11140,
+          "Ibuprofen": 11127,
+          "Aspirin": 11094,
+          "Paracetamol": 11071,
+          "Penicillin": 11068
+        }
+      },
+      "Test Results": {
+        "role": "ordinal",
+        "dtype": "object",
+        "null_count": 0,
+        "unique": 3,
+        "top_values": {
+          "Abnormal": 18627,
+          "Normal": 18517,
+          "Inconclusive": 18356
+        }
+      }
+    },
+    "num_features": 30,
+    "num_classes": 6,
+    "feature_names": [
+      "Age",
+      "Gender",
+      "Blood Type_A+",
+      "Blood Type_A-",
+      "Blood Type_AB+",
+      "Blood Type_AB-",
+      "Blood Type_B+",
+      "Blood Type_B-",
+      "Blood Type_O+",
+      "Blood Type_O-",
+      "admission_month",
+      "admission_dayofweek",
+      "admission_quarter",
+      "Insurance Provider_Aetna",
+      "Insurance Provider_Blue Cross",
+      "Insurance Provider_Cigna",
+      "Insurance Provider_Medicare",
+      "Insurance Provider_UnitedHealthcare",
+      "Billing Amount",
+      "Room Number",
+      "Admission Type_Elective",
+      "Admission Type_Emergency",
+      "Admission Type_Urgent",
+      "length_of_stay",
+      "Medication_Aspirin",
+      "Medication_Ibuprofen",
+      "Medication_Lipitor",
+      "Medication_Paracetamol",
+      "Medication_Penicillin",
+      "Test Results"
+    ],
+    "class_names": [
+      "Arthritis",
+      "Asthma",
+      "Cancer",
+      "Diabetes",
+      "Hypertension",
+      "Obesity"
+    ],
+    "is_fitted": true
+  },
+  "model": {
+    "architecture": "HealthcareMLP",
+    "hidden_dims": [
+      512,
+      256,
+      128,
+      64
+    ],
+    "parameter_count": 190662,
+    "dropout": 0.2
+  },
+  "sklearn_models": {
+    "random_forest": {
+      "accuracy": 29.16,
+      "classification_report": {
+        "Arthritis": {
+          "precision": 0.2749870533402382,
+          "recall": 0.28517722878625135,
+          "f1-score": 0.2799894542578434,
+          "support": 1862.0
+        },
+        "Asthma": {
+          "precision": 0.2993667242371906,
+          "recall": 0.28307022318998365,
+          "f1-score": 0.2909904868494684,
+          "support": 1837.0
+        },
+        "Cancer": {
+          "precision": 0.28643497757847536,
+          "recall": 0.27696476964769645,
+          "f1-score": 0.28162028106916503,
+          "support": 1845.0
+        },
+        "Diabetes": {
+          "precision": 0.28622267412303,
+          "recall": 0.3025255239118753,
+          "f1-score": 0.2941483803552769,
+          "support": 1861.0
+        },
+        "Hypertension": {
+          "precision": 0.30355220667384286,
+          "recall": 0.30502974580854514,
+          "f1-score": 0.3042891826274616,
+          "support": 1849.0
+        },
+        "Obesity": {
+          "precision": 0.3006034009873834,
+          "recall": 0.29685807150595883,
+          "f1-score": 0.2987189970019079,
+          "support": 1846.0
+        },
+        "accuracy": 0.29162162162162164,
+        "macro avg": {
+          "precision": 0.29186117282336005,
+          "recall": 0.2916042604750518,
+          "f1-score": 0.2916261303601872,
+          "support": 11100.0
+        },
+        "weighted avg": {
+          "precision": 0.2918267931784805,
+          "recall": 0.29162162162162164,
+          "f1-score": 0.291617604480005,
+          "support": 11100.0
+        }
+      },
+      "feature_importance": [
+        {
+          "feature": "Billing Amount",
+          "importance": 0.1314
+        },
+        {
+          "feature": "Room Number",
+          "importance": 0.1265
+        },
+        {
+          "feature": "Age",
+          "importance": 0.1122
+        },
+        {
+          "feature": "length_of_stay",
+          "importance": 0.1004
+        },
+        {
+          "feature": "admission_month",
+          "importance": 0.0699
+        },
+        {
+          "feature": "admission_dayofweek",
+          "importance": 0.0679
+        },
+        {
+          "feature": "Test Results",
+          "importance": 0.0412
+        },
+        {
+          "feature": "admission_quarter",
+          "importance": 0.0317
+        },
+        {
+          "feature": "Gender",
+          "importance": 0.0274
+        },
+        {
+          "feature": "Admission Type_Emergency",
+          "importance": 0.0162
+        },
+        {
+          "feature": "Insurance Provider_Medicare",
+          "importance": 0.0162
+        },
+        {
+          "feature": "Insurance Provider_Blue Cross",
+          "importance": 0.0161
+        },
+        {
+          "feature": "Insurance Provider_Cigna",
+          "importance": 0.0159
+        },
+        {
+          "feature": "Insurance Provider_UnitedHealthcare",
+          "importance": 0.0157
+        },
+        {
+          "feature": "Insurance Provider_Aetna",
+          "importance": 0.0155
+        },
+        {
+          "feature": "Admission Type_Urgent",
+          "importance": 0.0154
+        },
+        {
+          "feature": "Admission Type_Elective",
+          "importance": 0.0152
+        },
+        {
+          "feature": "Medication_Ibuprofen",
+          "importance": 0.015
+        },
+        {
+          "feature": "Medication_Penicillin",
+          "importance": 0.0146
+        },
+        {
+          "feature": "Medication_Paracetamol",
+          "importance": 0.0146
+        },
+        {
+          "feature": "Medication_Aspirin",
+          "importance": 0.0146
+        },
+        {
+          "feature": "Medication_Lipitor",
+          "importance": 0.0145
+        },
+        {
+          "feature": "Blood Type_A-",
+          "importance": 0.0118
+        },
+        {
+          "feature": "Blood Type_O-",
+          "importance": 0.0118
+        },
+        {
+          "feature": "Blood Type_AB-",
+          "importance": 0.0117
+        },
+        {
+          "feature": "Blood Type_O+",
+          "importance": 0.0115
+        },
+        {
+          "feature": "Blood Type_B-",
+          "importance": 0.0115
+        },
+        {
+          "feature": "Blood Type_B+",
+          "importance": 0.0113
+        },
+        {
+          "feature": "Blood Type_AB+",
+          "importance": 0.0112
+        },
+        {
+          "feature": "Blood Type_A+",
+          "importance": 0.0111
+        }
+      ]
+    },
+    "gradient_boosting": {
+      "accuracy": 20.15,
+      "classification_report": {
+        "Arthritis": {
+          "precision": 0.2035749751737835,
+          "recall": 0.22019334049409237,
+          "f1-score": 0.21155830753353974,
+          "support": 1862.0
+        },
+        "Asthma": {
+          "precision": 0.20193861066235863,
+          "recall": 0.20413718018508437,
+          "f1-score": 0.2030319436924743,
+          "support": 1837.0
+        },
+        "Cancer": {
+          "precision": 0.17926186291739896,
+          "recall": 0.16585365853658537,
+          "f1-score": 0.17229729729729729,
+          "support": 1845.0
+        },
+        "Diabetes": {
+          "precision": 0.20545829042224512,
+          "recall": 0.21440085975282105,
+          "f1-score": 0.2098343413094925,
+          "support": 1861.0
+        },
+        "Hypertension": {
+          "precision": 0.205085682697623,
+          "recall": 0.20064899945916712,
+          "f1-score": 0.202843083652269,
+          "support": 1849.0
+        },
+        "Obesity": {
+          "precision": 0.21230942970073405,
+          "recall": 0.20368364030335862,
+          "f1-score": 0.20790710533591375,
+          "support": 1846.0
+        },
+        "accuracy": 0.20153153153153153,
+        "macro avg": {
+          "precision": 0.20127147526235722,
+          "recall": 0.20148627978851816,
+          "f1-score": 0.20124534647016443,
+          "support": 11100.0
+        },
+        "weighted avg": {
+          "precision": 0.20128292627515285,
+          "recall": 0.20153153153153153,
+          "f1-score": 0.20127340991028358,
+          "support": 11100.0
+        }
+      }
+    }
+  },
+  "training": {
+    "epochs_completed": 16,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "best_val_accuracy": 18.36,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 1.9013,
+        "train_acc": 16.56,
+        "val_loss": 1.8007,
+        "val_acc": 16.34,
+        "lr": 0.001,
+        "time_s": 3.47
+      },
+      {
+        "epoch": 2,
+        "train_loss": 1.8035,
+        "train_acc": 17.41,
+        "val_loss": 1.7937,
+        "val_acc": 16.67,
+        "lr": 0.001,
+        "time_s": 3.41
+      },
+      {
+        "epoch": 3,
+        "train_loss": 1.7949,
+        "train_acc": 17.72,
+        "val_loss": 1.7935,
+        "val_acc": 16.79,
+        "lr": 0.001,
+        "time_s": 3.67
+      },
+      {
+        "epoch": 4,
+        "train_loss": 1.7907,
+        "train_acc": 18.52,
+        "val_loss": 1.7921,
+        "val_acc": 17.8,
+        "lr": 0.001,
+        "time_s": 3.38
+      },
+      {
+        "epoch": 5,
+        "train_loss": 1.7896,
+        "train_acc": 18.5,
+        "val_loss": 1.794,
+        "val_acc": 17.24,
+        "lr": 0.001,
+        "time_s": 3.51
+      },
+      {
+        "epoch": 6,
+        "train_loss": 1.7885,
+        "train_acc": 18.82,
+        "val_loss": 1.7952,
+        "val_acc": 17.19,
+        "lr": 0.001,
+        "time_s": 3.76
+      },
+      {
+        "epoch": 7,
+        "train_loss": 1.7875,
+        "train_acc": 19.01,
+        "val_loss": 1.795,
+        "val_acc": 17.39,
+        "lr": 0.001,
+        "time_s": 3.65
+      },
+      {
+        "epoch": 8,
+        "train_loss": 1.7872,
+        "train_acc": 18.83,
+        "val_loss": 1.7942,
+        "val_acc": 17.82,
+        "lr": 0.0005,
+        "time_s": 15.27
+      },
+      {
+        "epoch": 9,
+        "train_loss": 1.7823,
+        "train_acc": 20.2,
+        "val_loss": 1.7936,
+        "val_acc": 18.36,
+        "lr": 0.0005,
+        "time_s": 17.88
+      },
+      {
+        "epoch": 10,
+        "train_loss": 1.7794,
+        "train_acc": 20.52,
+        "val_loss": 1.7947,
+        "val_acc": 18.02,
+        "lr": 0.0005,
+        "time_s": 7.84
+      },
+      {
+        "epoch": 11,
+        "train_loss": 1.7785,
+        "train_acc": 20.56,
+        "val_loss": 1.7962,
+        "val_acc": 17.68,
+        "lr": 0.0005,
+        "time_s": 3.64
+      },
+      {
+        "epoch": 12,
+        "train_loss": 1.776,
+        "train_acc": 21.06,
+        "val_loss": 1.7995,
+        "val_acc": 17.57,
+        "lr": 0.00025,
+        "time_s": 3.53
+      },
+      {
+        "epoch": 13,
+        "train_loss": 1.7698,
+        "train_acc": 22.02,
+        "val_loss": 1.7992,
+        "val_acc": 18.14,
+        "lr": 0.00025,
+        "time_s": 14.49
+      },
+      {
+        "epoch": 14,
+        "train_loss": 1.7656,
+        "train_acc": 22.47,
+        "val_loss": 1.8004,
+        "val_acc": 18.13,
+        "lr": 0.00025,
+        "time_s": 17.58
+      },
+      {
+        "epoch": 15,
+        "train_loss": 1.7634,
+        "train_acc": 22.68,
+        "val_loss": 1.804,
+        "val_acc": 17.69,
+        "lr": 0.00025,
+        "time_s": 16.6
+      },
+      {
+        "epoch": 16,
+        "train_loss": 1.7613,
+        "train_acc": 22.74,
+        "val_loss": 1.8042,
+        "val_acc": 17.35,
+        "lr": 0.000125,
+        "time_s": 16.94
+      }
+    ]
+  },
+  "test_results": {
+    "test_loss": 1.7945,
+    "test_accuracy": 17.04,
+    "weighted_f1": 0.1686,
+    "classification_report": {
+      "Arthritis": {
+        "precision": 0.15062344139650874,
+        "recall": 0.16219119226638024,
+        "f1-score": 0.15619343160072408,
+        "support": 1862.0
+      },
+      "Asthma": {
+        "precision": 0.1709873138444567,
+        "recall": 0.16875340228633642,
+        "f1-score": 0.16986301369863013,
+        "support": 1837.0
+      },
+      "Cancer": {
+        "precision": 0.17467700258397933,
+        "recall": 0.1831978319783198,
+        "f1-score": 0.17883597883597885,
+        "support": 1845.0
+      },
+      "Diabetes": {
+        "precision": 0.17461383478844864,
+        "recall": 0.13970983342289092,
+        "f1-score": 0.15522388059701492,
+        "support": 1861.0
+      },
+      "Hypertension": {
+        "precision": 0.17266715650257164,
+        "recall": 0.12709572742022715,
+        "f1-score": 0.14641744548286603,
+        "support": 1849.0
+      },
+      "Obesity": {
+        "precision": 0.17861433720464556,
+        "recall": 0.24160346695557963,
+        "f1-score": 0.20538798065853098,
+        "support": 1846.0
+      },
+      "accuracy": 0.17036036036036037,
+      "macro avg": {
+        "precision": 0.1703638477201018,
+        "recall": 0.17042524238828902,
+        "f1-score": 0.16865362181229082,
+        "support": 11100.0
+      },
+      "weighted avg": {
+        "precision": 0.17034086473642718,
+        "recall": 0.17036036036036037,
+        "f1-score": 0.1686096051839482,
+        "support": 11100.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        302,
+        329,
+        339,
+        260,
+        206,
+        426
+      ],
+      [
+        327,
+        310,
+        317,
+        238,
+        238,
+        407
+      ],
+      [
+        339,
+        274,
+        338,
+        240,
+        233,
+        421
+      ],
+      [
+        344,
+        313,
+        319,
+        260,
+        231,
+        394
+      ],
+      [
+        334,
+        293,
+        320,
+        264,
+        235,
+        403
+      ],
+      [
+        359,
+        294,
+        302,
+        227,
+        218,
+        446
+      ]
+    ],
+    "num_test_samples": 11100
+  },
+  "weights_hash": "e9864ee04637e8c64187bb9f75c454268a57e95c853176c3bb31707bbe849aca",
+  "model_path": "D:\\Final Year Project\\Project - windscrf\\backend\\data\\trained_models\\healthcare_model.pt"
+}

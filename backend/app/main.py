@@ -100,6 +100,7 @@ app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["Pred
 app.include_router(hospital.router, prefix="/api/v1/hospital", tags=["Hospital Operations"])
 app.include_router(doctor.router, prefix="/api/v1/doctor", tags=["Doctor Operations"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administration"])
+app.include_router(patients.router, prefix="/api/v1/patients", tags=["Patients Project"])
 app.include_router(data_upload.router, prefix="/api/v1/data", tags=["Data Upload"])
 app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
 

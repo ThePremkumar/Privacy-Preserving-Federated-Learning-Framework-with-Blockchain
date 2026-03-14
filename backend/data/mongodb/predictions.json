@@ -1,0 +1,18 @@
+{
+    "0e6cec1f-b700-4642-b443-0f9d7ba2ef87": {
+        "patient_id": "1fc526b0-4732-4bc5-aa5c-368c0957709c",
+        "patient_name": "Alexander Smith",
+        "doctor_id": "fae16170-31df-4b60-b2cd-833254f8ec98",
+        "hospital_id": "c66e032d-f7ef-415a-befe-3e9998e2e93a",
+        "type": "ai_prediction",
+        "timestamp": "2026-03-14T08:52:08.895579",
+        "results": {
+            "prediction": "General Health Review",
+            "risk_score": 3.0,
+            "confidence": 85.0,
+            "features_used": []
+        },
+        "_id": "0e6cec1f-b700-4642-b443-0f9d7ba2ef87",
+        "created_at": "2026-03-14T08:52:08.895579"
+    }
+}

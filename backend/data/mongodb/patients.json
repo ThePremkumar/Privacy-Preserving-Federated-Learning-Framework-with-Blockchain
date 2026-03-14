@@ -1,0 +1,24 @@
+{
+    "1fc526b0-4732-4bc5-aa5c-368c0957709c": {
+        "name": "Alexander Smith",
+        "patient_id_manual": "P-7788",
+        "age": 42,
+        "gender": "Male",
+        "phone": "9876543210",
+        "address": "123 Clinical Way, New York",
+        "current_symptoms": "Mild cough, slight fatigue",
+        "diagnosis_notes": "Observation for seasonal allergies",
+        "blood_pressure": "120/80",
+        "sugar_level": "95 mg/dL",
+        "heart_rate": 72,
+        "temperature": 36.6,
+        "medical_history": [
+            "Asthma in childhood"
+        ],
+        "hospital_id": "c66e032d-f7ef-415a-befe-3e9998e2e93a",
+        "created_by": "fae16170-31df-4b60-b2cd-833254f8ec98",
+        "reports": [],
+        "_id": "1fc526b0-4732-4bc5-aa5c-368c0957709c",
+        "created_at": "2026-03-14T08:51:18.885255"
+    }
+}
