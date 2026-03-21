@@ -140,6 +140,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 |-----------|:-----------:|:-----:|:--------:|:------:|
 | Manage Organizations (CRUD) | ✅ | ✅ | ❌ | ❌ |
 | Edit Organization Details | ✅ | ✅ | ❌ | ❌ |
+| Delete Organizations | ✅ | ✅ | ❌ | ❌ |
 | Toggle Org Active/Inactive | ✅ | ✅ | ❌ | ❌ |
 | Create Admin Users | ✅ | ❌ | ❌ | ❌ |
 | Create Hospital Nodes | ✅ | ✅ | ❌ | ❌ |
@@ -148,6 +149,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | Start Local Training | ❌ | ❌ | ✅ | ❌ |
 | Submit for Review | ❌ | ❌ | ✅ | ❌ |
 | Review Training Jobs | ✅ | ✅ | ❌ | ❌ |
+| View Rejected Models | ✅ | ✅ | ❌ | ❌ |
 | Aggregate Global Model | ✅ | ❌ | ❌ | ❌ |
 | View Aggregation History | ✅ | ✅ | ❌ | ❌ |
 | View Network Monitor | ✅ | ✅ | ❌ | ❌ |
@@ -260,6 +262,7 @@ GET  /api/v1/auth/me                       # Get current user info
 POST /api/v1/auth/register                 # Register new user
 POST /api/v1/auth/register-hospital        # Register new hospital node
 PUT  /api/v1/auth/hospitals/{hospital_id}  # Update hospital details (admin+)
+DELETE /api/v1/auth/hospitals/{hospital_id}  # Delete hospital (admin+)
 GET  /api/v1/auth/users                    # List all users (admin+)
 GET  /api/v1/auth/hospitals                # List all hospitals (admin+)
 ```
@@ -477,8 +480,8 @@ curl http://localhost:8001/api/v1/status/metrics
 ### Frontend Dashboards
 | Dashboard | Role | Features |
 |-----------|------|----------|
-| **Super Admin** | Platform-wide view | Model governance, aggregation, organizations (CRUD), admin management |
-| **Admin** | Management view | Network monitor, model review, blockchain audit, organization editing |
+| **Super Admin** | Platform-wide view | Model governance, rejected models, aggregation, organizations (full CRUD), admin management |
+| **Admin** | Management view | Network monitor, model review, rejected models, blockchain audit, organization management |
 | **Hospital** | Operations view | Data upload, training (50 epochs), model participation, doctor management |
 | **Doctor** | Clinical view | Patients, predictions, anomaly alerts, NLP analysis, prediction history |
 
@@ -546,6 +549,10 @@ curl -X PUT http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Updated Hospital Name","contact_email":"new@email.com"}'
+
+# Delete hospital (requires admin token)
+curl -X DELETE http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
+  -H "Authorization: Bearer <token>"
 ```
 
 ---
@@ -565,7 +572,8 @@ curl -X PUT http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
 | **Blockchain Audit** | ✅ | SHA-256 + mock blockchain (dev) |
 | **RBAC** | ✅ | 4-tier role system with granular permissions |
 | **Privacy** | ✅ | Differential privacy (ε=1.0, δ=1e-5) |
-| **Organization Management** | ✅ | Full CRUD: create, edit, toggle status (admin+) |
+| **Organization Management** | ✅ | Full CRUD: create, edit, delete, toggle status (admin+) |
+| **Rejected Models Tracking** | ✅ | Rejected models dashboard with reasons & metrics |
 | **NLP Analysis** | ✅ | Clinical note analysis & entity extraction |
 | **Patient Registry** | ✅ | Vitals, symptoms, history, file uploads |
 | **AI Predictions** | ✅ | Disease prediction + anomaly detection |

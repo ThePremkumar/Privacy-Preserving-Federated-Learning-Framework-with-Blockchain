@@ -471,6 +471,31 @@ class AuthenticationService:
         finally:
             db.close()
 
+    def delete_hospital(self, hospital_id: str) -> bool:
+        """Delete a hospital and disassociate all its users."""
+        from app.core.db_models import Hospital as DBHospital, User as DBUser
+        db = self._get_db()
+        try:
+            db_hosp = db.query(DBHospital).filter(DBHospital.id == hospital_id).first()
+            if not db_hosp:
+                return False
+
+            # Disassociate users from this hospital (set hospital_id to None)
+            db.query(DBUser).filter(DBUser.hospital_id == hospital_id).update(
+                {DBUser.hospital_id: None}, synchronize_session="fetch"
+            )
+
+            db.delete(db_hosp)
+            db.commit()
+            logger.info(f"Hospital deleted: {db_hosp.name} (ID: {hospital_id})")
+            return True
+        except Exception as exc:
+            db.rollback()
+            logger.error(f"delete_hospital error: {exc}")
+            raise
+        finally:
+            db.close()
+
     def get_all_hospitals(self) -> List[Hospital]:
         from app.core.db_models import Hospital as DBHospital
         db = self._get_db()

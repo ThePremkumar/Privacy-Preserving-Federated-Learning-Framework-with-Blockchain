@@ -134,6 +134,7 @@ export default function ModelGovernancePage() {
   };
 
   const approvedJobs = allJobs.filter(j => j.status === 'approved');
+  const rejectedJobs = allJobs.filter(j => j.status === 'rejected');
   const latestRound = aggregationHistory.length > 0 ? aggregationHistory[0] : null;
 
   const statusColor = (s: string) => {
@@ -284,6 +285,74 @@ export default function ModelGovernancePage() {
           </CardContent>
         </Card>
 
+        {/* Rejected Reviews */}
+        <Card className="lg:col-span-5 border-none shadow-2xl shadow-slate-100 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 pb-5 p-6">
+            <div>
+              <CardTitle className="text-xl font-black">Rejected <span className="text-red-600">Models</span></CardTitle>
+              <CardDescription className="text-sm font-bold text-slate-400">Training submissions that did not meet quality criteria</CardDescription>
+            </div>
+            <span className="h-8 w-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center border border-red-100 text-sm font-black">{rejectedJobs.length}</span>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
+              {rejectedJobs.length === 0 ? (
+                <div className="p-8 text-center">
+                  <CheckCircle2 size={24} className="mx-auto text-emerald-300 mb-2" />
+                  <p className="text-sm font-bold text-slate-400">No rejected models</p>
+                  <p className="text-[10px] font-bold text-slate-300 mt-1">All reviewed training jobs have been approved</p>
+                </div>
+              ) : (
+                rejectedJobs.map((job) => (
+                  <div key={job.id} className="px-6 py-5 hover:bg-red-50/30 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100">
+                          <XCircle size={18} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-slate-900">Hospital: {job.hospital_id.substring(0, 8)}...</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{job.epochs} epochs • {job.num_samples.toLocaleString()} samples</p>
+                        </div>
+                      </div>
+                      <span className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border", statusColor(job.status))}>
+                        {job.status}
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                      <div className="flex gap-6 mb-2">
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase">Accuracy</p>
+                          <p className="text-sm font-black text-red-600">{job.accuracy ? (parseFloat(job.accuracy) * 100).toFixed(1) + '%' : '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase">Loss</p>
+                          <p className="text-sm font-black text-slate-600">{job.loss || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase">ε Used</p>
+                          <p className="text-sm font-black text-slate-600">{job.epsilon_used}</p>
+                        </div>
+                      </div>
+                      {job.review_notes && (
+                        <div className="mt-2 pt-2 border-t border-slate-100">
+                          <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Rejection Reason</p>
+                          <p className="text-xs font-bold text-slate-600 italic">"{job.review_notes}"</p>
+                        </div>
+                      )}
+                    </div>
+                    {job.completed_at && (
+                      <p className="text-[9px] font-bold text-slate-300 mt-2 uppercase tracking-widest">Completed: {new Date(job.completed_at).toLocaleDateString()} {new Date(job.completed_at).toLocaleTimeString()}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Right Panel */}
         <div className="lg:col-span-5 space-y-8">
           {/* Approved Jobs (ready for aggregation) - Super Admin only */}

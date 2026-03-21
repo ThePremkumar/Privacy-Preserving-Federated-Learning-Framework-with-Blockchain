@@ -192,6 +192,20 @@ async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest
         logger.error(f"Hospital update error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
+@router.delete("/hospitals/{hospital_id}")
+async def delete_hospital(hospital_id: str, current_user: User = Depends(require_permission(Permission.MANAGE_HOSPITALS))):
+    """Delete a hospital (admin only). Associated users will be disassociated."""
+    try:
+        success = auth_service.delete_hospital(hospital_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Hospital not found")
+        return {"message": "Hospital deleted successfully", "hospital_id": hospital_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Hospital delete error: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 @router.get("/me")
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information"""

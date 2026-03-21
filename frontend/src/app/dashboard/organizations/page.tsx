@@ -22,7 +22,9 @@ import {
   ChevronRight,
   Hospital,
   Edit,
-  Power
+  Power,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
@@ -49,6 +51,7 @@ export default function OrganizationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHospital, setEditingHospital] = useState<HospitalNode | null>(null);
+  const [deletingHospital, setDeletingHospital] = useState<HospitalNode | null>(null);
   const [hospitals, setHospitals] = useState<HospitalNode[]>([]);
   const [newHospital, setNewHospital] = useState({ name: '', contact_email: '', address: '' });
 
@@ -93,6 +96,17 @@ export default function OrganizationsPage() {
       fetchHospitals();
     } catch (err) {
       console.error('Failed to toggle status:', err);
+    }
+  };
+
+  const handleDeleteHospital = async () => {
+    if (!deletingHospital) return;
+    try {
+      await api.delete(`/auth/hospitals/${deletingHospital.id}`);
+      setDeletingHospital(null);
+      fetchHospitals();
+    } catch (err) {
+      console.error('Failed to delete hospital:', err);
     }
   };
 
@@ -228,6 +242,17 @@ export default function OrganizationsPage() {
                              >
                                 <Power size={14} />
                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 w-8 p-0 border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeletingHospital(org);
+                                }}
+                              >
+                                 <Trash2 size={14} />
+                              </Button>
                           </div>
                        </td>
                     </tr>
@@ -344,6 +369,54 @@ export default function OrganizationsPage() {
                   </button>
                </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingHospital && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-red-600 p-8 text-white relative">
+               <div className="absolute top-0 right-0 p-10 opacity-10 text-white">
+                  <AlertTriangle size={100} />
+               </div>
+               <h3 className="text-2xl font-black uppercase tracking-tighter">Delete <span className="text-red-200">Organization</span></h3>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mt-1">This action cannot be undone</p>
+            </div>
+
+            <div className="p-8 space-y-5">
+               <div className="bg-red-50 border border-red-100 rounded-xl p-4 space-y-2">
+                  <p className="text-sm font-black text-red-800">You are about to permanently delete:</p>
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-red-100">
+                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100">
+                        <Hospital size={18} />
+                     </div>
+                     <div>
+                        <p className="text-sm font-black text-slate-900">{deletingHospital.name}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{deletingHospital.contact_email}</p>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                  <div className="flex gap-2">
+                     <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                     <p className="text-xs font-bold text-amber-800">All users associated with this hospital will be disassociated. Training jobs and data uploads linked to this hospital will retain their records.</p>
+                  </div>
+               </div>
+
+               <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setDeletingHospital(null)}
+                    className="flex-1 px-6 py-4 rounded-xl bg-white border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={handleDeleteHospital}
+                    className="flex-1 px-6 py-4 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-200">
+                    Delete Permanently
+                  </button>
+               </div>
+            </div>
           </div>
         </div>
       )}
