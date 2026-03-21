@@ -140,7 +140,7 @@ export default function DataUploadPage() {
     setIsTraining(true);
     setErrorMessage(null);
     try {
-      const res = await api.post('/training/start', { upload_id: uploadId, epochs: 3, learning_rate: 0.001 });
+      const res = await api.post('/training/start', { upload_id: uploadId, epochs: 50, learning_rate: 0.001 });
       setTrainingResult(res.data);
       fetchTrainingJobs();
     } catch (err: any) {
@@ -271,7 +271,7 @@ export default function DataUploadPage() {
                         <Brain size={20} className="text-blue-600" />
                         <div>
                           <p className="text-sm font-black text-slate-900">Ready for Local Training</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">3 epochs • LR 0.001 • ε = 1.0</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">50 epochs • LR 0.001 • ε = 1.0</p>
                         </div>
                       </div>
                       <Button size="sm" onClick={() => handleStartTraining(uploadResult.id)} disabled={isTraining} className="shadow-lg shadow-blue-200">

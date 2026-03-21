@@ -38,6 +38,12 @@ class RegisterHospitalRequest(BaseModel):
     contact_email: str
     address: str
 
+class UpdateHospitalRequest(BaseModel):
+    name: Optional[str] = None
+    contact_email: Optional[str] = None
+    address: Optional[str] = None
+    is_active: Optional[bool] = None
+
 # Authentication dependencies
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> User:
     """Get current authenticated user"""
@@ -155,6 +161,35 @@ async def register_hospital(hospital_data: RegisterHospitalRequest, current_user
         }
     except Exception as e:
         logger.error(f"Hospital registration error: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.put("/hospitals/{hospital_id}")
+async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest, current_user: User = Depends(require_permission(Permission.MANAGE_HOSPITALS))):
+    """Update an existing hospital (admin only)"""
+    try:
+        hospital = auth_service.update_hospital(
+            hospital_id=hospital_id,
+            name=hospital_data.name,
+            contact_email=hospital_data.contact_email,
+            address=hospital_data.address,
+            is_active=hospital_data.is_active
+        )
+        
+        if not hospital:
+            raise HTTPException(status_code=404, detail="Hospital not found")
+            
+        return {
+            "message": "Hospital updated successfully",
+            "hospital": {
+                "id": hospital.id,
+                "name": hospital.name,
+                "contact_email": hospital.contact_email,
+                "address": hospital.address,
+                "is_active": hospital.is_active
+            }
+        }
+    except Exception as e:
+        logger.error(f"Hospital update error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @router.get("/me")

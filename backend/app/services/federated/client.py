@@ -15,7 +15,7 @@ class FederatedClient:
         self.criterion = nn.CrossEntropyLoss()
         self.model.to(device)
     
-    def train(self, epochs=5):
+    def train(self, epochs=10):
         self.model.train()
         epoch_losses = []
         

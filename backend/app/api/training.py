@@ -47,7 +47,7 @@ _training_reports: Dict[str, Dict[str, Any]] = {}
 
 class StartTrainingRequest(BaseModel):
     upload_id: str
-    epochs: int = 30
+    epochs: int = 50
     learning_rate: float = 0.001
     batch_size: int = 64
     patience: int = 7

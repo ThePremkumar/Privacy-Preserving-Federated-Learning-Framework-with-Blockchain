@@ -22,7 +22,7 @@ class FederatedTrainer:
         selected_indices = torch.randperm(len(self.clients))[:num_selected]
         return [self.clients[i] for i in selected_indices]
     
-    def train_round(self, round_num: int, local_epochs: int = 5) -> Dict[str, Any]:
+    def train_round(self, round_num: int, local_epochs: int = 10) -> Dict[str, Any]:
         """
         Execute one round of federated training
         """
@@ -81,7 +81,7 @@ class FederatedTrainer:
         
         return round_metrics
     
-    def train(self, local_epochs: int = 5, eval_test_loader=None) -> List[Dict[str, Any]]:
+    def train(self, local_epochs: int = 10, eval_test_loader=None) -> List[Dict[str, Any]]:
         """
         Execute complete federated training process
         """

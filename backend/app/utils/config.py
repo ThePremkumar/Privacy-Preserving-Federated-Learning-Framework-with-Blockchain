@@ -22,7 +22,7 @@ class Config:
             },
             "training": {
                 "rounds": 10,
-                "local_epochs": 5,
+                "local_epochs": 10,
                 "learning_rate": 0.01,
                 "client_fraction": 1.0
             },

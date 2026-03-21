@@ -94,7 +94,7 @@ class TrainingJob(Base):
     upload_id = Column(String, ForeignKey("dataset_uploads.id"), nullable=False)
     started_by = Column(String)
     status = Column(String, default="pending")  # pending, training, completed, failed, submitted, approved, rejected, aggregated
-    epochs = Column(Integer, default=3)
+    epochs = Column(Integer, default=50)
     learning_rate = Column(String, default="0.001")
     accuracy = Column(String, nullable=True)
     loss = Column(String, nullable=True)

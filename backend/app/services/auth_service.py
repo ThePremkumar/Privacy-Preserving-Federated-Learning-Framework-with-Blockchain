@@ -442,6 +442,35 @@ class AuthenticationService:
         finally:
             db.close()
 
+    def update_hospital(self, hospital_id: str, name: Optional[str] = None, contact_email: Optional[str] = None, address: Optional[str] = None, is_active: Optional[bool] = None) -> Optional[Hospital]:
+        """Update an existing hospital's details or status."""
+        from app.core.db_models import Hospital as DBHospital
+        db = self._get_db()
+        try:
+            db_hosp = db.query(DBHospital).filter(DBHospital.id == hospital_id).first()
+            if not db_hosp:
+                return None
+            
+            if name is not None:
+                db_hosp.name = name
+            if contact_email is not None:
+                db_hosp.contact_email = contact_email
+            if address is not None:
+                db_hosp.address = address
+            if is_active is not None:
+                db_hosp.is_active = is_active
+            
+            db.commit()
+            db.refresh(db_hosp)
+            logger.info(f"Hospital updated: {db_hosp.name} (ID: {hospital_id})")
+            return _db_hospital_to_dataclass(db_hosp)
+        except Exception as exc:
+            db.rollback()
+            logger.error(f"update_hospital error: {exc}")
+            raise
+        finally:
+            db.close()
+
     def get_all_hospitals(self) -> List[Hospital]:
         from app.core.db_models import Hospital as DBHospital
         db = self._get_db()

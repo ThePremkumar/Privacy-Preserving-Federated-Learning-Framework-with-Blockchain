@@ -52,7 +52,7 @@ MODEL_CONFIG = {
     "hidden_dim": 128,
     "output_dim": 10,
     "batch_size": 32,
-    "epochs_per_round": 3,
+    "epochs_per_round": 10,
     "learning_rate": 0.001
 }
 

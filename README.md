@@ -59,7 +59,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | Step | Actor | Action | Result |
 |------|-------|--------|--------|
 | **1** | 🏥 Hospital | Upload CSV dataset | Data stored in DB, SHA-256 hash generated |
-| **2** | 🏥 Hospital | Start local training | Model trained (3 epochs, ε=1.0 DP noise), accuracy & loss computed |
+| **2** | 🏥 Hospital | Start local training | Model trained (50 epochs, ε=1.0 DP noise), accuracy & loss computed |
 | **3** | 🏥 Hospital | Submit for review | Training job status → `submitted`, visible to admins |
 | **4** | 👨‍💼 Admin | Review & approve/reject | Training job status → `approved` or `rejected` with notes |
 | **5** | 👑 Super Admin | Aggregate approved jobs | FedAvg weighted averaging → global model updated |
@@ -92,10 +92,10 @@ The platform implements a complete **federated learning lifecycle** where hospit
 │  │  │   Auth   │ │ Training │ │   Data   │ │ Federated│ │                  │
 │  │  │  Service │ │  Service │ │  Upload  │ │  Service │ │                  │
 │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ │                  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐              │                  │
-│  │  │Blockchain│ │    DP    │ │  Audit   │              │                  │
-│  │  │ Service  │ │ Service  │ │  Logger  │              │                  │
-│  │  └──────────┘ └──────────┘ └──────────┘              │                  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │                  │
+│  │  │Blockchain│ │    DP    │ │   NLP    │ │ Synthetic│ │                  │
+│  │  │ Service  │ │ Service  │ │ Service  │ │Data Svc  │ │                  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ │                  │
 │  └────────────────────────────────────────────────────────┘                  │
 │                              │ SQLAlchemy                                     │
 │  ┌────────────────────────────────────────────────────────┐                  │
@@ -118,6 +118,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | **ML** | PyTorch, NumPy, Scikit-learn | Federated model training |
 | **Privacy** | Custom DP Service (Gaussian mechanism) | Differential privacy |
 | **Blockchain** | Web3.py, Ethereum (mock in dev) | Immutable audit trails |
+| **NLP** | Custom NLP Service | Clinical note analysis |
 | **Charts** | Recharts | Convergence visualization |
 
 ---
@@ -137,7 +138,9 @@ The platform implements a complete **federated learning lifecycle** where hospit
 
 | Permission | Super Admin | Admin | Hospital | Doctor |
 |-----------|:-----------:|:-----:|:--------:|:------:|
-| Manage Organizations | ✅ | ✅ | ❌ | ❌ |
+| Manage Organizations (CRUD) | ✅ | ✅ | ❌ | ❌ |
+| Edit Organization Details | ✅ | ✅ | ❌ | ❌ |
+| Toggle Org Active/Inactive | ✅ | ✅ | ❌ | ❌ |
 | Create Admin Users | ✅ | ❌ | ❌ | ❌ |
 | Create Hospital Nodes | ✅ | ✅ | ❌ | ❌ |
 | Create Doctors | ❌ | ❌ | ✅ | ❌ |
@@ -152,6 +155,8 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | Run AI Predictions | ❌ | ❌ | ❌ | ✅ |
 | Register Patients (Vitals + Docs) | ❌ | ❌ | ❌ | ✅ |
 | Upload Medical Reports (PDF) | ❌ | ❌ | ❌ | ✅ |
+| View Prediction History | ❌ | ❌ | ❌ | ✅ |
+| NLP Clinical Note Analysis | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
@@ -170,7 +175,7 @@ backend/
 │   │   ├── dependencies.py        # Auth dependencies (get_current_user, require_role)
 │   │   └── rbac.py                # Role definitions & permissions
 │   ├── api/
-│   │   ├── auth.py                # Login, register users/hospitals
+│   │   ├── auth.py                # Login, register users/hospitals, update hospitals
 │   │   ├── training.py            # Training lifecycle (start → review → aggregate)
 │   │   ├── data_upload.py         # CSV upload & storage
 │   │   ├── federated.py           # Federated learning rounds
@@ -184,7 +189,14 @@ backend/
 │   │   ├── auth_service.py        # Authentication (SQLAlchemy-backed)
 │   │   ├── federated_service.py   # FedAvg engine
 │   │   ├── blockchain_service.py  # Blockchain (mock in dev)
-│   │   └── dp_service.py          # Differential privacy (Gaussian noise)
+│   │   ├── dp_service.py          # Differential privacy (Gaussian noise)
+│   │   ├── nlp_service.py         # NLP clinical note analysis
+│   │   └── synthetic_data_service.py  # Synthetic data generation
+│   ├── data/
+│   │   ├── healthcare_trainer.py  # HealthcareMLP model & training
+│   │   ├── healthcare_preprocessor.py # Auto column detection & preprocessing
+│   │   ├── dataloader.py          # PyTorch DataLoader utilities
+│   │   └── run_training.py        # Standalone training script
 │   └── models/
 │       ├── federated.py           # FederatedModel wrapper (PyTorch)
 │       ├── healthcare_models.py   # Medical ML models
@@ -200,6 +212,7 @@ backend/
 frontend/
 ├── src/
 │   ├── app/
+│   │   ├── page.tsx              # Landing page (Features, How it Works, Security)
 │   │   ├── layout.tsx             # Root layout
 │   │   ├── login/page.tsx         # Login page
 │   │   └── dashboard/
@@ -207,13 +220,16 @@ frontend/
 │   │       ├── data-upload/       # CSV upload + training (Hospital)
 │   │       ├── federated/         # Model participation / Network monitor
 │   │       ├── model-governance/  # Review & aggregate (Admin/SuperAdmin)
-│   │       ├── organizations/     # Hospital management
+│   │       ├── model-health/      # Model health monitoring
+│   │       ├── organizations/     # Hospital management (CRUD, edit, toggle status)
 │   │       ├── admin-management/  # Admin user management
 │   │       ├── doctor-management/ # Doctor management (Hospital)
 │   │       ├── patients/          # Patient records
 │   │       ├── predictions/       # AI predictions (Doctor)
+│   │       ├── prediction-history/# Prediction history & analytics
+│   │       ├── nlp/               # NLP clinical note analysis
+│   │       ├── anomalies/         # Anomaly detection alerts
 │   │       ├── blockchain/        # Blockchain audit trail
-│   │       ├── model-health/      # Model health monitoring
 │   │       ├── compliance/        # Compliance & security
 │   │       ├── reports/           # Reports & analytics
 │   │       ├── audit-logs/        # Audit logs
@@ -243,6 +259,7 @@ POST /api/v1/auth/login                    # Login (returns JWT tokens)
 GET  /api/v1/auth/me                       # Get current user info
 POST /api/v1/auth/register                 # Register new user
 POST /api/v1/auth/register-hospital        # Register new hospital node
+PUT  /api/v1/auth/hospitals/{hospital_id}  # Update hospital details (admin+)
 GET  /api/v1/auth/users                    # List all users (admin+)
 GET  /api/v1/auth/hospitals                # List all hospitals (admin+)
 ```
@@ -255,14 +272,16 @@ GET  /api/v1/data/uploads                 # List upload history (hospital)
 
 ### Training Lifecycle
 ```http
-POST /api/v1/training/start               # Start local training (hospital)
+POST /api/v1/training/analyze-csv          # Analyze CSV columns (hospital/admin)
+POST /api/v1/training/start                # Start local training (hospital)
+GET  /api/v1/training/training-report/{id} # Get detailed training report
 POST /api/v1/training/{id}/submit-for-review  # Submit for admin review (hospital)
-GET  /api/v1/training/my-jobs             # List own training jobs (hospital)
-GET  /api/v1/training/pending-reviews     # List pending reviews (admin+)
-POST /api/v1/training/{id}/review         # Approve/reject training (admin+)
-GET  /api/v1/training/all-jobs            # List all training jobs (admin+)
-POST /api/v1/training/aggregate           # FedAvg aggregation (super_admin)
-GET  /api/v1/training/aggregation-history # Aggregation round history (admin+)
+GET  /api/v1/training/my-jobs              # List own training jobs (hospital)
+GET  /api/v1/training/pending-reviews      # List pending reviews (admin+)
+POST /api/v1/training/{id}/review          # Approve/reject training (admin+)
+GET  /api/v1/training/all-jobs             # List all training jobs (admin+)
+POST /api/v1/training/aggregate            # FedAvg aggregation (super_admin)
+GET  /api/v1/training/aggregation-history  # Aggregation round history (admin+)
 ```
 
 ### Federated Learning
@@ -306,7 +325,7 @@ GET  /api/v1/predictions/anomalies      # Get high-risk clinical alerts
 | `hospitals` | Registered hospital nodes | id, name, contact_email, address, is_active |
 | `dataset_uploads` | CSV upload metadata | id, filename, hospital_id, record_count, sha256_hash |
 | `dataset_records` | Individual CSV rows | id, upload_id, row_index, data (JSON) |
-| `training_jobs` | Local training runs | id, hospital_id, upload_id, status, accuracy, loss, weights_hash, model_weights |
+| `training_jobs` | Local training runs | id, hospital_id, upload_id, status, epochs, accuracy, loss, weights_hash, model_weights |
 | `aggregation_rounds` | Global model aggregation | id, round_number, global_accuracy, global_loss, blockchain_tx_hash |
 | `audit_logs` | Access and action logs | id, user_id, action, resource, details, timestamp |
 
@@ -354,17 +373,36 @@ pending → training → completed → submitted → approved → aggregated
 - Patient data protection via zero-trust architecture
 
 ### AI / ML Models
+- **HealthcareMLP**: Multi-layer perceptron with configurable hidden dims [256, 128, 64, 32]
 - **LogisticRegressionMedical**: Binary disease prediction
 - **RandomForestMedical**: Multi-class disease classification
 - **DiseaseProgressionModel**: LSTM + Attention for progression prediction
 - **MedicalEnsembleModel**: Weighted ensemble of multiple models
 - **MedicalRiskAssessment**: Comprehensive patient risk scoring
 
+### Training Configuration
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `epochs` | 50 | Training epochs for local model training |
+| `learning_rate` | 0.001 | Optimizer learning rate |
+| `batch_size` | 64 | Mini-batch size |
+| `patience` | 7 | Early stopping patience |
+| `local_epochs` (federated) | 10 | Local epochs per federated round |
+| `epochs_per_round` (global) | 10 | Training epochs per aggregation round |
+| `dropout` | 0.3 | Dropout rate for regularization |
+| `hidden_dims` | [256, 128, 64, 32] | MLP hidden layer dimensions |
+
 ### Federated Aggregation
 - **Algorithm**: FedAvg (Federated Averaging)
 - **Weighting**: Proportional to each hospital's sample count
 - **Privacy**: Gaussian noise added before aggregation (DP)
 - **Validation**: Model accuracy tracked across aggregation rounds
+
+### NLP & Clinical Analysis
+- **Clinical Note Analysis**: Natural language processing of clinical notes
+- **Entity Extraction**: Automatic extraction of medical entities from text
+- **Sentiment Analysis**: Patient sentiment tracking from clinical documentation
 
 ---
 
@@ -439,10 +477,10 @@ curl http://localhost:8001/api/v1/status/metrics
 ### Frontend Dashboards
 | Dashboard | Role | Features |
 |-----------|------|----------|
-| **Super Admin** | Platform-wide view | Model governance, aggregation, organizations |
-| **Admin** | Management view | Network monitor, model review, blockchain audit |
-| **Hospital** | Operations view | Data upload, training, model participation |
-| **Doctor** | Clinical view | Patients, predictions, anomaly alerts |
+| **Super Admin** | Platform-wide view | Model governance, aggregation, organizations (CRUD), admin management |
+| **Admin** | Management view | Network monitor, model review, blockchain audit, organization editing |
+| **Hospital** | Operations view | Data upload, training (50 epochs), model participation, doctor management |
+| **Doctor** | Clinical view | Patients, predictions, anomaly alerts, NLP analysis, prediction history |
 
 ---
 
@@ -497,11 +535,17 @@ curl -X POST http://localhost:8001/api/v1/data/upload-csv \
   -H "Authorization: Bearer <token>" \
   -F "file=@data/healthcare_dataset.csv"
 
-# Start training
+# Start training (50 epochs)
 curl -X POST http://localhost:8001/api/v1/training/start \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"upload_id":"<upload_id>","epochs":3}'
+  -d '{"upload_id":"<upload_id>","epochs":50}'
+
+# Update hospital details (requires admin token)
+curl -X PUT http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Updated Hospital Name","contact_email":"new@email.com"}'
 ```
 
 ---
@@ -513,13 +557,21 @@ curl -X POST http://localhost:8001/api/v1/training/start \
 | **Authentication** | ✅ | JWT + bcrypt + RBAC |
 | **Data Persistence** | ✅ | SQLAlchemy + SQLite/PostgreSQL |
 | **CSV Upload** | ✅ | Multipart upload + SHA-256 hash |
-| **Local Training** | ✅ | Simulated PyTorch training with DP |
+| **Auto Column Detection** | ✅ | Dynamic CSV analysis & preprocessing |
+| **Local Training** | ✅ | Real PyTorch HealthcareMLP (50 epochs, early stopping) |
+| **Training Reports** | ✅ | Per-class metrics, confusion matrix, convergence history |
 | **Review Workflow** | ✅ | Submit → Approve/Reject with notes |
 | **Global Aggregation** | ✅ | FedAvg weighted averaging |
 | **Blockchain Audit** | ✅ | SHA-256 + mock blockchain (dev) |
-| **RBAC** | ✅ | 4-tier role system |
+| **RBAC** | ✅ | 4-tier role system with granular permissions |
 | **Privacy** | ✅ | Differential privacy (ε=1.0, δ=1e-5) |
+| **Organization Management** | ✅ | Full CRUD: create, edit, toggle status (admin+) |
+| **NLP Analysis** | ✅ | Clinical note analysis & entity extraction |
+| **Patient Registry** | ✅ | Vitals, symptoms, history, file uploads |
+| **AI Predictions** | ✅ | Disease prediction + anomaly detection |
+| **Prediction History** | ✅ | Full diagnostic timeline & analytics |
 | **Responsive UI** | ✅ | Next.js + Tailwind CSS |
+| **Landing Page** | ✅ | Features, How it Works, Security sections |
 
 ---
 

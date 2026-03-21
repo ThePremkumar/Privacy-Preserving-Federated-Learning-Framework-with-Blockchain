@@ -20,7 +20,9 @@ import {
   Pause,
   Play,
   ChevronRight,
-  Hospital
+  Hospital,
+  Edit,
+  Power
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
@@ -46,6 +48,7 @@ export default function OrganizationsPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingHospital, setEditingHospital] = useState<HospitalNode | null>(null);
   const [hospitals, setHospitals] = useState<HospitalNode[]>([]);
   const [newHospital, setNewHospital] = useState({ name: '', contact_email: '', address: '' });
 
@@ -69,6 +72,27 @@ export default function OrganizationsPage() {
       fetchHospitals();
     } catch (err) {
       console.error('Failed to create hospital:', err);
+    }
+  };
+
+  const handleUpdateHospital = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingHospital) return;
+    try {
+      await api.put(`/auth/hospitals/${editingHospital.id}`, editingHospital);
+      setEditingHospital(null);
+      fetchHospitals();
+    } catch (err) {
+      console.error('Failed to update hospital:', err);
+    }
+  };
+
+  const toggleHospitalStatus = async (hospital: HospitalNode) => {
+    try {
+      await api.put(`/auth/hospitals/${hospital.id}`, { is_active: !hospital.is_active });
+      fetchHospitals();
+    } catch (err) {
+      console.error('Failed to toggle status:', err);
     }
   };
 
@@ -178,21 +202,96 @@ export default function OrganizationsPage() {
                           <span className="text-xs font-bold text-slate-500">{org.contact_email}</span>
                        </td>
                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-1">
-                             <Button size="sm" variant="outline" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest border text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50">
-                               Details
+                          <div className="flex items-center gap-2">
+                             <Button 
+                               size="sm" 
+                               variant="outline" 
+                               className="h-8 w-8 p-0 border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 setEditingHospital(org);
+                               }}
+                             >
+                                <Edit size={14} />
+                             </Button>
+                             <Button 
+                               size="sm" 
+                               variant="outline" 
+                               className={cn(
+                                 "h-8 w-8 p-0 border",
+                                 org.is_active ? "text-red-500 border-red-100 hover:bg-red-50" : "text-emerald-500 border-emerald-100 hover:bg-emerald-50"
+                               )}
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 toggleHospitalStatus(org);
+                               }}
+                             >
+                                <Power size={14} />
                              </Button>
                           </div>
                        </td>
                     </tr>
                  ))}
               </tbody>
+
            </table>
            <div className="p-6 border-t border-slate-50 flex items-center justify-between">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Showing {filteredHospitals.length} organizations</p>
            </div>
         </CardContent>
       </Card>
+
+      {/* Edit Organization Modal */}
+      {editingHospital && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-blue-600 p-8 text-white relative">
+               <div className="absolute top-0 right-0 p-10 opacity-10 text-white">
+                  <Edit size={100} />
+               </div>
+               <h3 className="text-2xl font-black uppercase tracking-tighter">Edit <span className="text-blue-200">Organization</span></h3>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mt-1">Update hospital node credentials and access</p>
+            </div>
+
+            <form onSubmit={handleUpdateHospital} className="p-8 space-y-5">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Name</label>
+                  <input 
+                    required type="text" value={editingHospital.name}
+                    onChange={(e) => setEditingHospital({...editingHospital, name: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
+                  <input 
+                    required type="email" value={editingHospital.contact_email}
+                    onChange={(e) => setEditingHospital({...editingHospital, contact_email: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address</label>
+                  <input 
+                    required type="text" value={editingHospital.address}
+                    onChange={(e) => setEditingHospital({...editingHospital, address: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+               </div>
+               <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setEditingHospital(null)}
+                    className="flex-1 px-6 py-4 rounded-xl bg-white border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+                    Cancel
+                  </button>
+                  <button type="submit"
+                    className="flex-1 px-6 py-4 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-200">
+                    Save Changes
+                  </button>
+               </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add Organization Modal */}
       {showAddModal && (
