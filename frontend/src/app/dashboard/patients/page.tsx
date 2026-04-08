@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Users, 
   Search, 
@@ -14,7 +15,6 @@ import {
   Calendar,
   Clock,
   ArrowUpRight,
-  MoreVertical,
   UploadCloud,
   CheckCircle2,
   XCircle,
@@ -34,11 +34,11 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export default function PatientsPage() {
+  const router = useRouter();
   const [patients, setPatients] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   
   // New Patient Form State
   const [newPatient, setNewPatient] = useState({
@@ -81,7 +81,6 @@ export default function PatientsPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // 1. Create Patient Record
       const res = await api.post('/patients/', {
         ...newPatient,
         age: parseInt(newPatient.age),
@@ -92,7 +91,6 @@ export default function PatientsPage() {
       
       const patientId = res.data.id;
 
-      // 2. Upload Report if exists
       if (reportFile) {
         const reportData = new FormData();
         reportData.append('file', reportFile);
@@ -101,7 +99,6 @@ export default function PatientsPage() {
         });
       }
 
-      // 3. Upload Dataset if exists (Integrated with Federated Learning data pipeline)
       if (datasetFile) {
         const datasetData = new FormData();
         datasetData.append('file', datasetFile);
@@ -133,31 +130,27 @@ export default function PatientsPage() {
     (p.patient_id_manual && p.patient_id_manual.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const handleViewPatient = (id: string) => {
+    router.push(`/dashboard/patients/${id}`);
+  };
+
   const handleGenerateReport = (id: string) => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 2000);
+    router.push('/dashboard/clinical-reports');
+  };
+
+  const handleDeletePatient = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete ${name}'s record?`)) return;
+    try {
+      await api.delete(`/patients/${id}`);
+      fetchPatients();
+    } catch (err) {
+      alert('Failed to delete patient');
+    }
   };
 
   return (
     <RoleGuard allowedRoles={['doctor']}>
     <div className="space-y-10 relative">
-      {/* Generating Overlay */}
-      {isGenerating && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md">
-           <Card className="w-96 p-10 flex flex-col items-center gap-6 border-none shadow-2xl animate-in zoom-in-95 duration-300">
-              <div className="relative">
-                 <div className="h-20 w-20 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
-                 <FileText className="absolute inset-0 m-auto text-blue-600" size={32} />
-              </div>
-              <div className="text-center space-y-2">
-                 <h4 className="text-xl font-black italic">Generating <span className="text-blue-600 underline">Clinical Report</span></h4>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed text-center">Aggregating predictive weights and patient history...</p>
-              </div>
-           </Card>
-        </div>
-      )}
 
       {/* Add Patient Modal */}
       {showAddModal && (
@@ -294,7 +287,7 @@ export default function PatientsPage() {
         {[
           { label: 'Total Patients', value: isLoading ? '...' : patients.length.toString(), icon: Users, color: 'text-slate-900', bg: 'bg-white' },
           { label: 'Consent Approved', value: patients.length > 0 ? patients.length.toString() : '—', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Risk Flags', value: '0', icon: ShieldQuestion, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Risk Flags', value: patients.filter(p => (p.medical_history?.length || 0) > 3).length.toString(), icon: ShieldQuestion, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Privacy Active', value: 'YES', icon: ShieldAlert, color: 'text-blue-600', bg: 'bg-blue-50' },
         ].map((stat, i) => (
           <Card key={i} className={cn("border-none shadow-xl shadow-slate-100/50 p-6", stat.bg)}>
@@ -351,7 +344,7 @@ export default function PatientsPage() {
                     <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-400 font-bold">No patients matching criteria.</td></tr>
                  ) : (
                   filteredPatients.map(patient => (
-                    <tr key={patient._id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                    <tr key={patient._id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => handleViewPatient(patient._id)}>
                        <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
                              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 font-black italic">
@@ -388,9 +381,9 @@ export default function PatientsPage() {
                        <td className="px-8 py-6">
                           <div className={cn(
                              "text-[10px] font-black uppercase tracking-widest",
-                             patient.medical_history?.length > 2 ? "text-amber-600" : "text-emerald-500"
+                             (patient.medical_history?.length || 0) > 3 ? "text-red-600" : patient.medical_history?.length > 1 ? "text-amber-600" : "text-emerald-500"
                           )}>
-                             {patient.medical_history?.length > 2 ? "Moderate" : "Low"} Risk Profile
+                             {(patient.medical_history?.length || 0) > 3 ? "High" : patient.medical_history?.length > 1 ? "Moderate" : "Low"} Risk
                           </div>
                        </td>
                        <td className="px-8 py-6">
@@ -399,20 +392,33 @@ export default function PatientsPage() {
                           </div>
                        </td>
                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                              <Button 
                                 size="icon" 
                                 variant="ghost" 
                                 className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
+                                title="Generate Report"
                                 onClick={(e) => { e.stopPropagation(); handleGenerateReport(patient._id); }}
                              >
                                 <FileText size={18} />
                              </Button>
-                             <Button size="icon" variant="ghost" className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50">
-                                <ShieldCheck size={18} />
+                             <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
+                                title="View Details"
+                                onClick={(e) => { e.stopPropagation(); handleViewPatient(patient._id); }}
+                             >
+                                <ChevronRight size={18} />
                              </Button>
-                             <Button size="icon" variant="ghost" className="h-9 w-9 text-slate-300 hover:text-red-500 hover:bg-red-50">
-                                <MoreVertical size={18} />
+                             <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-9 w-9 text-slate-300 hover:text-red-500 hover:bg-red-50"
+                                title="Delete"
+                                onClick={(e) => { e.stopPropagation(); handleDeletePatient(patient._id, patient.name); }}
+                             >
+                                <XCircle size={18} />
                              </Button>
                           </div>
                        </td>
@@ -425,7 +431,7 @@ export default function PatientsPage() {
         </CardContent>
       </Card>
       
-      {/* Sovereignty Info remains same but text updated for consistency */}
+      {/* Bottom Info Cards */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 pb-10">
         <Card className="border-none shadow-2xl shadow-slate-100 bg-slate-900 text-white p-8 overflow-hidden relative">
            <div className="absolute top-0 right-0 p-12 text-blue-600/10 transform translate-x-1/4 -translate-y-1/4">
@@ -433,7 +439,7 @@ export default function PatientsPage() {
            </div>
            <div className="relative space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-blue-600/30">
-                 HIPA Shield Active
+                 HIPAA Shield Active
               </div>
               <h3 className="text-3xl font-black italic">Universal <span className="text-blue-500">Clinical Data</span></h3>
               <p className="text-white/50 text-base font-medium leading-relaxed max-w-md">

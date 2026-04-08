@@ -161,16 +161,17 @@ const doctorNav: NavSection[] = [
     ]
   },
   {
-    title: 'Clinical',
+    title: 'Patient Care',
     items: [
       { name: 'My Patients', icon: Users, href: '/dashboard/patients' },
-      { name: 'New Prediction', icon: PlusCircle, href: '/dashboard/predictions' },
-      { name: 'Prediction History', icon: History, href: '/dashboard/prediction-history' },
+      { name: 'Clinical Reports', icon: ClipboardList, href: '/dashboard/clinical-reports' },
     ]
   },
   {
-    title: 'Intelligence',
+    title: 'AI Diagnostics',
     items: [
+      { name: 'New Prediction', icon: PlusCircle, href: '/dashboard/predictions' },
+      { name: 'Prediction History', icon: History, href: '/dashboard/prediction-history' },
       { name: 'Anomaly Alerts', icon: AlertTriangle, href: '/dashboard/anomalies', badge: '4' },
       { name: 'NLP Insights', icon: FileSearch, href: '/dashboard/nlp' },
     ]
