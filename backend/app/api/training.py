@@ -142,39 +142,32 @@ async def analyze_csv(
 # Hospital: start REAL training
 # ===========================================================================
 
-@router.post("/start", response_model=TrainingJobResponse, status_code=status.HTTP_201_CREATED)
-async def start_training(
-    req: StartTrainingRequest,
-    current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
-):
-    """
-    Hospital node starts local model training on an uploaded dataset.
-    This performs REAL ML training using the HealthcareMLP model on
-    all detected CSV columns.
-    """
-    hospital_id = current_user.get("hospital_id", "unknown")
-    user_id = current_user.get("user_id", "unknown")
+from fastapi import BackgroundTasks
 
+def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_id: str, batch_size: int, epochs: int, patience: int, learning_rate: float):
+    """Background task to run the actual training."""
     db = SessionLocal()
     try:
-        # Verify that the upload exists and belongs to this hospital
-        upload = db.query(DatasetUpload).filter(DatasetUpload.id == req.upload_id).first()
-        if not upload:
-            raise HTTPException(status_code=404, detail="Dataset upload not found.")
-        if upload.hospital_id != hospital_id:
-            raise HTTPException(status_code=403, detail="This dataset does not belong to your hospital.")
+        job = db.query(TrainingJob).filter(TrainingJob.id == job_id).first()
+        upload = db.query(DatasetUpload).filter(DatasetUpload.id == upload_id).first()
+        
+        if not job or not upload:
+            return
 
-        job_id = str(uuid.uuid4())
-        started_at = datetime.utcnow()
+        job.status = "training"
+        db.commit()
 
-        logger.info(f"Starting REAL training: job={job_id} hospital={hospital_id} upload={req.upload_id}")
+        logger.info(f"Background Task: Starting REAL training for job={job_id}")
 
         # ── 1. Reconstruct DataFrame from stored records ──────────────────
-        df = _reconstruct_dataframe(db, req.upload_id, upload)
+        df = _reconstruct_dataframe(db, upload_id, upload)
         num_samples = len(df)
 
         if num_samples == 0:
-            raise HTTPException(status_code=400, detail="Dataset has no records.")
+            job.status = "failed"
+            job.review_notes = "Dataset has no records."
+            db.commit()
+            return
 
         # ── 2. Detect columns & preprocess ────────────────────────────────
         processor = HealthcareDataProcessor()
@@ -192,7 +185,7 @@ async def start_training(
             X, y,
             test_size=0.2,
             val_size=0.1,
-            batch_size=req.batch_size,
+            batch_size=batch_size,
         )
 
         # ── 4. Build model ────────────────────────────────────────────────
@@ -207,19 +200,17 @@ async def start_training(
         )
         param_count = sum(p.numel() for p in model.parameters())
 
-        logger.info(f"Model: HealthcareMLP | Params: {param_count:,} | Device: {device}")
-
         # ── 5. Train ──────────────────────────────────────────────────────
         trainer = HealthcareTrainer(
             model=model,
             device=device,
-            learning_rate=req.learning_rate,
+            learning_rate=learning_rate,
         )
         history = trainer.train(
             train_loader=loaders["train"],
             val_loader=loaders["val"],
-            epochs=req.epochs,
-            patience=req.patience,
+            epochs=epochs,
+            patience=patience,
         )
 
         # ── 6. Evaluate on test set ───────────────────────────────────────
@@ -233,32 +224,20 @@ async def start_training(
         weights_json = json.dumps(weights_list, separators=(",", ":"))
         weights_hash = hashlib.sha256(weights_json.encode()).hexdigest()
 
-        final_accuracy = test_results["test_accuracy"] / 100.0  # store as 0-1
+        final_accuracy = test_results["test_accuracy"] / 100.0
         final_loss = test_results["test_loss"]
         completed_at = datetime.utcnow()
 
-        # ── 8. Save training job to DB ────────────────────────────────────
-        job = TrainingJob(
-            id=job_id,
-            hospital_id=hospital_id,
-            upload_id=req.upload_id,
-            started_by=user_id,
-            status="completed",
-            epochs=len(history),
-            learning_rate=str(req.learning_rate),
-            accuracy=f"{final_accuracy:.4f}",
-            loss=f"{final_loss:.4f}",
-            num_samples=num_samples,
-            weights_hash=weights_hash,
-            model_weights=weights_json,
-            epsilon_used="1.0",
-            delta_used="1e-5",
-            started_at=started_at,
-            completed_at=completed_at,
-        )
-        db.add(job)
+        # ── 8. Update training job ────────────────────────────────────
+        job.status = "completed"
+        job.epochs = len(history)
+        job.accuracy = f"{final_accuracy:.4f}"
+        job.loss = f"{final_loss:.4f}"
+        job.num_samples = num_samples
+        job.weights_hash = weights_hash
+        job.model_weights = weights_json
+        job.completed_at = completed_at
         db.commit()
-        db.refresh(job)
 
         # ── 9. Store detailed report in memory ────────────────────────────
         _training_reports[job_id] = {
@@ -280,30 +259,112 @@ async def start_training(
             },
             "training": {
                 "epochs_completed": len(history),
-                "batch_size": req.batch_size,
-                "learning_rate": req.learning_rate,
-                "patience": req.patience,
+                "batch_size": batch_size,
+                "learning_rate": learning_rate,
+                "patience": patience,
                 "best_val_accuracy": round(trainer.best_val_acc, 2),
                 "history": history,
             },
             "test_results": test_results,
             "weights_hash": weights_hash,
-            "started_at": started_at.isoformat(),
+            "started_at": job.started_at.isoformat(),
             "completed_at": completed_at.isoformat(),
         }
 
-        logger.info(
-            f"Training completed: job={job_id} hospital={hospital_id} "
-            f"acc={final_accuracy:.4f} loss={final_loss:.4f} "
-            f"epochs={len(history)} samples={num_samples}"
+        # Create notification
+        try:
+            from app.api.websockets import manager
+            from app.core.db_models import Notification
+            import asyncio
+            
+            notif = Notification(
+                user_id=user_id,
+                type="success",
+                title="Training Completed",
+                message=f"Model training on {num_samples} samples finished with {final_accuracy*100:.1f}% accuracy."
+            )
+            db.add(notif)
+            db.commit()
+            db.refresh(notif)
+            
+            # Use asyncio to run the broadcast
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(manager.send_personal_message({
+                        "id": notif.id,
+                        "type": notif.type,
+                        "title": notif.title,
+                        "message": notif.message,
+                        "is_read": False,
+                        "created_at": notif.created_at.isoformat() if notif.created_at else None
+                    }, user_id))
+            except RuntimeError:
+                pass
+        except Exception as e:
+            logger.error(f"Error creating notification: {e}")
+
+        logger.info(f"Training completed: job={job_id}")
+
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"Background training error: {exc}", exc_info=True)
+        if 'job' in locals() and job:
+            job.status = "failed"
+            job.review_notes = str(exc)
+            db.commit()
+    finally:
+        db.close()
+
+
+@router.post("/start", response_model=TrainingJobResponse, status_code=status.HTTP_201_CREATED)
+async def start_training(
+    req: StartTrainingRequest,
+    background_tasks: BackgroundTasks,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
+):
+    """
+    Hospital node starts local model training asynchronously.
+    """
+    hospital_id = current_user.get("hospital_id", "unknown")
+    user_id = current_user.get("user_id", "unknown")
+
+    db = SessionLocal()
+    try:
+        upload = db.query(DatasetUpload).filter(DatasetUpload.id == req.upload_id).first()
+        if not upload:
+            raise HTTPException(status_code=404, detail="Dataset upload not found.")
+        if upload.hospital_id != hospital_id:
+            raise HTTPException(status_code=403, detail="This dataset does not belong to your hospital.")
+
+        job_id = str(uuid.uuid4())
+        started_at = datetime.utcnow()
+
+        job = TrainingJob(
+            id=job_id,
+            hospital_id=hospital_id,
+            upload_id=req.upload_id,
+            started_by=user_id,
+            status="pending",
+            epochs=req.epochs,
+            learning_rate=str(req.learning_rate),
+            num_samples=0,
+            epsilon_used="1.0",
+            delta_used="1e-5",
+            started_at=started_at,
         )
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+
+        background_tasks.add_task(run_training_task, job_id, req.upload_id, hospital_id, user_id, req.batch_size, req.epochs, req.patience, req.learning_rate)
+
         return _job_to_response(job)
 
     except HTTPException:
         raise
     except Exception as exc:
         db.rollback()
-        logger.error(f"start_training error: {exc}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(exc))
     finally:
         db.close()

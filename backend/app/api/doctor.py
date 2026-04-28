@@ -132,6 +132,39 @@ async def get_doctor_patients(current_user: Dict[str, Any] = Depends(require_rol
     patients = await patient_repo.find_many({"hospital_id": hospital_id})
     return patients
 
+# New: List all doctors (admin/super_admin access)
+@router.get("/doctors")
+async def list_doctors(limit: int = 100, offset: int = 0, current_user: Dict[str, Any] = Depends(require_role(["admin", "super_admin"]))):
+    """Retrieve paginated list of all doctors across hospitals."""
+    from app.core.dependencies import auth_service
+    result = auth_service.get_all_doctors(limit=limit, offset=offset)
+    return result
+
+# New: Get doctor details by user ID
+@router.get("/doctors/{doctor_id}")
+async def get_doctor_detail(doctor_id: str, current_user: Dict[str, Any] = Depends(require_role(["admin", "super_admin"]))):
+    """Fetch a specific doctor's profile and assigned hospital."""
+    from app.core.dependencies import auth_service
+    doctor = auth_service.get_user_by_id(doctor_id)
+    if not doctor or doctor.role != UserRole.DOCTOR:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    return doctor
+
+# New: Deactivate a doctor (admin/super_admin)
+@router.delete("/doctors/{doctor_id}")
+async def deactivate_doctor(doctor_id: str, current_user: Dict[str, Any] = Depends(require_role(["admin", "super_admin"]))):
+    """Deactivate a doctor account."""
+    from app.core.dependencies import auth_service
+    # Retrieve username via user ID
+    doctor = auth_service.get_user_by_id(doctor_id)
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+    success = auth_service.deactivate_user(doctor.username)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to deactivate")
+    return {"status": "deactivated"}
+
+
 
 @router.get("/patient/{patient_id}/timeline")
 async def get_patient_timeline(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):

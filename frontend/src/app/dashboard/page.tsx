@@ -473,91 +473,178 @@ function DoctorDashboard() {
 
   if (isLoading) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
-  const s = summary || { total_patients: 0, anomaly_count: 0, active_predictions: 0, latest_accuracy: '0.00', recent_activity: [] };
+  const s = summary || { total_patients: 0, anomaly_count: 0, active_predictions: 0, latest_accuracy: '0.00', recent_activity: [], recent_patients: [], risk_distribution: { low: 0, moderate: 0, high: 0 }, total_reports: 0 };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.1]">
-            Clinical <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
+          <h1 className="text-3xl font-black text-slate-900">
+            Clinical <span className="gradient-text">Intelligence.</span>
           </h1>
-          <p className="mt-3 text-sm font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Calendar size={16} className="text-blue-600" /> Medical Practitioner Portal
+          <p className="mt-1 text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Calendar size={14} className="text-blue-700" /> Medical Practitioner Portal
           </p>
         </div>
         <div className="flex gap-3">
           <Link href="/dashboard/patients">
-            <Button variant="outline" className="h-12 px-6 border-2 font-black border-slate-200">Patient List</Button>
+            <Button variant="outline" className="h-10 px-5 text-xs border-2 font-black border-slate-200">Patient List</Button>
           </Link>
-          <Link href="/dashboard/data-upload">
-            <Button className="h-12 px-8 shadow-xl shadow-blue-200">Add Patient Data <Plus size={18} className="ml-2" /></Button>
+          <Link href="/dashboard/predictions">
+            <Button className="h-10 px-6 text-xs bg-blue-700 text-white shadow-lg shadow-blue-200 hover:bg-blue-800">Run Prediction <Zap size={14} className="ml-2" /></Button>
           </Link>
         </div>
       </div>
 
       {/* Doctor Stats */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Patients" value={s.total_patients.toString()} icon={Users} trend="Active records" color="blue" />
         <StatCard label="Critical Anomalies" value={s.anomaly_count.toString()} icon={AlertTriangle} trend="Immediate attention" color={s.anomaly_count > 0 ? 'red' : 'emerald'} />
         <StatCard label="AI Predictions" value={s.active_predictions.toString()} icon={BrainCircuit} trend="Recent analyses" color="purple" />
-        <StatCard label="Global Model Acc" value={`${(parseFloat(s.latest_accuracy) * 100).toFixed(1)}%`} icon={ShieldCheck} trend="Health record AI" color="emerald" />
+        <StatCard label="Clinical Reports" value={String(s.total_reports || 0)} icon={ShieldCheck} trend="AI-generated" color="emerald" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Recent Activity */}
-        <Card className="lg:col-span-8 border-none shadow-2xl shadow-slate-100">
-          <CardHeader className="border-b border-slate-50 pb-5">
-            <CardTitle className="text-xl font-black">Recent <span className="text-blue-600">Clinical Activity</span></CardTitle>
-            <CardDescription className="text-sm font-bold text-slate-400">Latest AI predictions and clinical notes</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-50">
-              {s.recent_activity.length === 0 ? (
-                <div className="p-12 text-center text-slate-400 font-bold">
-                  <Activity size={40} className="mx-auto text-slate-200 mb-3" />
-                  No recent activity found.
-                </div>
-              ) : (
-                s.recent_activity.map((act: any) => (
-                  <div key={act.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={cn("p-2 rounded-lg", act.type === 'nlp_analysis' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600')}>
-                        {act.type === 'nlp_analysis' ? <FileSearch size={18} /> : <BrainCircuit size={18} />}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Recent Activity + Patients */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Recent Patients with Risk */}
+          <Card className="glass-card border-none shadow-xl">
+            <CardHeader className="border-b border-slate-50 pb-4 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-black">Recent <span className="text-blue-700">Patients</span></CardTitle>
+                <CardDescription className="text-xs font-bold text-slate-400 mt-1">Latest registered patients with AI risk assessment</CardDescription>
+              </div>
+              <Link href="/dashboard/patients">
+                <Button size="sm" variant="outline" className="h-8 text-[10px] font-black uppercase tracking-widest border-2">View All</Button>
+              </Link>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-50">
+                {!s.recent_patients || s.recent_patients.length === 0 ? (
+                  <div className="p-10 text-center">
+                    <Users size={32} className="mx-auto text-slate-200 mb-3" />
+                    <p className="text-xs font-bold text-slate-400">No patients yet</p>
+                    <Link href="/dashboard/patients" className="inline-block mt-3 px-4 py-2 bg-blue-700 text-white text-xs font-black rounded-xl hover:bg-blue-800 transition-all shadow-lg shadow-blue-200">Register First Patient →</Link>
+                  </div>
+                ) : (
+                  s.recent_patients.slice(0, 5).map((p: any) => (
+                    <div key={p.id} className="px-6 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 text-sm font-black shadow-sm group-hover:scale-110 transition-transform">
+                          {p.name?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-slate-900 group-hover:text-blue-700 transition-colors">{p.name}</p>
+                          <p className="text-[10px] font-bold text-slate-400">{p.age}y · {p.gender}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-black text-slate-900 capitalize">{act.type.replace('_', ' ')}</p>
-                        <p className="text-[10px] font-bold text-slate-400">Patient ID: {act.patient_id}</p>
+                      <span className={cn(
+                        'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border',
+                        p.risk === 'High' ? 'bg-red-50 text-red-700 border-red-200' :
+                        p.risk === 'Moderate' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        'bg-teal-50 text-teal-700 border-teal-200'
+                      )}>
+                        {p.risk || 'Low'} Risk
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="glass-card border-none shadow-xl">
+            <CardHeader className="border-b border-slate-50 pb-4">
+              <CardTitle className="text-lg font-black">Recent <span className="text-blue-700">Clinical Activity</span></CardTitle>
+              <CardDescription className="text-xs font-bold text-slate-400 mt-1">Latest AI predictions and clinical notes</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-50">
+                {s.recent_activity.length === 0 ? (
+                  <div className="p-10 text-center text-slate-400 font-bold">
+                    <Activity size={32} className="mx-auto text-slate-200 mb-3" />
+                    <p className="text-xs">No recent activity found.</p>
+                    <p className="text-[10px] mt-1 text-slate-300">Run your first AI prediction to see activity here</p>
+                  </div>
+                ) : (
+                  s.recent_activity.map((act: any) => (
+                    <div key={act.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("p-2 rounded-xl", act.type === 'nlp_analysis' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700')}>
+                          {act.type === 'nlp_analysis' ? <FileSearch size={14} /> : <BrainCircuit size={14} />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-slate-900 capitalize">{act.type?.replace('_', ' ')}</p>
+                          <p className="text-[10px] font-bold text-slate-400">
+                            {act.patient_name || `Patient ${act.patient_id?.slice(0, 8)}…`}
+                            {act.prediction ? ` · ${act.prediction}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {act.risk_score > 0 && (
+                          <p className={cn("text-[10px] font-black", act.risk_score > 7 ? 'text-red-600' : act.risk_score > 4 ? 'text-amber-600' : 'text-teal-600')}>
+                            Risk: {act.risk_score.toFixed(1)}
+                          </p>
+                        )}
+                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{new Date(act.timestamp).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <p className="text-[10px] font-black italic text-slate-400 uppercase tracking-tighter">
-                      {new Date(act.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="bg-slate-50/30 p-4">
-             <Link href="/dashboard/predictions" className="w-full">
-               <Button variant="ghost" className="w-full font-black text-xs uppercase tracking-widest text-slate-400 hover:text-blue-600">View All Predictions <ArrowRight size={14} className="ml-2" /></Button>
-             </Link>
-          </CardFooter>
-        </Card>
+                  ))
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="bg-slate-50/50 p-3">
+              <Link href="/dashboard/predictions" className="w-full">
+                <Button variant="ghost" className="w-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-blue-700 hover:bg-white h-8">View All Predictions <ArrowRight size={12} className="ml-1.5" /></Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
 
-        {/* Quick Actions */}
-        <div className="lg:col-span-4 space-y-6">
-          <QuickAction href="/dashboard/predictions" icon={Zap} title="Run Prediction" desc="Classify disease from metrics" color="blue" />
-          <QuickAction href="/dashboard/anomalies" icon={AlertTriangle} title="Anomaly Detection" desc="View flagged high-risk patients" color="emerald" />
-          <QuickAction href="/dashboard/nlp" icon={BrainCircuit} title="NLP Analysis" desc="Analyze medical notes & summaries" color="purple" />
-          
-          <Card className="border-none shadow-2xl shadow-slate-100 bg-blue-600 text-white p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12"><Stethoscope size={80} /></div>
+        {/* Quick Actions & Overview */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Risk Distribution mini card */}
+          <Card className="glass-card border-none shadow-xl">
+            <CardHeader className="border-b border-slate-50 pb-3">
+              <CardTitle className="text-sm font-black">Patient Risk <span className="text-blue-700">Overview</span></CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3.5">
+              {[
+                { label: 'Low Risk',      value: s.risk_distribution?.low || 0,      color: '#10b981' },
+                { label: 'Moderate Risk', value: s.risk_distribution?.moderate || 0, color: '#f59e0b' },
+                { label: 'High Risk',     value: s.risk_distribution?.high || 0,     color: '#ef4444' },
+              ].map(item => {
+                const total = (s.risk_distribution?.low || 0) + (s.risk_distribution?.moderate || 0) + (s.risk_distribution?.high || 0) || 1;
+                const pct = Math.round((item.value / total) * 100);
+                return (
+                  <div key={item.label}>
+                    <div className="flex justify-between text-[10px] font-black text-slate-500 mb-1.5">
+                      <span>{item.label}</span>
+                      <span>{item.value} patients ({pct}%)</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div className="progress-bar-fill" style={{ width: `${pct}%`, background: item.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <QuickAction href="/dashboard/patients" icon={Users} title="My Patients" desc="View & manage patient registry" color="blue" />
+          <QuickAction href="/dashboard/clinical-reports" icon={FileSearch} title="Clinical Reports" desc="Generate AI-enhanced reports" color="purple" />
+          <QuickAction href="/dashboard/anomalies" icon={AlertTriangle} title="Anomaly Alerts" desc={`${s.anomaly_count} high-risk patients`} color="emerald" />
+          <QuickAction href="/dashboard/analytics" icon={BarChart3} title="Clinical Analytics" desc="Outcomes & prediction trends" color="blue" />
+
+          <Card className="border-none shadow-xl shadow-blue-200 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 rotate-12"><Stethoscope size={70} /></div>
             <div className="relative z-10">
-              <h3 className="font-black italic text-lg leading-tight mb-2">Federated<br/>Contribution</h3>
-              <p className="text-[10px] font-medium text-blue-100 mb-4">Your clinical decisions contribute to the global model's accuracy through anonymized local updates.</p>
+              <h3 className="font-black italic text-base leading-tight mb-2">Federated<br/>Contribution</h3>
+              <p className="text-[10px] font-medium text-blue-100 mb-4 leading-relaxed max-w-[85%]">Your clinical decisions feed into anonymized federated training, improving global AI model accuracy.</p>
               <Link href="/dashboard/federated">
-                <Button size="sm" className="bg-white text-blue-600 hover:bg-blue-50 font-black text-[10px] h-8 shadow-none border-none">Node Status</Button>
+                <Button size="sm" className="bg-white text-blue-700 hover:bg-blue-50 font-black text-[10px] h-7 shadow-none border-none uppercase tracking-widest px-4">Node Status</Button>
               </Link>
             </div>
           </Card>

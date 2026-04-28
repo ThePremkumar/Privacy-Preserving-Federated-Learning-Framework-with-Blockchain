@@ -2,115 +2,349 @@
 
 :root {
   /* Medical Premium Color Palette */
-  --primary: #0f172a;
+  --primary: #0F4C81;
+  --primary-light: #1565a8;
   --primary-foreground: #f8fafc;
-  --secondary: #3b82f6;
+  --secondary: #0D9488;
+  --secondary-light: #14b8a6;
   --secondary-foreground: #ffffff;
-  --accent: #10b981;
+  --accent: #0D9488;
   --accent-foreground: #ffffff;
-  --background: #ffffff;
-  --foreground: #020617;
-  --card: #f8fafc;
-  --card-foreground: #020617;
-  --popover: #ffffff;
-  --popover-foreground: #020617;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #94a3b8;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #3b82f6;
+  --ring: #0F4C81;
   --radius: 0.75rem;
-  
-  /* Healthcare Specific Colors */
+
+  /* Healthcare Semantic Colors */
   --health-green: #10b981;
-  --health-blue: #3b82f6;
+  --health-teal: #0D9488;
+  --health-blue: #0F4C81;
+  --health-blue-mid: #3b82f6;
   --health-red: #ef4444;
   --health-orange: #f59e0b;
-}
+  --health-purple: #8b5cf6;
+  --health-indigo: #6366f1;
 
-.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #020617;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #020617;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #334155;
+  /* Risk Levels */
+  --risk-low: #10b981;
+  --risk-moderate: #f59e0b;
+  --risk-high: #ef4444;
+  --risk-critical: #7f1d1d;
+
+  /* Sidebar */
+  --sidebar-width: 264px;
+  --sidebar-collapsed: 76px;
+  --topbar-height: 68px;
 }
 
 @theme {
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-surface: var(--surface);
   --color-health-green: var(--health-green);
+  --color-health-teal: var(--health-teal);
   --color-health-blue: var(--health-blue);
+  --color-health-blue-mid: var(--health-blue-mid);
   --color-health-red: var(--health-red);
   --color-health-orange: var(--health-orange);
+  --color-health-purple: var(--health-purple);
+  --color-risk-low: var(--risk-low);
+  --color-risk-moderate: var(--risk-moderate);
+  --color-risk-high: var(--risk-high);
+  --color-risk-critical: var(--risk-critical);
 }
 
+/* ─── Base ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--foreground);
+  font-feature-settings: "cv02","cv03","cv04","cv11";
 }
 
-/* Custom Utilities */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius);
+/* ─── Glassmorphism ─────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.glass-dark {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 24px -4px rgba(15, 76, 129, 0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ─── Gradient Text ─────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #3b82f6, #10b981);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Custom Animations */
+.gradient-text-warm {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Medical Grade Gradients ───────────────── */
+.bg-medical-gradient { background: linear-gradient(135deg, #0F4C81 0%, #0D9488 100%); }
+.bg-medical-gradient-soft { background: linear-gradient(135deg, #eff6ff 0%, #f0fdfa 100%); }
+.bg-danger-gradient { background: linear-gradient(135deg, #fee2e2 0%, #fef9c3 100%); }
+
+/* ─── KPI Cards ─────────────────────────────── */
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -8px rgba(15, 76, 129, 0.15);
+}
+
+/* ─── Risk Colors ───────────────────────────── */
+.risk-low     { color: var(--risk-low);      background: #dcfce7; }
+.risk-moderate { color: var(--risk-moderate); background: #fef9c3; }
+.risk-high    { color: var(--risk-high);     background: #fee2e2; }
+.risk-critical { color: var(--risk-critical); background: #fecaca; }
+
+/* ─── Status Badges ─────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+/* ─── Animations ────────────────────────────── */
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
+  0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slide-in-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .animate-shimmer {
   position: relative;
   overflow: hidden;
 }
-
 .animate-shimmer::after {
-  content: "";
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
   animation: shimmer 2s infinite;
 }
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.animate-float       { animation: float 3s ease-in-out infinite; }
+.animate-spin-slow   { animation: spin-slow 8s linear infinite; }
+.animate-slide-right { animation: slide-in-right 0.3s ease-out; }
+.animate-slide-up    { animation: slide-in-up 0.3s ease-out; }
+.animate-fade-in     { animation: fade-in 0.4s ease-out; }
+.animate-count-up    { animation: count-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─── Skeleton Loaders ──────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
 }
 
-.animate-spin-slow {
-  animation: spin-slow 8s linear infinite;
+/* ─── Custom Scrollbar ──────────────────────── */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Table Enhancements ────────────────────── */
+.medical-table tbody tr:nth-child(even) { background: #f8fafc; }
+.medical-table tbody tr:hover           { background: #eff6ff; cursor: pointer; }
+.medical-table thead th {
+  background: #f1f5f9;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 10px 16px;
+}
+.medical-table tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
+
+/* ─── Toast Notifications ───────────────────── */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: all;
+  min-width: 300px;
+  max-width: 400px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px -8px rgba(0,0,0,0.15);
+  border: 1px solid #e2e8f0;
+  animation: slide-in-right 0.3s ease-out;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* ─── Progress Bar ──────────────────────────── */
+.progress-bar { height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+/* ─── Live Indicator ────────────────────────── */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #10b981;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* ─── Command Palette ───────────────────────── */
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9998;
+  animation: fade-in 0.15s ease-out;
+}
+.cmd-palette {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(640px, 90vw);
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 40px 80px -12px rgba(0,0,0,0.25);
+  z-index: 9999;
+  animation: slide-in-up 0.2s ease-out;
+  overflow: hidden;
+}
+
+/* ─── Mobile Bottom Nav ─────────────────────── */
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid #e2e8f0;
+    padding: 8px 16px 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  .desktop-sidebar { display: none !important; }
+  main { padding-bottom: 90px !important; }
+}
+@media (min-width: 768px) {
+  .mobile-bottom-nav { display: none !important; }
+}
+
+/* ─── Recharts Tooltip ──────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 20px 40px -8px rgba(0,0,0,0.1) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* ─── Focus Ring ────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

@@ -496,39 +496,65 @@ class AuthenticationService:
         finally:
             db.close()
 
-    def get_all_hospitals(self) -> List[Hospital]:
+    def get_all_hospitals(self, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """Retrieve hospitals with pagination.
+        Returns a dict with total count and list of hospitals.
+        """
         from app.core.db_models import Hospital as DBHospital
         db = self._get_db()
         try:
-            rows = db.query(DBHospital).all()
-            return [_db_hospital_to_dataclass(r) for r in rows]
+            total = db.query(DBHospital).count()
+            rows = db.query(DBHospital).offset(offset).limit(limit).all()
+            hospitals = [_db_hospital_to_dataclass(r) for r in rows]
+            return {"total": total, "items": hospitals}
         finally:
             db.close()
 
-    def get_all_users(self) -> List[User]:
+    def get_all_users(self, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """Retrieve users with pagination.
+        Returns a dict containing total count and list of user dataclasses.
+        """
         from app.core.db_models import User as DBUser
         db = self._get_db()
         try:
-            rows = db.query(DBUser).all()
-            return [_db_user_to_dataclass(r) for r in rows]
+            total = db.query(DBUser).count()
+            rows = db.query(DBUser).offset(offset).limit(limit).all()
+            users = [_db_user_to_dataclass(r) for r in rows]
+            return {"total": total, "items": users}
         finally:
             db.close()
 
-    def get_users_by_role(self, role: UserRole) -> List[User]:
+    def get_all_doctors(self, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """Retrieve doctors (users with role DOCTOR) with pagination."""
+        return self.get_users_by_role(UserRole.DOCTOR, limit=limit, offset=offset)
+
+    def get_users_by_role(self, role: UserRole, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """Retrieve users filtered by role with pagination.
+        Returns total and items.
+        """
         from app.core.db_models import User as DBUser, UserRole as DBUserRole
         db = self._get_db()
         try:
-            rows = db.query(DBUser).filter(DBUser.role == DBUserRole(role.value)).all()
-            return [_db_user_to_dataclass(r) for r in rows]
+            query = db.query(DBUser).filter(DBUser.role == DBUserRole(role.value))
+            total = query.count()
+            rows = query.offset(offset).limit(limit).all()
+            users = [_db_user_to_dataclass(r) for r in rows]
+            return {"total": total, "items": users}
         finally:
             db.close()
 
-    def get_users_by_hospital(self, hospital_id: str) -> List[User]:
+    def get_users_by_hospital(self, hospital_id: str, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+        """Retrieve users belonging to a specific hospital with pagination.
+        Returns total and items.
+        """
         from app.core.db_models import User as DBUser
         db = self._get_db()
         try:
-            rows = db.query(DBUser).filter(DBUser.hospital_id == hospital_id).all()
-            return [_db_user_to_dataclass(r) for r in rows]
+            query = db.query(DBUser).filter(DBUser.hospital_id == hospital_id)
+            total = query.count()
+            rows = query.offset(offset).limit(limit).all()
+            users = [_db_user_to_dataclass(r) for r in rows]
+            return {"total": total, "items": users}
         finally:
             db.close()
 

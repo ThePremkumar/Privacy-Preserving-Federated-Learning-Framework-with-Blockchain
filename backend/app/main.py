@@ -104,6 +104,12 @@ app.include_router(patients.router, prefix="/api/v1/patients", tags=["Patients P
 app.include_router(data_upload.router, prefix="/api/v1/data", tags=["Data Upload"])
 app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
 
+from app.api.websockets import router as websockets_router
+app.include_router(websockets_router, tags=["WebSockets"])
+
+from app.api.notifications import router as notifications_router
+app.include_router(notifications_router, prefix="/api/v1/notifications", tags=["Notifications"])
+
 # Health check endpoints
 @app.get("/api/v1/status/health", tags=["System"])
 async def health_check():

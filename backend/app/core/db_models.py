@@ -128,3 +128,17 @@ class AggregationRound(Base):
     epsilon_total = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+class Notification(Base):
+    """Platform notifications for real-time updates."""
+    __tablename__ = "notifications"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), index=True, nullable=True) # Null for global broadcast
+    type = Column(String, nullable=False) # 'alert', 'success', 'warning', 'info'
+    title = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")

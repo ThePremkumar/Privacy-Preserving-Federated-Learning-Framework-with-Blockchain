@@ -580,6 +580,9 @@ curl -X DELETE http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
 | **Prediction History** | ✅ | Full diagnostic timeline & analytics |
 | **Responsive UI** | ✅ | Next.js + Tailwind CSS |
 | **Landing Page** | ✅ | Features, How it Works, Security sections |
+| **Async Training Queue**| ✅ | FastAPI BackgroundTasks for non-blocking ML operations |
+| **Real-time Alerts**  | ✅ | WebSocket-based notification system |
+| **Clinical UI/UX**    | ✅ | High-Fidelity Doctor Dashboard with risk-stratified widgets |
 
 ---
 
