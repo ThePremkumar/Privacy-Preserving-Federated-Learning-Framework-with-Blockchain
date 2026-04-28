@@ -59,7 +59,7 @@ class MongoRepository:
                 return doc
         return None
 
-    async def find_many(self, filter: Dict[str, Any] = None, limit: int = 100) -> List[Dict[str, Any]]:
+    async def find_many(self, filter: Dict[str, Any] = None, limit: int = 100, sort: list = None) -> List[Dict[str, Any]]:
         """Find multiple documents"""
         results = []
         for doc in self.data.values():
@@ -73,10 +73,13 @@ class MongoRepository:
                         break
                 if match:
                     results.append(doc)
+                    
+        if sort and len(sort) > 0:
+            sort_field = sort[0][0]
+            sort_dir = sort[0][1]
+            results.sort(key=lambda x: str(x.get(sort_field, "") or ""), reverse=(sort_dir == -1))
             
-            if len(results) >= limit:
-                break
-        return results
+        return results[:limit]
 
     async def delete_one(self, filter: Dict[str, Any]) -> bool:
         doc = await self.find_one(filter)

@@ -129,8 +129,8 @@ The platform implements a complete **federated learning lifecycle** where hospit
 
 | Role | Username | Password | Dashboard |
 |------|----------|----------|-----------|
-| 👑 **Super Admin** | `superadmin` | `changeme` | Platform Governance, Model Governance, Aggregation |
-| 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | Organizations, Model Review, Network Monitor |
+| 👑 **Super Admin** | `superadmin` | `changeme` | Platform Governance, User Management, Model Governance, Aggregation |
+| 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | Organizations, User Management, Model Review, Network Monitor |
 | 🏥 **Hospital Node** | `hospital_node1` | `test1234` | Data Upload, Training, Model Participation |
 | 🩺 **Doctor** | `Harish Raj` | `Harish` | Patients Registry, Diagnostics, Clinical Docs |
 
@@ -139,9 +139,11 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | Permission | Super Admin | Admin | Hospital | Doctor |
 |-----------|:-----------:|:-----:|:--------:|:------:|
 | Manage Organizations (CRUD) | ✅ | ✅ | ❌ | ❌ |
-| Edit Organization Details | ✅ | ✅ | ❌ | ❌ |
+| Edit Hospital Node Details | ✅ | ✅ | ❌ | ❌ |
 | Delete Organizations | ✅ | ✅ | ❌ | ❌ |
 | Toggle Org Active/Inactive | ✅ | ✅ | ❌ | ❌ |
+| User Management (CRUD) | ✅ | ✅ | ❌ | ❌ |
+| Administer Node Access & Roles | ✅ | ✅ | ❌ | ❌ |
 | Create Admin Users | ✅ | ❌ | ❌ | ❌ |
 | Create Hospital Nodes | ✅ | ✅ | ❌ | ❌ |
 | Create Doctors | ❌ | ❌ | ✅ | ❌ |

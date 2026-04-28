@@ -45,8 +45,78 @@ interface HospitalNode {
   is_active: boolean;
 }
 
+function ProfileEmailEditor({ currentEmail, onSuccess, onError }: { currentEmail: string, onSuccess: () => void, onError: (err: string) => void }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [email, setEmail] = useState(currentEmail);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  useEffect(() => {
+    setEmail(currentEmail);
+  }, [currentEmail]);
+
+  const handleSave = async () => {
+    if (email === currentEmail) {
+      setIsEditing(false);
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await api.put('/auth/me', { email });
+      setIsEditing(false);
+      onSuccess();
+    } catch (err: any) {
+      onError(err.response?.data?.detail || "Failed to update email");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between w-full">
+      {isEditing ? (
+        <input 
+          autoFocus
+          type="email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+          className="text-sm font-bold text-slate-900 bg-white border border-blue-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-100 flex-1 mr-2"
+        />
+      ) : (
+        <span className="text-sm font-black text-slate-900 tracking-tight flex-1 py-1.5">{email}</span>
+      )}
+      
+      {isEditing ? (
+        <div className="flex items-center gap-1">
+          <button 
+            disabled={isSaving}
+            onClick={handleSave} 
+            className="text-[9px] font-black uppercase tracking-widest bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isSaving ? '...' : 'Save'}
+          </button>
+          <button 
+            disabled={isSaving}
+            onClick={() => { setIsEditing(false); setEmail(currentEmail); }} 
+            className="text-[9px] font-black uppercase tracking-widest bg-slate-200 text-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button 
+          onClick={() => setIsEditing(true)} 
+          className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-2 rounded-lg hover:bg-blue-100"
+        >
+          Edit
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showAddHospitalModal, setShowAddHospitalModal] = useState(false);
@@ -237,10 +307,14 @@ export default function SettingsPage() {
                         </div>
                      </div>
                      <div className="col-span-2 md:col-span-1 space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                        <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center gap-3">
-                           <Mail className="text-slate-400" size={18} />
-                           <span className="text-sm font-black text-slate-900 tracking-tight">{user?.email}</span>
+                        <div className="flex justify-between items-center ml-1">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
+                        </div>
+                        <div className="bg-slate-50 border border-slate-100 p-2 rounded-2xl flex items-center justify-between gap-3 relative">
+                           <div className="flex items-center gap-3 w-full px-2">
+                             <Mail className="text-slate-400" size={18} />
+                             <ProfileEmailEditor currentEmail={user?.email || ''} onSuccess={() => { setSuccessMessage("Profile updated successfully"); refreshUser?.(); }} onError={(err) => setErrorMessage(err)} />
+                           </div>
                         </div>
                      </div>
                      <div className="col-span-2 md:col-span-1 space-y-2">

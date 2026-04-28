@@ -44,6 +44,9 @@ class UpdateHospitalRequest(BaseModel):
     address: Optional[str] = None
     is_active: Optional[bool] = None
 
+class UpdateProfileRequest(BaseModel):
+    email: EmailStr
+
 # Authentication dependencies
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> User:
     """Get current authenticated user"""
@@ -219,13 +222,72 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         "is_active": current_user.is_active
     }
 
+@router.put("/me")
+async def update_current_user_profile(profile_data: UpdateProfileRequest, current_user: User = Depends(get_current_user)):
+    """Update current user profile (only email allowed)"""
+    from app.core.database import SessionLocal
+    from app.core.db_models import User as DBUser, Notification, UserRole as DBUserRole
+    import asyncio
+    
+    db = SessionLocal()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.id == current_user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        old_email = db_user.email
+        db_user.email = profile_data.email
+        db.commit()
+        
+        # Determine targets for notification
+        # hospital admin, admin, super admin
+        targets = db.query(DBUser).filter(
+            (DBUser.role == DBUserRole.SUPER_ADMIN) | 
+            (DBUser.role == DBUserRole.ADMIN) | 
+            ((DBUser.role == DBUserRole.HOSPITAL) & (DBUser.hospital_id == current_user.hospital_id))
+        ).all()
+        
+        for target in targets:
+            notif = Notification(
+                title="Profile Update",
+                message=f"User {current_user.username} changed their email from {old_email} to {profile_data.email}.",
+                type="info",
+                user_id=target.id
+            )
+            db.add(notif)
+            
+        db.commit()
+        
+        # Send WebSocket notification to targets
+        try:
+            from app.api.websockets import manager
+            message = {
+                "type": "notification",
+                "title": "Profile Update",
+                "message": f"User {current_user.username} changed their email to {profile_data.email}.",
+                "notification_type": "info"
+            }
+            for target in targets:
+                # Wrap it in asyncio.create_task or run immediately since it's an async endpoint
+                asyncio.create_task(manager.send_personal_message(message, target.id))
+        except ImportError:
+            pass
+            
+        return {"message": "Profile updated successfully", "email": profile_data.email}
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Profile update error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
 @router.get("/users")
 async def get_users(current_user: User = Depends(require_permission(Permission.MANAGE_USERS))):
     """Get users (filtered based on role)"""
     if current_user.role == UserRole.HOSPITAL:
-        users = auth_service.get_users_by_hospital(current_user.hospital_id)
+        result = auth_service.get_users_by_hospital(current_user.hospital_id)
     else:
-        users = auth_service.get_all_users()
+        result = auth_service.get_all_users()
         
     return [
         {
@@ -237,13 +299,13 @@ async def get_users(current_user: User = Depends(require_permission(Permission.M
             "is_active": u.is_active,
             "created_at": u.created_at
         }
-        for u in users
+        for u in result.get("items", [])
     ]
 
 @router.get("/hospitals")
 async def get_hospitals(current_user: User = Depends(require_permission(Permission.MANAGE_HOSPITALS))):
     """Get all hospitals (admin only)"""
-    hospitals = auth_service.get_all_hospitals()
+    result = auth_service.get_all_hospitals()
     return [
         {
             "id": h.id,
@@ -252,6 +314,6 @@ async def get_hospitals(current_user: User = Depends(require_permission(Permissi
             "address": h.address,
             "is_active": h.is_active
         }
-        for h in hospitals
+        for h in result.get("items", [])
     ]
 
