@@ -119,7 +119,8 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | **Privacy** | Custom DP Service (Gaussian mechanism) | Differential privacy |
 | **Blockchain** | Web3.py, Ethereum (mock in dev) | Immutable audit trails |
 | **NLP** | Custom NLP Service | Clinical note analysis |
-| **Charts** | Recharts | Convergence visualization |
+| **Maps** | Leaflet.js (React-Leaflet) | Interactive hospital network visualization |
+| **Charts** | Recharts | Convergence & risk distribution charts |
 
 ---
 
@@ -586,6 +587,8 @@ curl -X DELETE http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
 | **Async Training Queue**| ✅ | FastAPI BackgroundTasks for non-blocking ML operations |
 | **Real-time Alerts**  | ✅ | WebSocket-based notification system |
 | **Clinical UI/UX**    | ✅ | High-Fidelity Doctor Dashboard with risk-stratified widgets |
+| **Interactive Map**   | ✅ | Leaflet.js-based Hospital Network Map with status HUD |
+| **Paginated API**     | ✅ | High-performance hospital & user listings for large networks |
 
 ---
 

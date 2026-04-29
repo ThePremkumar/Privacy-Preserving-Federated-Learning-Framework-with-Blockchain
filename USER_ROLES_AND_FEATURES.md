@@ -28,9 +28,9 @@ Admins serve as "Quality Control Officers." They monitor the network and vet the
 
 ### 🏠 Dashboard Overview
 - **Metrics**: Pending reviews, blocked organizations, and network-wide training jobs.
-- **Network Map**: Visualization of active regional nodes.
 
 ### 📄 Key Pages & Features
+- **Interactive Network Map (`/dashboard/network-map`)**: A high-fidelity geographic visualization using Leaflet.js. Admins can monitor hospital node locations across the map, view real-time status pulses (Active/Idle/Offline), and access detailed node analytics via interactive side panels.
 - **Model Review Gateway (`/dashboard/model-governance`)**: The primary workspace for vetting local training results. Admins inspect accuracy, loss curves, and per-class metrics before **Approving** or **Rejecting**.
 - **Hospital Directory (`/dashboard/organizations`)**: View and manage hospital nodes. Admins can update registration details like zip codes and toggle active status to maintain network hygiene.
 - **Network Monitor (`/dashboard/network-monitor`)**: Live status of hospital nodes (Online/Offline/Training).

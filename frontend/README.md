@@ -5,6 +5,7 @@ This is the frontend for the **Privacy-Preserving Federated Learning Healthcare 
 ## 🚀 Features
 
 - **Clinical Command Center (Doctor Dashboard)**: High-fidelity analytics, real-time risk stratification (Low/Moderate/High), and clinical intelligence widgets.
+- **Interactive Hospital Network Map**: Leaflet.js-powered geographic visualization of regional hospital nodes with real-time status HUD and side-panel analytics.
 - **Real-Time Notifications**: WebSocket-based push notifications for background training jobs and clinical alerts.
 - **Federated Network Monitor**: Visualized model training across hospital nodes, tracking convergence and privacy metrics.
 - **Enterprise Design System**: Modern, medical-grade UI using glassmorphism, semantic token mapping, and subtle micro-interactions.
@@ -16,6 +17,7 @@ This is the frontend for the **Privacy-Preserving Federated Learning Healthcare 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4, Lucide Icons
+- **Maps**: Leaflet.js (React-Leaflet)
 - **Animation**: Framer Motion
 - **Charts**: Recharts
 - **State Management**: React Hooks (useState, useEffect, useMemo)

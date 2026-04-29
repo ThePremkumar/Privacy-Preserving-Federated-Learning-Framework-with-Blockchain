@@ -132,5 +132,7 @@ Use these credentials to access the platform. Access levels are restricted based
 ### General Tips
 - **Organization Onboarding**: When registering new hospitals, ensure you include the **Zip/Pin Code**. This allows for localized training and better node grouping in future updates.
 - **Node Monitoring**: Use the "Essential Details" toggle/view in the Organization Management dashboard for a high-density view of all network participants.
+- **Interactive Map**: The Network Map (`/dashboard/network-map`) uses Leaflet.js. If you encounter issues with marker positions, ensure your browser has WebGL and hardware acceleration enabled.
+- **Paginated Data**: The platform uses high-performance pagination for hospital and user lists. If data isn't appearing as expected, check the "Items Per Page" settings or use the search filters.
 - Ensure your terminal is running at the project root or the specific `frontend`/`backend` directory as indicated.
 - For most Windows permission issues, try running your Terminal/PowerShell as **Administrator**.
