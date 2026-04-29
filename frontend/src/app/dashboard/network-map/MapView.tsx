@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { HospitalNode } from './types';
@@ -40,6 +40,13 @@ function MapController({ center, zoom }: { center: [number, number], zoom: numbe
   useEffect(() => {
     map.setView(center, zoom, { animate: true });
   }, [center, zoom, map]);
+  return null;
+}
+
+function MapEvents({ onInteract }: { onInteract: () => void }) {
+  useMapEvents({
+    click: () => onInteract(),
+  });
   return null;
 }
 
@@ -116,8 +123,8 @@ export default function MapView({ nodes, onNodeClick, selectedNode }: MapViewPro
         maxZoom={14}
         scrollWheelZoom={mapEnabled}
         className="w-full h-full z-0"
-        onClick={() => setMapEnabled(true)}
       >
+        <MapEvents onInteract={() => setMapEnabled(true)} />
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
