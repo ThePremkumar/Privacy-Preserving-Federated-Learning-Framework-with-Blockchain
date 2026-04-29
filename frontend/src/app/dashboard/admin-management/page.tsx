@@ -46,6 +46,7 @@ interface AdminUser {
   email: string;
   role: string;
   hospital_id: string | null;
+  hospital_name: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -102,7 +103,9 @@ export default function AdminManagementPage() {
   const fetchHospitals = useCallback(async () => {
     try {
       const res = await api.get('/auth/hospitals');
-      setHospitals(res.data);
+      // Backend returns { total: X, items: [...] }
+      const hospitalList = res.data.items || res.data;
+      setHospitals(Array.isArray(hospitalList) ? hospitalList : []);
     } catch { setHospitals([]); }
   }, []);
 
@@ -385,7 +388,7 @@ export default function AdminManagementPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hospital</label>
                   <select value={newUser.hospital_id} onChange={(e) => setNewUser({...newUser, hospital_id: e.target.value})} className="mt-1 w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-600 focus:ring-0 outline-none bg-white">
                     <option value="">Select hospital...</option>
-                    {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                    {Array.isArray(hospitals) && hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                   </select>
                 </div>
               )}
@@ -549,7 +552,14 @@ export default function AdminManagementPage() {
                             </div>
                             <div>
                               <p className="text-sm font-black text-slate-900">{u.username}</p>
-                              <p className="text-[10px] font-bold text-slate-400">{u.email}</p>
+                              <div className="flex flex-col">
+                                <p className="text-[10px] font-bold text-slate-400">{u.email}</p>
+                                {u.hospital_name && (
+                                  <p className="text-[9px] font-black text-blue-600 uppercase tracking-tight mt-0.5">
+                                    {u.hospital_name}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>

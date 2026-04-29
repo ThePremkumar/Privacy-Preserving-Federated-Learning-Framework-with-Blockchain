@@ -339,6 +339,7 @@ async def get_users(current_user: User = Depends(require_permission(Permission.M
             "email": u.email,
             "role": u.role.value,
             "hospital_id": u.hospital_id,
+            "hospital_name": u.hospital.name if u.hospital else None,
             "is_active": u.is_active,
             "created_at": u.created_at
         }

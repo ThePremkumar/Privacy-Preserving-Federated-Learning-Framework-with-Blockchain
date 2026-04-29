@@ -115,6 +115,7 @@ const adminNav: NavSection[] = [
     items: [
       { name: 'Analytics', icon: LineChart, href: '/dashboard/analytics', highlight: true },
       { name: 'Network Monitor', icon: Network, href: '/dashboard/federated' },
+      { name: 'Network Map', icon: Map, href: '/dashboard/network-map', highlight: true },
       { name: 'Model Comparison', icon: TrendingUp, href: '/dashboard/model-comparison', highlight: true },
     ],
   },

@@ -12,6 +12,7 @@ import bcrypt
 
 from app.core.dependencies import get_current_user, require_role
 from app.core.database import SessionLocal
+from sqlalchemy.orm import joinedload
 from app.core import db_models
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ async def list_all_users(
     """List all users. Admins see all except super_admins; super_admin sees everyone."""
     db = SessionLocal()
     try:
-        query = db.query(db_models.User)
+        query = db.query(db_models.User).options(joinedload(db_models.User.hospital))
         if current_user.get("role") == "admin":
             # admin cannot see super_admin users
             query = query.filter(db_models.User.role != db_models.UserRole.SUPER_ADMIN)
@@ -507,6 +508,7 @@ def _user_dict(u) -> dict:
         "email": u.email,
         "role": u.role.value.lower() if u.role else "unknown",
         "hospital_id": u.hospital_id,
+        "hospital_name": u.hospital.name if u.hospital else None,
         "is_active": u.is_active,
         "created_at": u.created_at.isoformat() if u.created_at else "",
     }

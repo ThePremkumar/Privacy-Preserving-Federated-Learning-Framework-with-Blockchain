@@ -33,6 +33,7 @@ interface SystemUser {
   email: string;
   role: UserRole;
   hospital_id?: string;
+  hospital_name?: string;
   is_active: boolean;
   created_at?: string;
 }
@@ -158,7 +159,8 @@ export default function SettingsPage() {
         const [usersRes, hospitalsRes] = await Promise.all(requests);
         setUsers(usersRes.data);
         if (hospitalsRes) {
-          setHospitals(hospitalsRes.data);
+          const hList = Array.isArray(hospitalsRes.data) ? hospitalsRes.data : (hospitalsRes.data?.items || []);
+          setHospitals(hList);
         }
       }
     } catch (err) {
@@ -376,6 +378,9 @@ export default function SettingsPage() {
                                          <div className="flex flex-col">
                                             <span className="text-sm font-black text-slate-900 uppercase tracking-tighter">{u.username}</span>
                                             <span className="text-[10px] font-bold text-slate-400">{u.email}</span>
+                                            {u.hospital_name && (
+                                              <span className="text-[9px] font-black text-blue-600 uppercase tracking-tight mt-0.5">{u.hospital_name}</span>
+                                            )}
                                          </div>
                                       </div>
                                    </td>
@@ -417,9 +422,9 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       {hospitals.length === 0 ? (
+                       {Array.isArray(hospitals) && hospitals.length === 0 ? (
                          <div className="col-span-2 p-10 text-center text-slate-400 text-xs font-black uppercase italic border-2 border-dashed border-slate-100 rounded-3xl">No hospital nodes available</div>
-                       ) : hospitals.map(h => (
+                       ) : Array.isArray(hospitals) && hospitals.map(h => (
                          <div key={h.id} className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-4 hover:border-blue-200 transition-all shadow-sm">
                             <div className="flex items-center justify-between">
                                <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -564,7 +569,7 @@ export default function SettingsPage() {
                           ) : (
                             <>
                               <option value="">Select Hub...</option>
-                              {hospitals.map(h => (
+                              {Array.isArray(hospitals) && hospitals.map(h => (
                                 <option key={h.id} value={h.id}>{h.name}</option>
                               ))}
                               <option value="NOD-GLOBAL">NOD-GLOBAL</option>
