@@ -398,6 +398,106 @@ async def get_system_config(current_user: Dict[str, Any] = Depends(require_role(
     return {"version": "1.0.0", "status": "active"}
 
 
+@router.get("/privacy-budget")
+async def get_privacy_budget(
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
+):
+    """Get privacy budget usage per hospital."""
+    db = SessionLocal()
+    try:
+        hospitals = db.query(db_models.Hospital).all()
+        jobs = db.query(db_models.TrainingJob).all()
+        
+        hospital_budgets = []
+        total_used = 0.0
+        
+        for i, h in enumerate(hospitals):
+            h_jobs = [j for j in jobs if j.hospital_id == h.id]
+            rounds_participated = len(h_jobs)
+            budget_used = sum(float(j.epsilon_used) for j in h_jobs if j.epsilon_used)
+            budget_remaining = max(0.0, 10.0 - budget_used)
+            
+            if budget_remaining <= 0:
+                status = "critical"
+            elif budget_remaining <= 2.0:
+                status = "warning"
+            else:
+                status = "healthy"
+                
+            total_used += budget_used
+            
+            hospital_budgets.append({
+                "hospital_id": h.id,
+                "hospital_name": h.name,
+                "rounds_participated": rounds_participated,
+                "budget_used": budget_used,
+                "budget_remaining": budget_remaining,
+                "status": status
+            })
+                
+        # If there are no hospitals, avoid division by zero
+        avg_used = total_used / len(hospitals) if hospitals else 0.0
+        
+        return {
+            "hospitals": hospital_budgets,
+            "total_used": avg_used
+        }
+    finally:
+        db.close()
+
+
+@router.post("/privacy-budget/reset/{hospital_id}")
+async def reset_privacy_budget(
+    hospital_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
+):
+    """Reset privacy budget for a hospital (Super Admin only)."""
+    db = SessionLocal()
+    try:
+        jobs = db.query(db_models.TrainingJob).filter(db_models.TrainingJob.hospital_id == hospital_id).all()
+        for j in jobs:
+            j.epsilon_used = "0.0"
+        db.commit()
+        return {"message": "Budget reset successfully"}
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        db.close()
+
+
+@router.get("/hospitals/{hospital_id}/stats")
+async def get_hospital_stats(
+    hospital_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
+):
+    """Get real-time statistics for a specific hospital node."""
+    db = SessionLocal()
+    try:
+        user_count = db.query(db_models.User).filter(db_models.User.hospital_id == hospital_id).count()
+        upload_count = db.query(db_models.DatasetUpload).filter(db_models.DatasetUpload.hospital_id == hospital_id).count()
+        job_count = db.query(db_models.TrainingJob).filter(db_models.TrainingJob.hospital_id == hospital_id).count()
+        
+        jobs = db.query(db_models.TrainingJob).filter(
+            db_models.TrainingJob.hospital_id == hospital_id,
+            db_models.TrainingJob.accuracy.isnot(None)
+        ).all()
+        
+        avg_acc = 0.0
+        valid_jobs = [j for j in jobs if j.accuracy]
+        if valid_jobs:
+            avg_acc = sum(float(j.accuracy) for j in valid_jobs) / len(valid_jobs)
+            
+        return {
+            "users": user_count,
+            "datasets": upload_count,
+            "training_jobs": job_count,
+            "avg_accuracy": avg_acc
+        }
+    finally:
+        db.close()
+
+
 # ── Helpers ──
 
 def _user_dict(u) -> dict:

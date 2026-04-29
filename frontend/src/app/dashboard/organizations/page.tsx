@@ -30,6 +30,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { RegisterOrganizationModal } from '@/components/organizations/RegisterOrganizationModal';
+import { EditOrganizationDrawer } from '@/components/organizations/EditOrganizationDrawer';
 import api from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -43,6 +45,13 @@ interface HospitalNode {
   name: string;
   contact_email: string;
   address: string;
+  organization_type?: string;
+  admin_name?: string;
+  contact_phone?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zip_code?: string;
   is_active: boolean;
 }
 
@@ -53,42 +62,28 @@ export default function OrganizationsPage() {
   const [editingHospital, setEditingHospital] = useState<HospitalNode | null>(null);
   const [deletingHospital, setDeletingHospital] = useState<HospitalNode | null>(null);
   const [hospitals, setHospitals] = useState<HospitalNode[]>([]);
-  const [newHospital, setNewHospital] = useState({ name: '', contact_email: '', address: '' });
+  const [error, setError] = useState<string | null>(null);
 
   const fetchHospitals = useCallback(async () => {
     try {
+      setError(null);
       const res = await api.get('/auth/hospitals');
-      setHospitals(res.data);
-    } catch {
+      // Handle both paginated object and raw list formats
+      if (Array.isArray(res.data)) {
+        setHospitals(res.data);
+      } else if (res.data && Array.isArray(res.data.items)) {
+        setHospitals(res.data.items);
+      } else {
+        setHospitals([]);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch hospitals:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to connect to API');
       setHospitals([]);
     }
   }, []);
 
   useEffect(() => { fetchHospitals(); }, [fetchHospitals]);
-
-  const handleCreateHospital = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api.post('/auth/register-hospital', newHospital);
-      setShowAddModal(false);
-      setNewHospital({ name: '', contact_email: '', address: '' });
-      fetchHospitals();
-    } catch (err) {
-      console.error('Failed to create hospital:', err);
-    }
-  };
-
-  const handleUpdateHospital = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingHospital) return;
-    try {
-      await api.put(`/auth/hospitals/${editingHospital.id}`, editingHospital);
-      setEditingHospital(null);
-      fetchHospitals();
-    } catch (err) {
-      console.error('Failed to update hospital:', err);
-    }
-  };
 
   const toggleHospitalStatus = async (hospital: HospitalNode) => {
     try {
@@ -108,6 +103,10 @@ export default function OrganizationsPage() {
     } catch (err) {
       console.error('Failed to delete hospital:', err);
     }
+  };
+
+  const openEditModal = (org: HospitalNode) => {
+    setEditingHospital(org);
   };
 
   const filteredHospitals = hospitals.filter(org =>
@@ -133,6 +132,14 @@ export default function OrganizationsPage() {
           Add Organization <Plus size={16} className="ml-2" />
         </Button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+          <AlertTriangle size={18} />
+          <p className="text-sm font-bold">{error}</p>
+          <button onClick={() => fetchHospitals()} className="ml-auto text-xs underline font-black uppercase">Retry</button>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -199,7 +206,9 @@ export default function OrganizationsPage() {
                              </div>
                              <div className="flex flex-col">
                                 <span className="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors">{org.name}</span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{org.id} • {org.address}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                  {org.city}{org.state ? `, ${org.state}` : ''}{org.zip_code ? ` (${org.zip_code})` : ''} • {org.country}
+                                </span>
                              </div>
                           </div>
                        </td>
@@ -223,7 +232,7 @@ export default function OrganizationsPage() {
                                className="h-8 w-8 p-0 border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
                                onClick={(e) => {
                                  e.stopPropagation();
-                                 setEditingHospital(org);
+                                 openEditModal(org);
                                }}
                              >
                                 <Edit size={14} />
@@ -266,111 +275,28 @@ export default function OrganizationsPage() {
         </CardContent>
       </Card>
 
-      {/* Edit Organization Modal */}
+      {/* Edit Organization Drawer */}
       {editingHospital && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl">
-            <div className="bg-blue-600 p-8 text-white relative">
-               <div className="absolute top-0 right-0 p-10 opacity-10 text-white">
-                  <Edit size={100} />
-               </div>
-               <h3 className="text-2xl font-black uppercase tracking-tighter">Edit <span className="text-blue-200">Organization</span></h3>
-               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mt-1">Update hospital node credentials and access</p>
-            </div>
-
-            <form onSubmit={handleUpdateHospital} className="p-8 space-y-5">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Name</label>
-                  <input 
-                    required type="text" value={editingHospital.name}
-                    onChange={(e) => setEditingHospital({...editingHospital, name: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
-                  <input 
-                    required type="email" value={editingHospital.contact_email}
-                    onChange={(e) => setEditingHospital({...editingHospital, contact_email: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address</label>
-                  <input 
-                    required type="text" value={editingHospital.address}
-                    onChange={(e) => setEditingHospital({...editingHospital, address: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                  />
-               </div>
-               <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setEditingHospital(null)}
-                    className="flex-1 px-6 py-4 rounded-xl bg-white border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
-                    Cancel
-                  </button>
-                  <button type="submit"
-                    className="flex-1 px-6 py-4 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-200">
-                    Save Changes
-                  </button>
-               </div>
-            </form>
-          </div>
-        </div>
+        <EditOrganizationDrawer 
+          hospital={editingHospital} 
+          onClose={() => setEditingHospital(null)} 
+          onSuccess={(msg) => {
+             // You can add toast here using msg
+             setEditingHospital(null);
+             fetchHospitals();
+          }} 
+        />
       )}
 
       {/* Add Organization Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl">
-            <div className="bg-slate-900 p-8 text-white relative">
-               <div className="absolute top-0 right-0 p-10 opacity-10">
-                  <Hospital size={100} />
-               </div>
-               <h3 className="text-2xl font-black uppercase tracking-tighter">Register <span className="text-blue-400">Organization</span></h3>
-               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Onboard new hospital node to federated network</p>
-            </div>
-
-            <form onSubmit={handleCreateHospital} className="p-8 space-y-5">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Name</label>
-                  <input 
-                    required type="text" value={newHospital.name}
-                    onChange={(e) => setNewHospital({...newHospital, name: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                    placeholder="Hospital or research institution name"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
-                  <input 
-                    required type="email" value={newHospital.contact_email}
-                    onChange={(e) => setNewHospital({...newHospital, contact_email: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                    placeholder="admin@hospital.org"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address</label>
-                  <input 
-                    required type="text" value={newHospital.address}
-                    onChange={(e) => setNewHospital({...newHospital, address: e.target.value})}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                    placeholder="City, State"
-                  />
-               </div>
-               <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowAddModal(false)}
-                    className="flex-1 px-6 py-4 rounded-xl bg-white border border-slate-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
-                    Cancel
-                  </button>
-                  <button type="submit"
-                    className="flex-1 px-6 py-4 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-blue-200">
-                    Register Node
-                  </button>
-               </div>
-            </form>
-          </div>
-        </div>
+        <RegisterOrganizationModal 
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+             setShowAddModal(false);
+             fetchHospitals();
+          }}
+        />
       )}
 
       {/* Delete Confirmation Modal */}

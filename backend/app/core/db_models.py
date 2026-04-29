@@ -23,6 +23,13 @@ class Hospital(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     contact_email = Column(String, nullable=False)
     address = Column(String)
+    organization_type = Column(String, default="Hospital")
+    admin_name = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    country = Column(String, default="India")
+    zip_code = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     

@@ -37,11 +37,26 @@ class RegisterHospitalRequest(BaseModel):
     name: str
     contact_email: str
     address: str
+    organization_type: str = "Hospital"
+    admin_name: str
+    contact_phone: Optional[str] = None
+    city: str
+    state: str
+    country: str = "India"
+    zip_code: Optional[str] = None
+    is_active: bool = True
 
 class UpdateHospitalRequest(BaseModel):
     name: Optional[str] = None
     contact_email: Optional[str] = None
     address: Optional[str] = None
+    organization_type: Optional[str] = None
+    admin_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    zip_code: Optional[str] = None
     is_active: Optional[bool] = None
 
 class UpdateProfileRequest(BaseModel):
@@ -150,7 +165,15 @@ async def register_hospital(hospital_data: RegisterHospitalRequest, current_user
         hospital = auth_service.register_hospital(
             name=hospital_data.name,
             contact_email=hospital_data.contact_email,
-            address=hospital_data.address
+            address=hospital_data.address,
+            organization_type=hospital_data.organization_type,
+            admin_name=hospital_data.admin_name,
+            contact_phone=hospital_data.contact_phone,
+            city=hospital_data.city,
+            state=hospital_data.state,
+            country=hospital_data.country,
+            zip_code=hospital_data.zip_code,
+            is_active=hospital_data.is_active
         )
         
         return {
@@ -159,7 +182,14 @@ async def register_hospital(hospital_data: RegisterHospitalRequest, current_user
                 "id": hospital.id,
                 "name": hospital.name,
                 "contact_email": hospital.contact_email,
-                "address": hospital.address
+                "address": hospital.address,
+                "organization_type": hospital.organization_type,
+                "admin_name": hospital.admin_name,
+                "contact_phone": hospital.contact_phone,
+                "city": hospital.city,
+                "state": hospital.state,
+                "country": hospital.country,
+                "is_active": hospital.is_active
             }
         }
     except Exception as e:
@@ -175,6 +205,13 @@ async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest
             name=hospital_data.name,
             contact_email=hospital_data.contact_email,
             address=hospital_data.address,
+            organization_type=hospital_data.organization_type,
+            admin_name=hospital_data.admin_name,
+            contact_phone=hospital_data.contact_phone,
+            city=hospital_data.city,
+            state=hospital_data.state,
+            country=hospital_data.country,
+            zip_code=hospital_data.zip_code,
             is_active=hospital_data.is_active
         )
         
@@ -188,6 +225,12 @@ async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest
                 "name": hospital.name,
                 "contact_email": hospital.contact_email,
                 "address": hospital.address,
+                "organization_type": hospital.organization_type,
+                "admin_name": hospital.admin_name,
+                "contact_phone": hospital.contact_phone,
+                "city": hospital.city,
+                "state": hospital.state,
+                "country": hospital.country,
                 "is_active": hospital.is_active
             }
         }
@@ -306,14 +349,25 @@ async def get_users(current_user: User = Depends(require_permission(Permission.M
 async def get_hospitals(current_user: User = Depends(require_permission(Permission.MANAGE_HOSPITALS))):
     """Get all hospitals (admin only)"""
     result = auth_service.get_all_hospitals()
-    return [
+    hospitals = [
         {
             "id": h.id,
             "name": h.name,
             "contact_email": h.contact_email,
             "address": h.address,
+            "organization_type": h.organization_type,
+            "admin_name": h.admin_name,
+            "contact_phone": h.contact_phone,
+            "city": h.city,
+            "state": h.state,
+            "country": h.country,
+            "zip_code": h.zip_code,
             "is_active": h.is_active
         }
         for h in result.get("items", [])
     ]
+    return {
+        "total": result.get("total", 0),
+        "items": hospitals
+    }
 

@@ -150,7 +150,6 @@ const hospitalAdminNav: NavSection[] = [
       { name: 'Local Data Upload', icon: Upload, href: '/dashboard/data-upload' },
       { name: 'Model Participation', icon: Cpu, href: '/dashboard/federated' },
       { name: 'Analytics', icon: LineChart, href: '/dashboard/analytics', highlight: true },
-      { name: 'Privacy Budget', icon: Lock, href: '/dashboard/privacy-budget', highlight: true },
       { name: 'Local Reports', icon: ClipboardList, href: '/dashboard/reports' },
     ],
   },

@@ -12,7 +12,7 @@ The Super Admin is the ultimate authority, responsible for platform health, netw
 - **Activity**: Platform-wide audit logs showing major system changes.
 
 ### 📄 Key Pages & Features
-- **Organizations Management (`/dashboard/organizations`)**: Full CRUD operations for hospitals. Super Admins can onboard new hospitals, edit their details, or revoke access (soft-delete/deactivate).
+- **Organizations Management (`/dashboard/organizations`)**: Full CRUD operations for hospitals. Super Admins can onboard new hospitals using localized data (including Zip/Pin codes), edit their details, or revoke access. The interface features an **"Essential Details"** view for efficient monitoring of the entire node network.
 - **Admin Management (`/dashboard/admin-management`)**: Create and manage "Admin" users who oversee model governance.
 - **Model Governance (`/dashboard/model-governance`)**:
     - **Global Aggregation**: The exclusive ability to run the **FedAvg** algorithm. This merges approved local models from hospitals into the new Global Model.
@@ -32,7 +32,7 @@ Admins serve as "Quality Control Officers." They monitor the network and vet the
 
 ### 📄 Key Pages & Features
 - **Model Review Gateway (`/dashboard/model-governance`)**: The primary workspace for vetting local training results. Admins inspect accuracy, loss curves, and per-class metrics before **Approving** or **Rejecting**.
-- **Hospital Directory (`/dashboard/organizations`)**: View and manage hospital nodes (limited to basic management tasks assigned by Super Admin).
+- **Hospital Directory (`/dashboard/organizations`)**: View and manage hospital nodes. Admins can update registration details like zip codes and toggle active status to maintain network hygiene.
 - **Network Monitor (`/dashboard/network-monitor`)**: Live status of hospital nodes (Online/Offline/Training).
 - **Blockchain Audit Trail (`/dashboard/blockchain`)**: Verify the integrity of aggregation rounds using on-chain transaction hashes.
 

@@ -103,6 +103,13 @@ class Hospital:
     name: str
     contact_email: str
     address: str
+    organization_type: str = "Hospital"
+    admin_name: str = ""
+    contact_phone: str = ""
+    city: str = ""
+    state: str = ""
+    country: str = "India"
+    zip_code: str = ""
     is_active: bool = True
     created_at: datetime = None
     compliance_certificates: List[str] = None
@@ -140,6 +147,13 @@ def _db_hospital_to_dataclass(db_hosp) -> Hospital:
         name=db_hosp.name,
         contact_email=db_hosp.contact_email,
         address=db_hosp.address or "",
+        organization_type=db_hosp.organization_type or "Hospital",
+        admin_name=db_hosp.admin_name or "",
+        contact_phone=db_hosp.contact_phone or "",
+        city=db_hosp.city or "",
+        state=db_hosp.state or "",
+        country=db_hosp.country or "India",
+        zip_code=db_hosp.zip_code or "",
         is_active=db_hosp.is_active,
         created_at=db_hosp.created_at,
     )
@@ -407,7 +421,7 @@ class AuthenticationService:
     # Hospital registration (persisted)
     # ------------------------------------------------------------------
 
-    def register_hospital(self, name: str, contact_email: str, address: str) -> Hospital:
+    def register_hospital(self, name: str, contact_email: str, address: str, organization_type: str = "Hospital", admin_name: str = "", contact_phone: str = "", city: str = "", state: str = "", country: str = "India", zip_code: str = "", is_active: bool = True) -> Hospital:
         from app.core.db_models import Hospital as DBHospital
         import uuid
 
@@ -419,7 +433,14 @@ class AuthenticationService:
                 name=name,
                 contact_email=contact_email,
                 address=address,
-                is_active=True,
+                organization_type=organization_type,
+                admin_name=admin_name,
+                contact_phone=contact_phone,
+                city=city,
+                state=state,
+                country=country,
+                zip_code=zip_code,
+                is_active=is_active,
             )
             db.add(db_hosp)
             db.commit()
@@ -442,7 +463,7 @@ class AuthenticationService:
         finally:
             db.close()
 
-    def update_hospital(self, hospital_id: str, name: Optional[str] = None, contact_email: Optional[str] = None, address: Optional[str] = None, is_active: Optional[bool] = None) -> Optional[Hospital]:
+    def update_hospital(self, hospital_id: str, name: str = None, contact_email: str = None, address: str = None, organization_type: str = None, admin_name: str = None, contact_phone: str = None, city: str = None, state: str = None, country: str = None, zip_code: str = None, is_active: bool = None) -> Optional[Hospital]:
         """Update an existing hospital's details or status."""
         from app.core.db_models import Hospital as DBHospital
         db = self._get_db()
@@ -457,6 +478,20 @@ class AuthenticationService:
                 db_hosp.contact_email = contact_email
             if address is not None:
                 db_hosp.address = address
+            if organization_type is not None:
+                db_hosp.organization_type = organization_type
+            if admin_name is not None:
+                db_hosp.admin_name = admin_name
+            if contact_phone is not None:
+                db_hosp.contact_phone = contact_phone
+            if city is not None:
+                db_hosp.city = city
+            if state is not None:
+                db_hosp.state = state
+            if country is not None:
+                db_hosp.country = country
+            if zip_code is not None:
+                db_hosp.zip_code = zip_code
             if is_active is not None:
                 db_hosp.is_active = is_active
             

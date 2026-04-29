@@ -8,8 +8,8 @@ This is the frontend for the **Privacy-Preserving Federated Learning Healthcare 
 - **Real-Time Notifications**: WebSocket-based push notifications for background training jobs and clinical alerts.
 - **Federated Network Monitor**: Visualized model training across hospital nodes, tracking convergence and privacy metrics.
 - **Enterprise Design System**: Modern, medical-grade UI using glassmorphism, semantic token mapping, and subtle micro-interactions.
+- **Organization Management**: Localized registration (Zip/Pin Code support) and a high-density **"Essential Details"** view for managing large hospital networks.
 - **Role-Based Access Control (RBAC)**: Secure multi-tenant architecture supporting Super Admin, Admin, Hospital, and Doctor roles.
-- **System Governance**: Full CRUD interfaces for managing hospital node details, user management, and role administration for system admins.
 
 ## 🛠️ Tech Stack
 

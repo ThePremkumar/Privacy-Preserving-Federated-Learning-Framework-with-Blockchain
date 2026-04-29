@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, AlertTriangle, CheckCircle2, RefreshCw, RotateCcw, Loader2, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 import api from '@/lib/api';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -148,6 +149,7 @@ export default function PrivacyBudgetPage() {
   }));
 
   return (
+    <RoleGuard allowedRoles={['super_admin', 'admin']}>
     <div className="space-y-8 animate-fade-in">
       {/* Toast */}
       {toast && (
@@ -317,5 +319,6 @@ export default function PrivacyBudgetPage() {
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }

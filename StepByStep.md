@@ -122,13 +122,15 @@ Use these credentials to access the platform. Access levels are restricted based
   uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
   ```
 
-#### ❌ `ModuleNotFoundError`
-- **Cause**: A dependency is missing from your environment.
-- **Fix**: Ensure your venv is active and run:
-  ```bash
-  pip install -r requirements.txt
+#### ❌ `OperationalError: no such column: hospitals.zip_code`
+- **Cause**: The database schema in `db_models.py` was updated but the physical `app.db` file is out of date.
+- **Fix**: Run the following command to manually add the column:
+  ```powershell
+  python -c "import sqlite3; conn=sqlite3.connect('app.db'); conn.cursor().execute('ALTER TABLE hospitals ADD COLUMN zip_code TEXT'); conn.commit(); conn.close()"
   ```
 
 ### General Tips
+- **Organization Onboarding**: When registering new hospitals, ensure you include the **Zip/Pin Code**. This allows for localized training and better node grouping in future updates.
+- **Node Monitoring**: Use the "Essential Details" toggle/view in the Organization Management dashboard for a high-density view of all network participants.
 - Ensure your terminal is running at the project root or the specific `frontend`/`backend` directory as indicated.
 - For most Windows permission issues, try running your Terminal/PowerShell as **Administrator**.

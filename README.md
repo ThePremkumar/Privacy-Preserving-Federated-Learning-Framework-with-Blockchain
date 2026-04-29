@@ -139,7 +139,7 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | Permission | Super Admin | Admin | Hospital | Doctor |
 |-----------|:-----------:|:-----:|:--------:|:------:|
 | Manage Organizations (CRUD) | ✅ | ✅ | ❌ | ❌ |
-| Edit Hospital Node Details | ✅ | ✅ | ❌ | ❌ |
+| Edit Hospital Details (Inc. Zip Code) | ✅ | ✅ | ❌ | ❌ |
 | Delete Organizations | ✅ | ✅ | ❌ | ❌ |
 | Toggle Org Active/Inactive | ✅ | ✅ | ❌ | ❌ |
 | User Management (CRUD) | ✅ | ✅ | ❌ | ❌ |
@@ -327,7 +327,7 @@ GET  /api/v1/predictions/anomalies      # Get high-risk clinical alerts
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
 | `users` | All platform users | id, username, email, password_hash, role, hospital_id |
-| `hospitals` | Registered hospital nodes | id, name, contact_email, address, is_active |
+| `hospitals` | Registered hospital nodes | id, name, contact_email, address, zip_code, is_active |
 | `dataset_uploads` | CSV upload metadata | id, filename, hospital_id, record_count, sha256_hash |
 | `dataset_records` | Individual CSV rows | id, upload_id, row_index, data (JSON) |
 | `training_jobs` | Local training runs | id, hospital_id, upload_id, status, epochs, accuracy, loss, weights_hash, model_weights |
@@ -574,7 +574,8 @@ curl -X DELETE http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
 | **Blockchain Audit** | ✅ | SHA-256 + mock blockchain (dev) |
 | **RBAC** | ✅ | 4-tier role system with granular permissions |
 | **Privacy** | ✅ | Differential privacy (ε=1.0, δ=1e-5) |
-| **Organization Management** | ✅ | Full CRUD: create, edit, delete, toggle status (admin+) |
+| **Organization Management** | ✅ | Full CRUD: create, edit (inc. zip code), delete, toggle status (admin+) |
+| **Simplified Management UI**| ✅ | "Essential Details" view for clean node monitoring |
 | **Rejected Models Tracking** | ✅ | Rejected models dashboard with reasons & metrics |
 | **NLP Analysis** | ✅ | Clinical note analysis & entity extraction |
 | **Patient Registry** | ✅ | Vitals, symptoms, history, file uploads |
