@@ -158,10 +158,12 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | View Network Monitor | ✅ | ✅ | ❌ | ❌ |
 | View Model Participation | ❌ | ❌ | ✅ | ❌ |
 | Run AI Predictions | ❌ | ❌ | ❌ | ✅ |
-| Register Patients (Vitals + Docs) | ❌ | ❌ | ❌ | ✅ |
-| Upload Medical Reports (PDF) | ❌ | ❌ | ❌ | ✅ |
-| View Prediction History | ❌ | ❌ | ❌ | ✅ |
-| NLP Clinical Note Analysis | ❌ | ❌ | ❌ | ✅ |
+| Register Patients (Vitals + Docs) | ❌ | ❌ | ✅ | ✅ |
+| Upload Medical Reports (PDF) | ❌ | ❌ | ✅ | ✅ |
+| View Prediction History | ❌ | ❌ | ✅ | ✅ |
+| NLP Clinical Note Analysis | ❌ | ❌ | ✅ | ✅ |
+| Review Patient Referrals | ❌ | ❌ | ✅ | ❌ |
+| Manage Doctor Referrals | ❌ | ❌ | ✅ | ❌ |
 
 ---
 
@@ -305,6 +307,9 @@ POST /api/v1/patients/                  # Register new patient (vitals + notes)
 GET  /api/v1/patients/                  # List hospital patients
 GET  /api/v1/patients/{id}              # Get detailed patient clinical file
 POST /api/v1/patients/{id}/upload-report # Upload medical PDF/scan to record
+GET  /api/v1/patients/referrals         # List patient referrals (hospital admin)
+POST /api/v1/patients/referrals/{id}/review # Submit referral review/notes
+PATCH /api/v1/patients/referrals/{id}/read  # Mark referral as read
 ```
 
 ### Predictions & AI Analysis
@@ -584,6 +589,8 @@ curl -X DELETE http://localhost:8001/api/v1/auth/hospitals/<hospital_id> \
 | **Prediction History** | ✅ | Full diagnostic timeline & analytics |
 | **Responsive UI** | ✅ | Next.js + Tailwind CSS |
 | **Landing Page** | ✅ | Features, How it Works, Security sections |
+| **Patient Referral Inbox**| ✅ | Real-time administrative review of doctor referrals |
+| **Admin Note Syncing** | ✅ | Notes & priority updates synced between Admin & Doctor |
 | **Async Training Queue**| ✅ | FastAPI BackgroundTasks for non-blocking ML operations |
 | **Real-time Alerts**  | ✅ | WebSocket-based notification system |
 | **Clinical UI/UX**    | ✅ | High-Fidelity Doctor Dashboard with risk-stratified widgets |

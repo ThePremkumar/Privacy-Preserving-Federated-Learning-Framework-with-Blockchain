@@ -53,6 +53,11 @@ Hospital Nodes are the "Engine" of the platform. They represent individual hospi
     - **Differential Privacy (DP)**: Initiate local training with Gaussian noise injection to ensure patient records never leak.
     - **Submission**: Send completed local weights to Admins for review.
 - **Doctor Management (`/dashboard/doctor-management`)**: Register and manage clinical staff (Doctors) who will use the AI for patient care.
+- **Patient Management (`/dashboard/patients`)**: Full access to the patient registry for the entire facility. Admins can view comprehensive profiles, clinical timelines, and manage patient records.
+- **Patient Referral Reviews (`/dashboard/patient-reviews`)** — **[NEW]**:
+    - **Doctor Referral Inbox**: A dedicated interface to review patient records shared by doctors for administrative oversight.
+    - **Annotation & Action**: Mark referrals as "Reviewed" or "Flagged," set administrative priority, and add notes that sync back to the referring doctor.
+    - **Notification Badge**: Real-time unread counts for pending referrals in the sidebar.
 - **Model Participation (`/dashboard/federated`)**: View the hospital's contribution level and rewards for participating in global model rounds.
 
 ---
@@ -85,9 +90,11 @@ Doctors are the "End Users" who apply the AI's intelligence to real-world clinic
 
 1. **🏥 Hospital** registers a **🩺 Doctor**.
 2. **🩺 Doctor** registers a **Patient** and uploads vitals.
-3. **🏥 Hospital** uploads a large **CSV Dataset** of similar historical patient data.
-4. **🏥 Hospital** runs **Local Training** (DP-enabled) using that dataset.
-5. **👨‍💼 Admin** reviews and **Approves** the training job.
-6. **👑 Super Admin** aggregates it into a new **Global Model**.
-7. **🩺 Doctor** uses the improved **Global Model** via the **Prediction Gateway** to diagnose their patient accurately.
-8. **🩺 Doctor** generates a **Clinical Report** to finalize the patient's care plan.
+3. **🩺 Doctor** shares critical patient records via **"Send to Admin"** for high-priority review.
+4. **🏥 Hospital Admin** reviews the referral, flags concerns, and prioritizes care in the **Patient Reviews** dashboard.
+5. **🏥 Hospital** uploads a large **CSV Dataset** of historical patient data.
+6. **🏥 Hospital** runs **Local Training** (DP-enabled) using that dataset.
+7. **👨‍💼 Admin** reviews and **Approves** the training job.
+8. **👑 Super Admin** aggregates it into a new **Global Model**.
+9. **🩺 Doctor** uses the improved **Global Model** via the **Prediction Gateway** to diagnose their patient accurately.
+10. **🩺 Doctor** generates a **Clinical Report** to finalize the patient's care plan.

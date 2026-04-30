@@ -97,6 +97,8 @@ Use these credentials to access the platform. Access levels are restricted based
 | **Manage Users** | ✅ | ❌ | ✅ (Doctors only) | ❌ |
 | **Federated Training** | ✅ | ✅ | ✅ | ❌ |
 | **Blockchain Audit** | ✅ | ✅ | ✅ | ❌ |
+| **Patient Referrals** | ❌ | ❌ | ✅ (Review) | ✅ (Send) |
+| **Patient Management** | ❌ | ❌ | ✅ | ✅ |
 | **Patient Predictions** | ❌ | ❌ | ❌ | ✅ |
 | **Anomalies & NLP** | ❌ | ❌ | ❌ | ✅ |
 | **Global Analytics** | ✅ | ✅ | ❌ | ❌ |
@@ -122,12 +124,16 @@ Use these credentials to access the platform. Access levels are restricted based
   uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
   ```
 
-#### ❌ `OperationalError: no such column: hospitals.zip_code`
-- **Cause**: The database schema in `db_models.py` was updated but the physical `app.db` file is out of date.
-- **Fix**: Run the following command to manually add the column:
+#### ❌ `OperationalError: no such column: users.hospital_id`
+- **Cause**: Existing users were created before the hospital isolation feature was added.
+- **Fix**: Run this to update existing users:
   ```powershell
-  python -c "import sqlite3; conn=sqlite3.connect('app.db'); conn.cursor().execute('ALTER TABLE hospitals ADD COLUMN zip_code TEXT'); conn.commit(); conn.close()"
+  python -c "import sqlite3; conn=sqlite3.connect('app.db'); conn.cursor().execute('ALTER TABLE users ADD COLUMN hospital_id TEXT'); conn.commit(); conn.close()"
   ```
+
+#### ❌ `403 Forbidden` on Patient Referrals
+- **Cause**: Route shadowing in FastAPI where dynamic patient IDs were matching before the referral list endpoint.
+- **Fix**: Ensure `GET /patients/referrals` is defined BEFORE `GET /patients/{patient_id}` in `backend/app/api/patients.py`. (Fixed in current version).
 
 ### General Tips
 - **Organization Onboarding**: When registering new hospitals, ensure you include the **Zip/Pin Code**. This allows for localized training and better node grouping in future updates.
