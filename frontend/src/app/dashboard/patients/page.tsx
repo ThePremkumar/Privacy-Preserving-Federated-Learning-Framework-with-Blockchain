@@ -20,46 +20,39 @@ import {
   XCircle,
   Loader2,
   X,
-  BrainCircuit
+  BrainCircuit,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  Send,
+  MoreVertical,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import api from '@/lib/api';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '@/lib/utils';
+import { exportPDF, exportCSV, exportJSON } from '@/lib/exportPatients';
+import { SendToAdminModal } from '@/components/patients/SendToAdminModal';
+import { useAuth } from '@/hooks/useAuth';
+import { usePatientFilters } from '@/hooks/usePatientFilters';
+import { FilterExportPanel } from '@/components/patients/FilterExportPanel';
+import { ActiveFilterChips } from '@/components/patients/ActiveFilterChips';
 
 export default function PatientsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [patients, setPatients] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
   
-  // New Patient Form State
-  const [newPatient, setNewPatient] = useState({
-    name: '',
-    patient_id_manual: '',
-    age: '',
-    gender: 'Male',
-    phone: '',
-    address: '',
-    current_symptoms: '',
-    diagnosis_notes: '',
-    blood_pressure: '',
-    sugar_level: '',
-    heart_rate: '',
-    temperature: '',
-    medical_history: ''
-  });
-  
-  const [reportFile, setReportFile] = useState<File | null>(null);
-  const [datasetFile, setDatasetFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [sendToAdminPatient, setSendToAdminPatient] = useState<any | null>(null);
+
+  const { filters, updateFilter, clearFilters, filteredPatients: hookFilteredPatients, activeFilterCount } = usePatientFilters(patients, user?.id);
 
   const fetchPatients = async () => {
     setIsLoading(true);
@@ -77,65 +70,47 @@ export default function PatientsPage() {
     fetchPatients();
   }, []);
 
-  const handleAddPatient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const res = await api.post('/patients/', {
-        ...newPatient,
-        age: parseInt(newPatient.age),
-        heart_rate: newPatient.heart_rate ? parseInt(newPatient.heart_rate) : undefined,
-        temperature: newPatient.temperature ? parseFloat(newPatient.temperature) : undefined,
-        medical_history: newPatient.medical_history.split(',').map(s => s.trim()).filter(s => s),
-      });
-      
-      const patientId = res.data.id;
-
-      if (reportFile) {
-        const reportData = new FormData();
-        reportData.append('file', reportFile);
-        await api.post(`/patients/${patientId}/upload-report`, reportData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      }
-
-      if (datasetFile) {
-        const datasetData = new FormData();
-        datasetData.append('file', datasetFile);
-        await api.post('/data/upload-csv', datasetData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      }
-
-      setShowAddModal(false);
-      setNewPatient({ 
-        name: '', patient_id_manual: '', age: '', gender: 'Male', phone: '', address: '',
-        current_symptoms: '', diagnosis_notes: '', blood_pressure: '', sugar_level: '',
-        heart_rate: '', temperature: '', medical_history: '' 
-      });
-      setReportFile(null);
-      setDatasetFile(null);
-      fetchPatients();
-      alert('Patient and associated data saved successfully');
-    } catch (err: any) {
-      alert(err?.response?.data?.detail || 'Failed to save patient data');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const filteredPatients = patients.filter(p => 
+  const finalFilteredPatients = hookFilteredPatients.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     p._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.patient_id_manual && p.patient_id_manual.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const handleViewPatient = (id: string) => {
-    router.push(`/dashboard/patients/${id}`);
+  const handleToggleSelectAll = () => {
+    if (selectedIds.length === finalFilteredPatients.length && finalFilteredPatients.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(finalFilteredPatients.map(p => p._id));
+    }
   };
 
-  const handleGenerateReport = (id: string) => {
-    router.push('/dashboard/clinical-reports');
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleExport = (format: 'pdf' | 'csv' | 'json') => {
+    let dataToExport = selectedIds.length > 0 
+      ? patients.filter(p => selectedIds.includes(p._id))
+      : finalFilteredPatients;
+      
+    // Enforce role-based export restriction: doctors can only export their own patients
+    if (user?.role === 'doctor') {
+      dataToExport = dataToExport.filter(p => p.created_by === user?.id);
+      if (dataToExport.length === 0) {
+        alert('You do not have permission to export the selected patient records. Doctors can only export records they registered.');
+        return;
+      }
+    }
+    
+    if (format === 'pdf') exportPDF(dataToExport, user?.username || 'Doctor', user?.hospital_name || 'HealthConnect Central', filters);
+    if (format === 'csv') exportCSV(dataToExport, filters);
+    if (format === 'json') exportJSON(dataToExport, filters);
+  };
+
+  const handleViewPatient = (id: string) => {
+    router.push(`/dashboard/patients/${id}`);
   };
 
   const handleDeletePatient = async (id: string, name: string) => {
@@ -149,125 +124,27 @@ export default function PatientsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={['doctor']}>
+    <RoleGuard allowedRoles={['doctor', 'hospital']}>
     <div className="space-y-10 relative">
 
-      {/* Add Patient Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
-          <Card className="w-full max-w-4xl border-none shadow-2xl my-8">
-            <CardHeader className="flex flex-row items-center justify-between border-b pb-4 px-8 pt-8">
-              <div>
-                <CardTitle className="text-2xl font-black">Register <span className="text-blue-600">Clinical Data</span></CardTitle>
-                <CardDescription className="text-xs font-bold text-slate-400 tracking-widest uppercase">Comprehensive patient onboarding workflow</CardDescription>
-              </div>
-              <Button size="icon" variant="ghost" onClick={() => setShowAddModal(false)}><X size={24}/></Button>
-            </CardHeader>
-            <form onSubmit={handleAddPatient}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
-                {/* Left Side: Personal Info */}
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 border-b pb-2">Basic Identification</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</label>
-                      <input required className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Patient ID (Manual)</label>
-                      <input className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.patient_id_manual} onChange={e => setNewPatient({...newPatient, patient_id_manual: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Age</label>
-                      <input required type="number" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.age} onChange={e => setNewPatient({...newPatient, age: e.target.value})} />
-                    </div>
-                    <div className="space-y-1 col-span-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Gender</label>
-                       <select className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.gender} onChange={e => setNewPatient({...newPatient, gender: e.target.value})}>
-                         <option>Male</option>
-                         <option>Female</option>
-                         <option>Other</option>
-                       </select>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Contact Number</label>
-                    <input className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Home Address</label>
-                    <textarea className="w-full h-20 p-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.address} onChange={e => setNewPatient({...newPatient, address: e.target.value})} />
-                  </div>
-                </div>
-
-                {/* Right Side: Medical Details */}
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 border-b pb-2">Medical Status</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Blood Pressure</label>
-                      <input placeholder="e.120/80" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.blood_pressure} onChange={e => setNewPatient({...newPatient, blood_pressure: e.target.value})} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sugar Level</label>
-                      <input placeholder="e.g. 110 mg/dL" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.sugar_level} onChange={e => setNewPatient({...newPatient, sugar_level: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Heart Rate (BPM)</label>
-                      <input type="number" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.heart_rate} onChange={e => setNewPatient({...newPatient, heart_rate: e.target.value})} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Temp (°C)</label>
-                      <input type="number" step="0.1" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.temperature} onChange={e => setNewPatient({...newPatient, temperature: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current Symptoms</label>
-                    <input placeholder="e.g. Fever, Cough" className="w-full h-11 px-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.current_symptoms} onChange={e => setNewPatient({...newPatient, current_symptoms: e.target.value})} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Diagnosis Notes</label>
-                    <textarea className="w-full h-20 p-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.diagnosis_notes} onChange={e => setNewPatient({...newPatient, diagnosis_notes: e.target.value})} />
-                  </div>
-                </div>
-
-                {/* Full Width Bottom: Files & History */}
-                <div className="md:col-span-2 space-y-6 pt-4 border-t border-slate-50">
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-4">
-                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Attached Documentation</h4>
-                         <div className="space-y-1">
-                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Medical Report (PDF/Scan)</label>
-                           <input type="file" accept=".pdf,image/*" className="w-full text-xs" onChange={e => setReportFile(e.target.files?.[0] || null)} />
-                         </div>
-                         <div className="space-y-1">
-                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Dataset (CSV/JSON)</label>
-                           <input type="file" accept=".csv,.json" className="w-full text-xs" onChange={e => setDatasetFile(e.target.files?.[0] || null)} />
-                         </div>
-                      </div>
-                      <div className="space-y-4">
-                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Pre-existing History</h4>
-                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">History items (comma separated)</label>
-                         <textarea placeholder="e.g. Asthma, Hypertension" className="w-full h-24 p-4 bg-slate-50 border rounded-xl text-xs font-bold" value={newPatient.medical_history} onChange={e => setNewPatient({...newPatient, medical_history: e.target.value})} />
-                      </div>
-                   </div>
-                </div>
-              </div>
-
-              <div className="p-8 border-t bg-slate-50/50 flex gap-4 justify-end">
-                <Button variant="outline" className="h-12 px-8 font-black uppercase tracking-widest text-[10px]" type="button" onClick={() => setShowAddModal(false)}>Discard</Button>
-                <Button className="h-12 px-12 font-black uppercase tracking-widest text-[10px] shadow-xl shadow-blue-200" type="submit" disabled={isSubmitting}>
-                   {isSubmitting ? <><Loader2 className="animate-spin mr-2" size={14}/> Processing...</> : 'Save Patient Data' }
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
+      {sendToAdminPatient && (
+        <SendToAdminModal 
+          patient={sendToAdminPatient} 
+          onClose={() => setSendToAdminPatient(null)}
+          onSuccess={() => alert('Patient details sent to admin successfully')}
+        />
       )}
+
+      <FilterExportPanel 
+        isOpen={showFilterPanel} 
+        onClose={() => setShowFilterPanel(false)}
+        filters={filters}
+        updateFilter={updateFilter}
+        clearFilters={clearFilters}
+        filteredPatients={finalFilteredPatients}
+        doctorName={user?.username || 'Doctor'}
+        hospitalName={user?.hospital_name || 'HealthConnect'}
+      />
 
       <div className="flex items-center justify-between">
         <div>
@@ -277,11 +154,40 @@ export default function PatientsPage() {
           </p>
         </div>
         <div className="flex gap-4">
-           <Button className="h-12 px-8 shadow-xl shadow-blue-200" onClick={() => setShowAddModal(true)}>
+           <div className="relative">
+              <Button 
+                variant="outline" 
+                className="h-12 px-6 border-2 border-slate-200 font-black uppercase tracking-widest text-[10px] bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                onClick={() => setShowFilterPanel(true)}
+              >
+                Filter & Export {activeFilterCount > 0 ? `(${activeFilterCount})` : ''} ↓
+              </Button>
+           </div>
+
+           <Button className="h-12 px-8 shadow-xl shadow-blue-200" onClick={() => router.push('/dashboard/patients/new')}>
               Register Patient <Plus size={18} className="ml-2" />
            </Button>
         </div>
       </div>
+
+      {selectedIds.length > 0 && (
+        <div className="bg-blue-600 text-white px-6 py-4 rounded-2xl flex items-center justify-between shadow-xl shadow-blue-200 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-4">
+            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center font-black text-sm">
+              {selectedIds.length}
+            </div>
+            <span className="text-sm font-black italic uppercase tracking-widest">Patients selected for batch export</span>
+          </div>
+          <div className="flex gap-3">
+            <Button size="sm" variant="ghost" className="text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest" onClick={() => setSelectedIds([])}>
+              <X size={14} className="mr-2" /> Deselect All
+            </Button>
+            <Button size="sm" className="bg-white text-blue-600 hover:bg-blue-50 font-black text-[10px] uppercase tracking-widest" onClick={() => handleExport('csv')}>
+              Export Selected
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         {[
@@ -318,6 +224,7 @@ export default function PatientsPage() {
                    value={searchQuery}
                    onChange={e => setSearchQuery(e.target.value)}
                  />
+                 <ActiveFilterChips filters={filters} updateFilter={updateFilter} clearFilters={clearFilters} />
               </div>
            </div>
         </CardHeader>
@@ -328,105 +235,140 @@ export default function PatientsPage() {
                 <span className="text-xs font-black uppercase tracking-widest">Accessing Ledger...</span>
              </div>
            ) : (
-           <table className="w-full text-left border-collapse">
-              <thead>
-                 <tr className="bg-slate-50/50 border-b border-slate-50">
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Patient Profile</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">History</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Internal Risk</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Registered</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Actions</th>
-                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                 {filteredPatients.length === 0 ? (
-                    <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-400 font-bold">No patients matching criteria.</td></tr>
-                 ) : (
-                  filteredPatients.map(patient => (
-                    <tr key={patient._id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => handleViewPatient(patient._id)}>
-                       <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                             <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 font-black italic">
-                                {patient.name.charAt(0)}
-                             </div>
-                             <div className="flex flex-col">
-                                <span className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors">{patient.name}</span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                  {patient.patient_id_manual || patient._id.slice(-8)} • {patient.gender}, {patient.age}y
-                                </span>
-                             </div>
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex flex-col gap-1">
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-100 w-fit">
-                               <CheckCircle2 size={10} /> Active
+           <div className="overflow-x-auto">
+             <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                   <tr className="bg-slate-50/50 border-b border-slate-50">
+                      <th className="px-6 py-5">
+                         <div 
+                           className={cn(
+                             "h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all",
+                             selectedIds.length === finalFilteredPatients.length && finalFilteredPatients.length > 0
+                               ? "bg-blue-600 border-blue-600 text-white" 
+                               : "bg-white border-slate-200"
+                           )}
+                           onClick={handleToggleSelectAll}
+                         >
+                           {selectedIds.length === finalFilteredPatients.length && finalFilteredPatients.length > 0 && <Check size={14} strokeWidth={4} />}
+                         </div>
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Patient Profile</th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">History</th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Internal Risk</th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Registered</th>
+                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
+                   </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                   {finalFilteredPatients.length === 0 ? (
+                      <tr><td colSpan={7} className="px-8 py-20 text-center text-slate-400 font-bold">No patients matching criteria.</td></tr>
+                   ) : (
+                    finalFilteredPatients.map(patient => (
+                      <tr 
+                        key={patient._id} 
+                        className={cn(
+                          "hover:bg-slate-50/50 transition-colors group cursor-pointer",
+                          selectedIds.includes(patient._id) && "bg-blue-50/30"
+                        )}
+                        onClick={() => handleToggleSelect(patient._id)}
+                      >
+                         <td className="px-6 py-6" onClick={(e) => e.stopPropagation()}>
+                           <div 
+                             className={cn(
+                               "h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all",
+                               selectedIds.includes(patient._id)
+                                 ? "bg-blue-600 border-blue-600 text-white" 
+                                 : "bg-white border-slate-200"
+                             )}
+                             onClick={() => handleToggleSelect(patient._id)}
+                           >
+                             {selectedIds.includes(patient._id) && <Check size={14} strokeWidth={4} />}
+                           </div>
+                         </td>
+                         <td className="px-6 py-6" onClick={() => handleViewPatient(patient._id)}>
+                            <div className="flex items-center gap-4">
+                               <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 font-black italic">
+                                  {patient.name.charAt(0)}
+                               </div>
+                               <div className="flex flex-col">
+                                  <span className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors">{patient.name}</span>
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {patient.patient_id_manual || patient._id.slice(-8)} • {patient.gender}, {patient.age}y
+                                  </span>
+                               </div>
                             </div>
-                            {patient.reports?.length > 0 && (
-                              <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest">
-                                {patient.reports.length} Reports Attached
-                              </span>
-                            )}
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
-                             {patient.medical_history?.slice(0, 2).map((h: string, i: number) => (
-                               <span key={i} className="px-2 py-0.5 bg-slate-100 rounded text-[8px] font-bold uppercase text-slate-500">{h}</span>
-                             ))}
-                             {patient.medical_history?.length > 2 && <span className="text-[8px] font-black text-slate-300">+{patient.medical_history.length - 2} More</span>}
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className={cn(
-                             "text-[10px] font-black uppercase tracking-widest",
-                             (patient.medical_history?.length || 0) > 3 ? "text-red-600" : patient.medical_history?.length > 1 ? "text-amber-600" : "text-emerald-500"
-                          )}>
-                             {(patient.medical_history?.length || 0) > 3 ? "High" : patient.medical_history?.length > 1 ? "Moderate" : "Low"} Risk
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase italic">
-                             <Clock size={12} /> {patient.created_at ? new Date(patient.created_at).toLocaleDateString() : 'N/A'}
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex items-center gap-2">
-                             <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
-                                title="Generate Report"
-                                onClick={(e) => { e.stopPropagation(); handleGenerateReport(patient._id); }}
-                             >
-                                <FileText size={18} />
-                             </Button>
-                             <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
-                                title="View Details"
-                                onClick={(e) => { e.stopPropagation(); handleViewPatient(patient._id); }}
-                             >
-                                <ChevronRight size={18} />
-                             </Button>
-                             <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-9 w-9 text-slate-300 hover:text-red-500 hover:bg-red-50"
-                                title="Delete"
-                                onClick={(e) => { e.stopPropagation(); handleDeletePatient(patient._id, patient.name); }}
-                             >
-                                <XCircle size={18} />
-                             </Button>
-                          </div>
-                       </td>
-                    </tr>
-                  ))
-                 )}
-              </tbody>
-           </table>
+                         </td>
+                         <td className="px-6 py-6">
+                            <div className="flex flex-col gap-1">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-100 w-fit">
+                                 <CheckCircle2 size={10} /> Active
+                              </div>
+                              {patient.reports?.length > 0 && (
+                                <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest">
+                                  {patient.reports.length} Reports Attached
+                                </span>
+                              )}
+                            </div>
+                         </td>
+                         <td className="px-6 py-6">
+                            <div className="flex flex-wrap gap-1 max-w-[200px]">
+                               {patient.medical_history?.slice(0, 2).map((h: string, i: number) => (
+                                 <span key={i} className="px-2 py-0.5 bg-slate-100 rounded text-[8px] font-bold uppercase text-slate-500">{h}</span>
+                               ))}
+                               {patient.medical_history?.length > 2 && <span className="text-[8px] font-black text-slate-300">+{patient.medical_history.length - 2} More</span>}
+                            </div>
+                         </td>
+                         <td className="px-6 py-6">
+                            <div className={cn(
+                               "text-[10px] font-black uppercase tracking-widest",
+                               (patient.medical_history?.length || 0) > 3 ? "text-red-600" : patient.medical_history?.length > 1 ? "text-amber-600" : "text-emerald-500"
+                            )}>
+                               {(patient.medical_history?.length || 0) > 3 ? "High" : patient.medical_history?.length > 1 ? "Moderate" : "Low"} Risk
+                            </div>
+                         </td>
+                         <td className="px-6 py-6">
+                            <div className="flex items-center gap-2 text-slate-400 text-[10px] font-bold uppercase italic">
+                               <Clock size={12} /> {patient.created_at ? new Date(patient.created_at).toLocaleDateString() : 'N/A'}
+                            </div>
+                         </td>
+                         <td className="px-6 py-6 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                               <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
+                                  title="Send to Admin"
+                                  onClick={(e) => { e.stopPropagation(); setSendToAdminPatient(patient); }}
+                               >
+                                  <Send size={16} />
+                               </Button>
+                               <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-9 w-9 text-slate-300 hover:text-blue-600 hover:bg-blue-50"
+                                  title="View Details"
+                                  onClick={(e) => { e.stopPropagation(); handleViewPatient(patient._id); }}
+                               >
+                                  <ChevronRight size={18} />
+                               </Button>
+                               <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-9 w-9 text-slate-300 hover:text-red-500 hover:bg-red-50"
+                                  title="Delete"
+                                  onClick={(e) => { e.stopPropagation(); handleDeletePatient(patient._id, patient.name); }}
+                               >
+                                  <XCircle size={18} />
+                               </Button>
+                            </div>
+                         </td>
+                      </tr>
+                    ))
+                   )}
+                </tbody>
+             </table>
+           </div>
            )}
         </CardContent>
       </Card>

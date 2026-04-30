@@ -146,6 +146,27 @@ class Notification(Base):
     title = Column(String, nullable=False)
     message = Column(String, nullable=False)
     is_read = Column(Boolean, default=False)
+    meta_data = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User")
+
+
+class PatientReferralReview(Base):
+    """Admin reviews for patient referrals."""
+    __tablename__ = "patient_referral_reviews"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    notification_id = Column(String, ForeignKey("notifications.id"))
+    patient_id = Column(String, index=True) # MongoDB ID
+    reviewed_by = Column(String, ForeignKey("users.id"), nullable=True) # Admin
+    sent_by = Column(String, ForeignKey("users.id")) # Doctor
+    status = Column(String, default="pending")  # pending, reviewed, flagged
+    admin_notes = Column(String, nullable=True)
+    priority = Column(String, default="normal")
+    reviewed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    notification = relationship("Notification")
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+    sender = relationship("User", foreign_keys=[sent_by])

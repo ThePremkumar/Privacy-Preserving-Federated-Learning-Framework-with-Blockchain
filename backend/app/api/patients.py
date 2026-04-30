@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from typing import List, Dict, Any, Optional
 from app.core.dependencies import get_current_user, require_role
 from app.core.mongodb import patient_repo
+from app.core.database import SessionLocal, get_db
+from app.core.db_models import User, UserRole, Notification, AuditLog, PatientReferralReview
 from pydantic import BaseModel, Field
 from datetime import datetime
 import os
@@ -43,8 +45,11 @@ class PatientUpdate(BaseModel):
     temperature: Optional[float] = None
     medical_history: Optional[List[str]] = None
 
+class NoteRequest(BaseModel):
+    note: Optional[str] = ""
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_patient(patient: PatientCreate, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def create_patient(patient: PatientCreate, current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """Register a new patient with comprehensive medical data"""
     patient_data = patient.model_dump()
     patient_data["hospital_id"] = current_user.get("hospital_id")
@@ -61,7 +66,7 @@ async def create_patient(patient: PatientCreate, current_user: Dict[str, Any] = 
 async def update_patient(
     patient_id: str, 
     updates: PatientUpdate, 
-    current_user: Dict[str, Any] = Depends(require_role(["doctor"]))
+    current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))
 ):
     """Update an existing patient record"""
     patient = await patient_repo.find_one({"_id": patient_id})
@@ -91,7 +96,7 @@ async def update_patient(
 @router.delete("/{patient_id}")
 async def delete_patient(
     patient_id: str, 
-    current_user: Dict[str, Any] = Depends(require_role(["doctor"]))
+    current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))
 ):
     """Soft-delete a patient record (marks as inactive)"""
     patient = await patient_repo.find_one({"_id": patient_id})
@@ -115,7 +120,7 @@ async def delete_patient(
 async def upload_patient_report(
     patient_id: str, 
     file: UploadFile = File(...),
-    current_user: Dict[str, Any] = Depends(require_role(["doctor"]))
+    current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))
 ):
     """Upload a medical report (PDF/Image) for a specific patient"""
     patient = await patient_repo.find_one({"_id": patient_id})
@@ -157,15 +162,143 @@ async def upload_patient_report(
     return {"message": "Report uploaded successfully", "report": report_meta}
 
 @router.get("/", response_model=List[Dict[str, Any]])
-async def list_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def list_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """List active patients for the current hospital/doctor"""
     hospital_id = current_user.get("hospital_id")
     all_patients = await patient_repo.find_many({"hospital_id": hospital_id})
     # Filter out deleted patients
     return [p for p in all_patients if p.get("status", "active") != "deleted"]
 
+class ReviewSubmit(BaseModel):
+    status: str
+    admin_notes: str
+    priority: str
+
+@router.get("/referrals")
+async def get_referrals(
+    status: Optional[str] = Query(None),
+    unread: Optional[bool] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"]))
+):
+    """Get all patient referrals sent to this hospital admin"""
+    db = SessionLocal()
+    try:
+        query = db.query(PatientReferralReview).join(
+            Notification, PatientReferralReview.notification_id == Notification.id
+        ).filter(
+            Notification.user_id == current_user.get("user_id")
+        )
+        
+        if status:
+            query = query.filter(PatientReferralReview.status == status)
+        if unread is not None:
+            query = query.filter(Notification.is_read == (not unread if not unread else False))
+            
+        referrals = query.all()
+        result = []
+        for ref in referrals:
+            patient = await patient_repo.find_one({"_id": ref.patient_id})
+            doctor = db.query(User).filter(User.id == ref.sent_by).first()
+            
+            result.append({
+                "id": ref.id,
+                "notification_id": ref.notification_id,
+                "status": ref.status,
+                "admin_notes": ref.admin_notes,
+                "priority": ref.priority,
+                "created_at": ref.created_at.isoformat() if ref.created_at else None,
+                "patient": patient,
+                "sending_doctor": {"name": doctor.username if doctor else "Unknown"},
+                "notification": {
+                    "is_read": ref.notification.is_read if ref.notification else False,
+                    "message": ref.notification.message if ref.notification else ""
+                }
+            })
+        return result
+    finally:
+        db.close()
+
+@router.get("/referrals/{referral_id}")
+async def get_referral(
+    referral_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"]))
+):
+    db = SessionLocal()
+    try:
+        ref = db.query(PatientReferralReview).filter(PatientReferralReview.id == referral_id).first()
+        if not ref:
+            raise HTTPException(status_code=404, detail="Referral not found")
+        
+        patient = await patient_repo.find_one({"_id": ref.patient_id})
+        doctor = db.query(User).filter(User.id == ref.sent_by).first()
+        
+        return {
+            "id": ref.id,
+            "status": ref.status,
+            "admin_notes": ref.admin_notes,
+            "priority": ref.priority,
+            "created_at": ref.created_at.isoformat() if ref.created_at else None,
+            "patient": patient,
+            "sending_doctor": {"name": doctor.username if doctor else "Unknown"},
+            "notification": {
+                "message": ref.notification.meta_data.get('note', '') if ref.notification and ref.notification.meta_data else ''
+            }
+        }
+    finally:
+        db.close()
+
+@router.post("/referrals/{referral_id}/review")
+async def submit_referral_review(
+    referral_id: str,
+    review: ReviewSubmit,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"]))
+):
+    db = SessionLocal()
+    try:
+        ref = db.query(PatientReferralReview).filter(PatientReferralReview.id == referral_id).first()
+        if not ref:
+            raise HTTPException(status_code=404, detail="Referral not found")
+            
+        ref.status = review.status
+        ref.admin_notes = review.admin_notes
+        ref.priority = review.priority
+        ref.reviewed_by = current_user.get("user_id")
+        ref.reviewed_at = datetime.utcnow()
+        
+        # Create notification for doctor
+        patient = await patient_repo.find_one({"_id": ref.patient_id})
+        doctor_notification = Notification(
+            user_id=ref.sent_by,
+            type="referral_reviewed",
+            title=f"Referral Reviewed: {patient.get('name') if patient else 'Patient'}",
+            message=f"Admin reviewed your referral. Note: {review.admin_notes} | Priority: {review.priority.capitalize()}",
+            meta_data={"referral_id": referral_id, "patient_id": ref.patient_id}
+        )
+        db.add(doctor_notification)
+        db.commit()
+        return {"success": True}
+    finally:
+        db.close()
+
+@router.patch("/referrals/{referral_id}/read")
+async def mark_referral_read(
+    referral_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"]))
+):
+    db = SessionLocal()
+    try:
+        ref = db.query(PatientReferralReview).filter(PatientReferralReview.id == referral_id).first()
+        if not ref:
+            raise HTTPException(status_code=404, detail="Referral not found")
+            
+        if ref.notification:
+            ref.notification.is_read = True
+            db.commit()
+        return {"success": True}
+    finally:
+        db.close()
 @router.get("/{patient_id}")
-async def get_patient(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def get_patient(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """Get patient details"""
     patient = await patient_repo.find_one({"_id": patient_id})
     if not patient:
@@ -176,3 +309,87 @@ async def get_patient(patient_id: str, current_user: Dict[str, Any] = Depends(re
         raise HTTPException(status_code=403, detail="Permission denied")
             
     return patient
+
+@router.post("/{patient_id}/send-to-admin")
+async def send_to_admin(
+    patient_id: str,
+    note_request: NoteRequest,
+    current_user: Dict[str, Any] = Depends(require_role(["doctor"]))
+):
+    """Send patient details to hospital admin for review"""
+    # 1. Verify patient exists and belongs to doctor's hospital
+    patient = await patient_repo.find_one({"_id": patient_id})
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    hospital_id = current_user.get("hospital_id")
+    if patient.get("hospital_id") != hospital_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # 2. Find the hospital's admin
+    db = SessionLocal()
+    try:
+        admin_user = db.query(User).filter(
+            User.hospital_id == hospital_id,
+            User.role == UserRole.HOSPITAL,
+            User.is_active == True
+        ).first()
+        
+        if not admin_user:
+            raise HTTPException(status_code=404, detail="Hospital admin not found")
+        
+        # 3. Create Audit Log
+        audit = AuditLog(
+            user_id=current_user.get("user_id"),
+            action="patient_details_sent",
+            resource=f"patient:{patient_id}",
+            details={
+                "sent_to": admin_user.email,
+                "note": note_request.note,
+                "patient_name": patient.get("name")
+            }
+        )
+        db.add(audit)
+        
+        # 4. Create Notification
+        notification = Notification(
+            user_id=admin_user.id,
+            type="patient_referral",
+            title=f"Patient referral from Dr. {current_user.get('username')}",
+            message=f"Patient {patient.get('name')} (ID: {patient.get('patient_id_manual') or patient_id}) details shared. Note: {note_request.note}",
+            meta_data={
+                "patient_id": patient_id,
+                "sent_by": current_user.get("user_id"),
+                "note": note_request.note
+            }
+        )
+        db.add(notification)
+        db.flush()
+        
+        # 5. Create Patient Referral Review
+        referral = PatientReferralReview(
+            notification_id=notification.id,
+            patient_id=patient_id,
+            sent_by=current_user.get("user_id"),
+            status="pending",
+            priority="normal"
+        )
+        db.add(referral)
+        db.commit()
+        
+        return {
+            "success": True,
+            "sent_to": admin_user.email,
+            "sent_at": datetime.utcnow().isoformat(),
+            "patient_id": patient_id
+        }
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+

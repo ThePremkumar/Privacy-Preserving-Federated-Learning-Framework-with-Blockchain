@@ -81,6 +81,11 @@ class MongoRepository:
             
         return results[:limit]
 
+    async def count_documents(self, filter: Dict[str, Any] = None) -> int:
+        """Count documents matching a filter"""
+        results = await self.find_many(filter, limit=999999)
+        return len(results)
+
     async def delete_one(self, filter: Dict[str, Any]) -> bool:
         doc = await self.find_one(filter)
         if doc:

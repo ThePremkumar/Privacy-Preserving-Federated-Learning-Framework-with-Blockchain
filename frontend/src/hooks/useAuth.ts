@@ -11,6 +11,7 @@ export interface User {
   name: string;
   role: UserRole;
   hospital_id?: string;
+  hospital_name?: string;
   email: string;
 }
 
@@ -35,6 +36,7 @@ export const useAuth = () => {
         name: userData.username, // Using username as name for now
         role: userData.role as UserRole,
         hospital_id: userData.hospital_id,
+        hospital_name: userData.hospital?.name,
         email: userData.email,
       });
     } catch (error) {

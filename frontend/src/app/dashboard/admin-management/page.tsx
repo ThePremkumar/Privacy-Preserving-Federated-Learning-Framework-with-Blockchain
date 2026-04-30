@@ -74,7 +74,7 @@ export default function AdminManagementPage() {
 
   // Edit form state
   const [editForm, setEditForm] = useState({
-    email: '', role: '', is_active: true
+    email: '', role: '', is_active: true, hospital_id: ''
   });
 
   // Reset password form state
@@ -144,6 +144,7 @@ export default function AdminManagementPage() {
     try {
       await api.put(`/admin/users/${editingUser.id}`, {
         email: editForm.email, role: editForm.role, is_active: editForm.is_active,
+        hospital_id: editForm.hospital_id || null,
       });
       setSuccess(`User "${editingUser.username}" updated`);
       setEditingUser(null);
@@ -212,7 +213,7 @@ export default function AdminManagementPage() {
 
   const startEdit = (u: AdminUser) => {
     setEditingUser(u);
-    setEditForm({ email: u.email, role: u.role, is_active: u.is_active });
+    setEditForm({ email: u.email, role: u.role, is_active: u.is_active, hospital_id: u.hospital_id || '' });
     setResetPasswordUser(null);
     setShowCreateForm(false);
   };
@@ -435,6 +436,15 @@ export default function AdminManagementPage() {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
+              {(editForm.role === 'hospital' || editForm.role === 'doctor') && isSuperAdmin && (
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hospital</label>
+                  <select value={editForm.hospital_id} onChange={(e) => setEditForm({...editForm, hospital_id: e.target.value})} className="mt-1 w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-amber-500 focus:ring-0 outline-none bg-white">
+                    <option value="">Select hospital...</option>
+                    {Array.isArray(hospitals) && hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="flex gap-3 justify-end pt-4">
               <Button variant="outline" onClick={() => setEditingUser(null)} className="border-2">Cancel</Button>

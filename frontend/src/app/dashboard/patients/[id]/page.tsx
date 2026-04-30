@@ -27,18 +27,15 @@ import {
   Stethoscope,
   Pill,
   ClipboardList,
-  Shield
+  Shield,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import api from '@/lib/api';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '@/lib/utils';
+import { SendToAdminModal } from '@/components/patients/SendToAdminModal';
 
 export default function PatientDetailPage() {
   const params = useParams();
@@ -57,6 +54,7 @@ export default function PatientDetailPage() {
   const [clinicalReport, setClinicalReport] = useState<any>(null);
   const [editForm, setEditForm] = useState<any>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showSendToAdmin, setShowSendToAdmin] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -172,7 +170,7 @@ export default function PatientDetailPage() {
 
   if (!patient) {
     return (
-      <RoleGuard allowedRoles={['doctor']}>
+      <RoleGuard allowedRoles={['doctor', 'hospital']}>
         <div className="h-96 flex flex-col items-center justify-center gap-4">
           <AlertTriangle size={48} className="text-amber-400" />
           <p className="text-lg font-bold text-slate-400">Patient not found</p>
@@ -186,8 +184,16 @@ export default function PatientDetailPage() {
   const riskColor = riskLevel === 'High' ? 'text-red-600 bg-red-50 border-red-100' : riskLevel === 'Moderate' ? 'text-amber-600 bg-amber-50 border-amber-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100';
 
   return (
-    <RoleGuard allowedRoles={['doctor']}>
-      <div className="space-y-8">
+    <RoleGuard allowedRoles={['doctor', 'hospital']}>
+      <div className="space-y-8 pb-20">
+        {showSendToAdmin && (
+          <SendToAdminModal 
+            patient={patient} 
+            onClose={() => setShowSendToAdmin(false)} 
+            onSuccess={() => alert('Patient details sent to admin successfully')} 
+          />
+        )}
+
         {/* Clinical Report Modal */}
         {clinicalReport && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 backdrop-blur-md p-4 overflow-y-auto">
@@ -339,7 +345,7 @@ export default function PatientDetailPage() {
         {/* Delete Confirmation */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-            <Card className="w-full max-w-md border-none shadow-2xl p-8 text-center space-y-6">
+            <Card className="w-full max-md border-none shadow-2xl p-8 text-center space-y-6">
               <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
                 <Trash2 className="text-red-600" size={28}/>
               </div>
@@ -374,6 +380,9 @@ export default function PatientDetailPage() {
             </div>
           </div>
           <div className="flex gap-3">
+            <Button variant="outline" className="h-11 px-5 border-2 font-black text-[10px] uppercase tracking-widest" onClick={() => setShowSendToAdmin(true)}>
+              <Send size={14} className="mr-2"/> Send to Admin
+            </Button>
             <Button variant="outline" className="h-11 px-5 border-2 font-black text-[10px] uppercase tracking-widest" onClick={handleEdit}>
               <Edit3 size={14} className="mr-2"/> Edit
             </Button>
@@ -480,8 +489,8 @@ export default function PatientDetailPage() {
                           <FileText size={16}/>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-black text-slate-900 truncate">{r.filename}</p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(r.uploaded_at).toLocaleDateString()}</p>
+                           <p className="text-xs font-black text-slate-900 truncate">{r.filename}</p>
+                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(r.uploaded_at).toLocaleDateString()}</p>
                         </div>
                       </div>
                     ))}

@@ -261,6 +261,9 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
         "role": current_user.role.value,
         "hospital_id": current_user.hospital_id,
+        "hospital": {
+            "name": getattr(current_user, "hospital").name if getattr(current_user, "hospital", None) else None
+        } if current_user.hospital_id else None,
         "permissions": [p.value for p in current_user.permissions],
         "is_active": current_user.is_active
     }
@@ -339,7 +342,7 @@ async def get_users(current_user: User = Depends(require_permission(Permission.M
             "email": u.email,
             "role": u.role.value,
             "hospital_id": u.hospital_id,
-            "hospital_name": u.hospital.name if u.hospital else None,
+            "hospital_name": getattr(u, "hospital").name if getattr(u, "hospital", None) else None,
             "is_active": u.is_active,
             "created_at": u.created_at
         }

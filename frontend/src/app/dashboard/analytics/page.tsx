@@ -144,21 +144,18 @@ export default function AnalyticsPage() {
   const accuracyHistory = mh.accuracy_history || monthlyRounds.map((m, i) => ({ round: `R${i+1}`, accuracy: m.accuracy, loss: (100 - m.accuracy) / 100 }));
   const docData = data?.doctor || {};
 
-  // Doctor-specific derived data
+  // Doctor-specific derived data (Using Real Data now!)
   const riskDist = [
-    { name: 'Low Risk', value: docData.risk_distribution?.low || 42, color: '#10b981' },
-    { name: 'Moderate', value: docData.risk_distribution?.moderate || 35, color: '#f59e0b' },
-    { name: 'High Risk', value: docData.risk_distribution?.high || 23, color: '#ef4444' },
+    { name: 'Low Risk', value: docData.risk_distribution?.low || 0, color: '#10b981' },
+    { name: 'Moderate', value: docData.risk_distribution?.moderate || 0, color: '#f59e0b' },
+    { name: 'High Risk', value: docData.risk_distribution?.high || 0, color: '#ef4444' },
   ];
 
-  const predTypes = Object.entries(docData.prediction_types || { ai_prediction: 18, nlp_analysis: 9 }).map(([name, value]) => ({
+  const predTypes = Object.entries(docData.prediction_types || {}).map(([name, value]) => ({
     name: name.replace('_', ' '), value: value as number, color: name === 'ai_prediction' ? '#0F4C81' : '#0D9488',
   }));
 
-  const patientTrend = [
-    { month: 'Jan', patients: 4 }, { month: 'Feb', patients: 7 }, { month: 'Mar', patients: 11 },
-    { month: 'Apr', patients: 15 }, { month: 'May', patients: 19 }, { month: 'Jun', patients: docData.total_patients || 22 },
-  ];
+  const patientTrend = docData.patient_trend || [];
 
   if (loading) return (
     <div className="space-y-8 animate-fade-in">

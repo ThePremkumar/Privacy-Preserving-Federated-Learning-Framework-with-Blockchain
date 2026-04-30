@@ -14,7 +14,7 @@ from app.core.db_models import DatasetUpload, TrainingJob
 router = APIRouter(tags=["doctor"])
 
 @router.get("/summary")
-async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """
     Get aggregated summary metrics for the doctor's dashboard.
     Includes patient count, record count, anomalies, and performance.
@@ -84,7 +84,31 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
             ptype = pred.get("type", "unknown")
             pred_types[ptype] = pred_types.get(ptype, 0) + 1
         
-        # 7. Recent patients (last 5)
+        # 7. Patient registration trend (last 6 months)
+        from dateutil.relativedelta import relativedelta
+        import calendar
+        
+        patient_trend = []
+        today = datetime.utcnow()
+        for i in range(5, -1, -1):
+            target_month = today - relativedelta(months=i)
+            month_name = calendar.month_abbr[target_month.month]
+            
+            # Count patients created in this month
+            count = 0
+            for p in all_patients:
+                created_str = p.get("created_at")
+                if created_str:
+                    try:
+                        dt = datetime.fromisoformat(created_str)
+                        if dt.year == target_month.year and dt.month == target_month.month:
+                            count += 1
+                    except ValueError:
+                        pass
+            
+            patient_trend.append({"month": month_name, "patients": count})
+
+        # 8. Recent patients (last 5)
         recent_patients = sorted(all_patients, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
         recent_patients_data = [
             {
@@ -109,6 +133,7 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
             "age_groups": age_groups,
             "risk_distribution": risk_dist,
             "prediction_types": pred_types,
+            "patient_trend": patient_trend,
             "recent_patients": recent_patients_data,
             "recent_activity": [
                 {
@@ -126,7 +151,7 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
         db.close()
 
 @router.get("/patients")
-async def get_doctor_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def get_doctor_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """List all patients assigned to the doctor's facility"""
     hospital_id = current_user.get("hospital_id")
     patients = await patient_repo.find_many({"hospital_id": hospital_id})
@@ -167,7 +192,7 @@ async def deactivate_doctor(doctor_id: str, current_user: Dict[str, Any] = Depen
 
 
 @router.get("/patient/{patient_id}/timeline")
-async def get_patient_timeline(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def get_patient_timeline(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """Get complete patient timeline including predictions, reports, and notes"""
     hospital_id = current_user.get("hospital_id")
     
@@ -239,7 +264,7 @@ async def get_patient_timeline(patient_id: str, current_user: Dict[str, Any] = D
 
 
 @router.post("/clinical-report/{patient_id}")
-async def generate_clinical_report(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
+async def generate_clinical_report(patient_id: str, current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
     """Generate a comprehensive AI-enhanced clinical report for a patient"""
     hospital_id = current_user.get("hospital_id")
     

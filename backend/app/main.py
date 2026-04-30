@@ -85,7 +85,7 @@ app = FastAPI(
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly for production
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -106,7 +106,7 @@ app.include_router(data_upload.router, prefix="/api/v1/data", tags=["Data Upload
 app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
 
 from app.api.websockets import router as websockets_router
-app.include_router(websockets_router, tags=["WebSockets"])
+app.include_router(websockets_router, prefix="/api/v1", tags=["WebSockets"])
 
 from app.api.notifications import router as notifications_router
 app.include_router(notifications_router, prefix="/api/v1/notifications", tags=["Notifications"])

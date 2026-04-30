@@ -25,6 +25,7 @@ class UpdateUserRequest(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
+    hospital_id: Optional[str] = None
 
 
 class ResetPasswordRequest(BaseModel):
@@ -87,7 +88,7 @@ async def update_user(
     req: UpdateUserRequest,
     current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
 ):
-    """Update a user's email, role, or active status."""
+    """Update a user's email, role, active status, or hospital."""
     db = SessionLocal()
     try:
         u = db.query(db_models.User).filter(db_models.User.id == user_id).first()
@@ -115,6 +116,11 @@ async def update_user(
                 raise HTTPException(status_code=400, detail=f"Invalid role: {req.role}")
         if req.is_active is not None:
             u.is_active = req.is_active
+        if req.hospital_id is not None:
+            if current_user.get("role") == "super_admin":
+                u.hospital_id = req.hospital_id
+            else:
+                raise HTTPException(status_code=403, detail="Only Super Admins can change a user's hospital")
         db.commit()
         db.refresh(u)
 

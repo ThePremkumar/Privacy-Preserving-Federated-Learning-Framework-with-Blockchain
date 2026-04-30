@@ -30,6 +30,7 @@ import {
   Upload,
   Cpu,
   ClipboardList,
+  ClipboardCheck,
   PlusCircle,
   History,
   Bell,
@@ -143,6 +144,7 @@ const hospitalAdminNav: NavSection[] = [
     items: [
       { name: 'Doctor Management', icon: Stethoscope, href: '/dashboard/doctor-management' },
       { name: 'Patient Management', icon: Users, href: '/dashboard/patients' },
+      { name: 'Patient Reviews', icon: ClipboardCheck, href: '/dashboard/patient-reviews', highlight: true },
     ],
   },
   {
@@ -249,11 +251,22 @@ const roleConfig: Record<UserRole, { label: string; color: string; gradient: str
   doctor:      { label: 'Doctor',      color: 'bg-blue-600',   gradient: 'from-blue-600 to-blue-700' },
 };
 
+import api from '@/lib/api';
+
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  React.useEffect(() => {
+    if (user?.role === 'hospital') {
+      api.get('/patients/referrals?status=pending&unread=true').then(res => {
+        setUnreadCount(res.data.length);
+      }).catch(console.error);
+    }
+  }, [user]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -262,7 +275,15 @@ export const Sidebar = () => {
 
   if (!user) return null;
 
-  const navSections = getNavForRole(user.role);
+  const navSections = getNavForRole(user.role).map(section => ({
+    ...section,
+    items: section.items.map(item => {
+      if (item.name === 'Patient Reviews' && unreadCount > 0) {
+        return { ...item, badge: unreadCount.toString() };
+      }
+      return item;
+    })
+  }));
   const mobileItems = mobileNavItems[user.role];
   const role = roleConfig[user.role];
 
