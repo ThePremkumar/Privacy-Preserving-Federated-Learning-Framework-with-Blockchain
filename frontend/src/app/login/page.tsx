@@ -46,8 +46,12 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
-      const detail = err.response?.data?.detail || 'Invalid credentials. Access denied.';
-      setError(detail);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Network Error: Cannot connect to the security gateway. Please ensure the backend server is running on port 8001.');
+      } else {
+        const detail = err.response?.data?.detail || 'Invalid credentials. Access denied.';
+        setError(detail);
+      }
       setIsLoading(false);
     }
   };

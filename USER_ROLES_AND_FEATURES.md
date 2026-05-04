@@ -4,6 +4,21 @@ This document provides a comprehensive breakdown of the features, pages, and wor
 
 ---
 
+## 🔑 Login Credentials (Quick Reference)
+
+| Role | Specialist ID | Passcode | Hospital |
+|------|--------------|----------|----------|
+| 👑 Super Admin | `superadmin` | `changeme` | — (Platform-wide) |
+| 🏥 Hospital (HIMSR) | `himsr_node` | `HIMSR@2026` | HIMSR, Hosur |
+| 🏥 Hospital (Apollo) | `apollo_node` | `Apollo@2026` | Apollo Hospitals, Chennai |
+| 🏥 Hospital (AIIMS) | `aiims_node` | `AIIMS@2026` | AIIMS Delhi |
+| 👨‍💼 Admin | *(created by super admin)* | *(set at creation)* | — |
+| 🩺 Doctor | *(created by hospital node)* | *(set at creation)* | Assigned hospital |
+
+> **Auto-seeded accounts:** Super Admin + 3 Hospital Nodes are created on first startup.
+
+---
+
 ## 👑 Super Admin (Platform Governance)
 The Super Admin is the ultimate authority, responsible for platform health, network membership, and the final stage of the Federated Learning lifecycle.
 
@@ -53,7 +68,7 @@ Hospital Nodes are the "Engine" of the platform. They represent individual hospi
     - **Differential Privacy (DP)**: Initiate local training with Gaussian noise injection to ensure patient records never leak.
     - **Submission**: Send completed local weights to Admins for review.
 - **Doctor Management (`/dashboard/doctor-management`)**: Register and manage clinical staff (Doctors) who will use the AI for patient care.
-- **Patient Management (`/dashboard/patients`)**: Full access to the patient registry for the entire facility. Admins can view comprehensive profiles, clinical timelines, and manage patient records.
+- **Patient Management (`/dashboard/patients`)**: Full access to the patient registry for the entire facility. Admins can view comprehensive profiles, clinical timelines, and verify records against the **Blockchain Audit Ledger**.
 - **Patient Referral Reviews (`/dashboard/patient-reviews`)** — **[NEW]**:
     - **Doctor Referral Inbox**: A dedicated interface to review patient records shared by doctors for administrative oversight.
     - **Annotation & Action**: Mark referrals as "Reviewed" or "Flagged," set administrative priority, and add notes that sync back to the referring doctor.
@@ -73,7 +88,9 @@ Doctors are the "End Users" who apply the AI's intelligence to real-world clinic
 - **Patient Registry (`/dashboard/patients`)**:
     - **Comprehensive Profiles**: Manage vitals (BP, Sugar, HR, Temp), medical history, and symptoms.
     - **Phygital Records**: Attach scanned medical reports (PDF/Images) directly to patient files.
+    - **Blockchain Audit Ledger**: Access an immutable, on-chain record of every registration, update, and report upload to ensure data integrity and compliance.
 - **Patient Detail View (`/dashboard/patients/[id]`)** — **[NEW]**:
+
     - **Clinical Timeline**: A unified medical history showing every registration, report upload, and AI prediction in chronological order.
     - **Quick Actions**: One-click "Run Prediction" or "Generate Report" from the patient profile.
 - **Clinical Reports (`/dashboard/clinical-reports`)** — **[NEW]**:

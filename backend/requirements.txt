@@ -26,6 +26,7 @@ cryptography>=41.0.0
 
 # Additional ML models
 pandas>=2.1.0
+pyarrow>=14.0.0
 xgboost>=2.0.0
 
 # Monitoring and logging

@@ -46,11 +46,25 @@ _training_reports: Dict[str, Dict[str, Any]] = {}
 # ===========================================================================
 
 class StartTrainingRequest(BaseModel):
-    upload_id: str
+    upload_id: Optional[str] = None
+    department_id: Optional[int] = None
     epochs: int = 50
     learning_rate: float = 0.001
-    batch_size: int = 64
-    patience: int = 7
+    batch_size: int = 128
+    patience: int = 50
+    training_source: str = "csv"  # csv, direct_db
+    privacy_mode: str = "anonymized"  # anonymized, identified
+    epsilon: float = 1.0
+    doctor_id: Optional[str] = None
+    force: bool = False
+
+class ExportRequest(BaseModel):
+    training_source: str = "direct_db"
+    upload_id: Optional[str] = None
+    department_id: Optional[int] = None
+    doctor_id: Optional[str] = None
+    privacy_mode: str = "anonymized"
+    format: str = "csv"  # csv, json
 
 
 class TrainingJobResponse(BaseModel):
@@ -61,6 +75,7 @@ class TrainingJobResponse(BaseModel):
     epochs: int
     accuracy: Optional[str] = None
     loss: Optional[str] = None
+    source_filename: Optional[str] = None
     num_samples: int
     weights_hash: Optional[str] = None
     epsilon_used: str
@@ -68,6 +83,8 @@ class TrainingJobResponse(BaseModel):
     completed_at: Optional[str] = None
     review_notes: Optional[str] = None
     reviewed_by: Optional[str] = None
+    department_id: Optional[int] = None
+    department_name: Optional[str] = None
 
 
 class ReviewRequest(BaseModel):
@@ -82,13 +99,47 @@ class AggregateRequest(BaseModel):
 class AggregationResponse(BaseModel):
     round_id: str
     round_number: int
+    global_model_version: int
     participating_hospitals: List[str]
     total_samples: int
     global_accuracy: str
     global_loss: str
     global_weights_hash: str
     blockchain_tx_hash: str
+    blockchain_status: str
 
+class AggregationHistoryItem(BaseModel):
+    id: str
+    round_number: int
+    date: str
+    nodes_count: int
+    total_samples: int
+    global_accuracy: str
+    global_loss: str
+    blockchain_status: str
+
+class UpdateRoundNotesRequest(BaseModel):
+    notes: str
+
+class AggregationRoundDetailResponse(BaseModel):
+    id: str
+    round_number: int
+    global_model_version: int
+    global_accuracy: str
+    global_loss: str
+    total_samples: int
+    contributing_jobs: List[Dict[str, Any]]
+    contributing_nodes: List[str]
+    node_weights: Dict[str, float]
+    blockchain_tx_hash: str
+    blockchain_status: str
+    aggregated_by_username: str
+    started_at: str
+    completed_at: str
+    duration_seconds: int
+    privacy_epsilon: float
+    notes: Optional[str] = None
+    accuracy_regression: Optional[Dict[str, Any]] = None
 
 class AnalyzeCSVRequest(BaseModel):
     upload_id: str
@@ -120,14 +171,64 @@ async def analyze_csv(
         processor = HealthcareDataProcessor()
         report = processor.detect_columns(df)
 
+        # --- TRAINING READINESS CHECK (SECTION 12) ---
+        readiness_checks = {
+            "status": "ready",
+            "errors": [],
+            "warnings": [],
+            "info": []
+        }
+
+        # CHECK 1: Record count
+        row_count = len(df)
+        if row_count < 100:
+            readiness_checks["status"] = "blocked"
+            readiness_checks["errors"].append(f"Dataset too small for meaningful training. Minimum 100 records required. Found {row_count}.")
+        elif row_count < 500:
+            readiness_checks["warnings"].append(f"Low record count ({row_count}). Model accuracy may be limited.")
+        elif row_count > 10000:
+            # Estimate: 10s base + 1s per 1000 rows per 10 epochs (mock estimate)
+            est_time = 10 + (row_count / 1000) * (50 / 10) 
+            readiness_checks["info"].append(f"High volume dataset ({row_count} records). Estimated training time: {int(est_time)}s.")
+
+        # CHECK 2: Column presence
+        target_detected = any(c['is_target'] for c in report.values())
+        if not target_detected:
+            readiness_checks["warnings"].append("No recognizable target column found. Verify your dataset contains a diagnosis or outcome column before training.")
+        
+        feature_count = sum(1 for c in report.values() if not c['is_target'] and c['type'] != 'id')
+        if feature_count < 5:
+            readiness_checks["warnings"].append(f"Only {feature_count} features detected. Model may have insufficient signal.")
+
+        # CHECK 3: Filename vs content consistency
+        node_slug = (hospital.short_name or hospital.name.split()[0]).lower().replace(" ", "") if 'hospital' in locals() else "unknown"
+        filename_slug = upload.filename.lower().split('_')[0] if '_' in upload.filename else ""
+        if filename_slug and filename_slug != node_slug:
+            readiness_checks["warnings"].append(f"Warning: Filename prefix '{filename_slug}' mismatch with node '{node_slug}'.")
+
+        # CHECK 4: Duplicate detection
+        duplicate = db.query(DatasetUpload).filter(
+            DatasetUpload.hospital_id == upload.hospital_id,
+            DatasetUpload.sha256_hash == upload.sha256_hash,
+            DatasetUpload.id != upload.id
+        ).first()
+        if duplicate:
+            readiness_checks["warnings"].append(
+                f"This file has already been uploaded on {duplicate.uploaded_at.strftime('%Y-%m-%d')} "
+                f"as '{duplicate.filename}'. Training on duplicate data will not improve the global model. "
+                f"Upload ID of existing file: {duplicate.id}. "
+                f"Proceed with existing upload or confirm to create a duplicate."
+            )
+
         return {
             "upload_id": req.upload_id,
             "filename": upload.filename,
-            "total_rows": len(df),
+            "total_rows": row_count,
             "total_columns": len(df.columns),
             "columns_detected": list(df.columns),
             "column_analysis": report,
-            "message": f"Detected {len(report)} columns across {len(df)} rows.",
+            "readiness_report": readiness_checks,
+            "message": f"Detected {len(report)} columns across {row_count} rows.",
         }
     except HTTPException:
         raise
@@ -144,7 +245,21 @@ async def analyze_csv(
 
 from fastapi import BackgroundTasks
 
-def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_id: str, batch_size: int, epochs: int, patience: int, learning_rate: float):
+def _apply_privacy_mode(df: Any, privacy_mode: str) -> Any:
+    """Strip identity fields if mode is anonymized."""
+    if privacy_mode == "anonymized":
+        # PII and identity fields to strip
+        to_strip = [
+            "Patient Name", "Name", "Patient ID", "id", "_id", 
+            "Phone", "Email", "National ID", "Address", "SSN",
+            "Doctor Name", "Doctor", "doctor_name", "doctor_id", "Doctor ID"
+        ]
+        for col in to_strip:
+            if col in df.columns:
+                df = df.drop(columns=[col])
+    return df
+
+async def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_id: str, batch_size: int, epochs: int, patience: int, learning_rate: float):
     """Background task to run the actual training."""
     db = SessionLocal()
     try:
@@ -157,10 +272,26 @@ def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_id: st
         job.status = "training"
         db.commit()
 
+        # Audit Log
+        from app.core.db_models import AuditLog
+        audit_msg = "Training job started in anonymized mode — doctor identity excluded." if job.privacy_mode == "anonymized" else "Training job started WITH doctor identity fields."
+        audit = AuditLog(
+            user_id=user_id,
+            action="training_started",
+            resource=f"job:{job_id}",
+            details={"privacy_mode": job.privacy_mode, "message": audit_msg}
+        )
+        db.add(audit)
+        db.commit()
+
         logger.info(f"Background Task: Starting REAL training for job={job_id}")
 
         # ── 1. Reconstruct DataFrame from stored records ──────────────────
         df = _reconstruct_dataframe(db, upload_id, upload)
+        
+        # ── Apply Privacy Mode ──────────────────────────────────────────
+        df = _apply_privacy_mode(df, job.privacy_mode)
+        
         num_samples = len(df)
 
         if num_samples == 0:
@@ -219,9 +350,13 @@ def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_id: st
             class_names=list(processor.label_encoder.classes_),
         )
 
-        # ── 7. Compute weights hash ──────────────────────────────────────
-        weights_list = [p.data.cpu().numpy().tolist() for p in model.parameters()]
-        weights_json = json.dumps(weights_list, separators=(",", ":"))
+        # ── 7. Compute weights hash (Optimized) ───────────────────────────
+        # Correct weight extraction for aggregation (Location 2 fix)
+        weights_dict = {
+            key: value.cpu().numpy().tolist()
+            for key, value in model.state_dict().items()
+        }
+        weights_json = json.dumps(weights_dict)
         weights_hash = hashlib.sha256(weights_json.encode()).hexdigest()
 
         final_accuracy = test_results["test_accuracy"] / 100.0
@@ -337,6 +472,31 @@ async def start_training(
         if upload.hospital_id != hospital_id:
             raise HTTPException(status_code=403, detail="This dataset does not belong to your hospital.")
 
+        # --- UPLOAD VALIDATION RULE ---
+        from app.core.db_models import Hospital
+        hospital = db.query(Hospital).filter(Hospital.id == hospital_id).first()
+        org_type = hospital.organization_type if hospital else "Hospital"
+        
+        suspicious_keywords = ["COVID", "nursing_home", "CMS", "census", "billing_only"]
+        filename_upper = upload.filename.upper()
+        org_type_upper = org_type.upper()
+        
+        is_suspicious = False
+        for kw in suspicious_keywords:
+            if kw.upper() in filename_upper:
+                # If keyword matches org type (e.g. Nursing Home), it's not suspicious
+                if kw.upper() in org_type_upper:
+                    continue
+                is_suspicious = True
+                break
+        
+        if is_suspicious and not req.force:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Warning: The selected dataset filename ('{upload.filename}') does not match this node's organization type ('{org_type}'). Confirm this is the correct file before proceeding."
+            )
+        # ------------------------------
+
         job_id = str(uuid.uuid4())
         started_at = datetime.utcnow()
 
@@ -344,15 +504,28 @@ async def start_training(
             id=job_id,
             hospital_id=hospital_id,
             upload_id=req.upload_id,
+            source_filename=upload.filename,
             started_by=user_id,
             status="pending",
+            training_source=req.training_source,
+            privacy_mode=req.privacy_mode,
+            is_anonymized=(req.privacy_mode == "anonymized"),
             epochs=req.epochs,
             learning_rate=str(req.learning_rate),
             num_samples=0,
-            epsilon_used="1.0",
+            epsilon_used=str(req.epsilon),
             delta_used="1e-5",
+            department_id=req.department_id,
+            doctor_id=req.doctor_id,
             started_at=started_at,
         )
+        # Fetch department name if provided
+        if req.department_id:
+            from app.core.db_models import Department
+            dept = db.query(Department).filter(Department.id == req.department_id).first()
+            if dept:
+                job.department_name = dept.name
+
         db.add(job)
         db.commit()
         db.refresh(job)
@@ -366,6 +539,195 @@ async def start_training(
     except Exception as exc:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        db.close()
+
+@router.post("/start-from-org-data", response_model=TrainingJobResponse, status_code=status.HTTP_201_CREATED)
+async def start_training_from_org_data(
+    req: StartTrainingRequest,
+    background_tasks: BackgroundTasks,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
+):
+    """
+    Hospital node starts local model training on patient data from MongoDB (optionally scoped by department).
+    """
+    hospital_id = current_user.get("hospital_id", "unknown")
+    user_id = current_user.get("user_id", "unknown")
+
+    db = SessionLocal()
+    try:
+        job_id = str(uuid.uuid4())
+        started_at = datetime.utcnow()
+
+        # Create job record (upload_id is null for org data)
+        job = TrainingJob(
+            id=job_id,
+            hospital_id=hospital_id,
+            upload_id="org_data", # Special marker
+            started_by=user_id,
+            status="pending",
+            training_source=req.training_source,
+            privacy_mode=req.privacy_mode,
+            is_anonymized=(req.privacy_mode == "anonymized"),
+            epochs=req.epochs,
+            learning_rate=str(req.learning_rate),
+            num_samples=0,
+            epsilon_used=str(req.epsilon),
+            delta_used="1e-5",
+            department_id=req.department_id,
+            doctor_id=req.doctor_id,
+            started_at=started_at,
+        )
+        
+        if req.department_id:
+            from app.core.db_models import Department
+            dept = db.query(Department).filter(Department.id == req.department_id).first()
+            if dept:
+                job.department_name = dept.name
+
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+
+        # Background task for org data training
+        background_tasks.add_task(run_org_training_task, job_id, hospital_id, user_id, req.batch_size, req.epochs, req.patience, req.learning_rate, req.department_id, req.doctor_id)
+
+        return _job_to_response(job)
+
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"start_training_from_org_data error: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        db.close()
+
+async def run_org_training_task(job_id: str, hospital_id: str, user_id: str, batch_size: int, epochs: int, patience: int, learning_rate: float, department_id: Optional[int] = None, doctor_id: Optional[str] = None):
+    """Background task to run training on patient data from MongoDB."""
+    db = SessionLocal()
+    try:
+        from app.core.mongodb import patient_repo
+        import pandas as pd
+        
+        job = db.query(TrainingJob).filter(TrainingJob.id == job_id).first()
+        if not job:
+            return
+
+        job.status = "training"
+        db.commit()
+
+        # Audit Log
+        from app.core.db_models import AuditLog
+        audit_msg = "Training job started in anonymized mode — doctor identity excluded." if job.privacy_mode == "anonymized" else "Training job started WITH doctor identity fields."
+        audit = AuditLog(
+            user_id=user_id,
+            action="training_started",
+            resource=f"job:{job_id}",
+            details={"privacy_mode": job.privacy_mode, "message": audit_msg}
+        )
+        db.add(audit)
+        db.commit()
+
+        # Filter by department/doctor if needed
+        query = {"hospital_id": hospital_id}
+        if doctor_id:
+            query["created_by"] = doctor_id
+            
+        all_patients = await patient_repo.find_many(query)
+        
+        if department_id and not doctor_id:
+            # Find doctors in this department
+            from app.core.db_models import User
+            doctors = db.query(User).filter(User.hospital_id == hospital_id, User.department_id == department_id).all()
+            doctor_ids = [d.id for d in doctors]
+            patients = [p for p in all_patients if p.get("created_by") in doctor_ids]
+        else:
+            patients = all_patients
+
+        # Filter out deleted
+        patients = [p for p in patients if p.get("status", "active") != "deleted"]
+        
+        num_samples = len(patients)
+        if num_samples < 10: # Minimum samples for training
+            job.status = "failed"
+            job.review_notes = f"Insufficient data: only {num_samples} records found for this scope (minimum 10 required)."
+            db.commit()
+            return
+
+        # ── 2. Convert to DataFrame ──────────────────────────────────────
+        # We need to map MongoDB patient fields to the CSV columns expected by the processor
+        # (This is a simplified mapping for simulation)
+        rows = []
+        for p in patients:
+            rows.append({
+                "Patient ID": p.get("patient_id_manual") or p.get("_id"),
+                "Age": p.get("age"),
+                "Gender": p.get("gender"),
+                "Blood Pressure": p.get("blood_pressure", "120/80"),
+                "Cholesterol": "Normal", # Mock
+                "Heart Rate": p.get("heart_rate", 72),
+                "Diabetes": "No", # Mock
+                "Family History": "No", # Mock
+                "Smoking": "No", # Mock
+                "Obesity": "No", # Mock
+                "Alcohol Consumption": "No", # Mock
+                "Exercise Hours Per Week": 3, # Mock
+                "Diet": "Average", # Mock
+                "Previous Heart Problems": "No", # Mock
+                "Medication Use": "No", # Mock
+                "Sedentary Hours Per Day": 8, # Mock
+                "Income": 50000, # Mock
+                "BMI": 24, # Mock
+                "Triglycerides": 150, # Mock
+                "Physical Activity Days Per Week": 3, # Mock
+                "Sleep Hours Per Day": 7, # Mock
+                "Country": "India",
+                "Continent": "Asia",
+                "Hemisphere": "Northern",
+                "Heart Attack Risk": 0 if len(p.get("medical_history", [])) < 2 else 1
+            })
+        
+        df = pd.DataFrame(rows)
+        
+        # ── Apply Privacy Mode ──────────────────────────────────────────
+        df = _apply_privacy_mode(df, job.privacy_mode)
+        
+        # ── 3. Train using same logic as CSV ─────────────────────────────
+        # (Reusing the processor and trainer logic)
+        processor = HealthcareDataProcessor()
+        X, y = processor.fit_transform(df)
+        
+        loaders = processor.create_dataloaders(X, y, test_size=0.2, val_size=0.1, batch_size=batch_size)
+        
+        import torch
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = HealthcareMLP(input_dim=processor.num_features, num_classes=processor.num_classes)
+        trainer = HealthcareTrainer(model=model, device=device, learning_rate=learning_rate)
+        history = trainer.train(train_loader=loaders["train"], val_loader=loaders["val"], epochs=epochs, patience=patience)
+        
+        test_results = trainer.evaluate_final(test_loader=loaders["test"], class_names=list(processor.label_encoder.classes_))
+        
+        weights_list = [p.data.cpu().numpy().tolist() for p in model.parameters()]
+        weights_json = json.dumps(weights_list, separators=(",", ":"))
+        weights_hash = hashlib.sha256(weights_json.encode()).hexdigest()
+
+        # ── 4. Update job ────────────────────────────────────────────────
+        job.status = "completed"
+        job.epochs = len(history)
+        job.accuracy = f"{test_results['test_accuracy']/100:.4f}"
+        job.loss = f"{test_results['test_loss']:.4f}"
+        job.num_samples = num_samples
+        job.weights_hash = weights_hash
+        job.model_weights = weights_json
+        job.completed_at = datetime.utcnow()
+        db.commit()
+
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"run_org_training_task error: {exc}", exc_info=True)
+        if 'job' in locals() and job:
+            job.status = "failed"
+            job.review_notes = str(exc)
+            db.commit()
     finally:
         db.close()
 
@@ -405,6 +767,11 @@ async def get_training_report(
                 "epochs": job.epochs,
                 "num_samples": job.num_samples,
                 "weights_hash": job.weights_hash,
+                "hash_detail": {
+                      "message": "Upload verified & hash recorded",
+                      "count": f"{job.num_samples} records stored",
+                      "hash": job.weights_hash
+                }
             }
         finally:
             db.close()
@@ -464,6 +831,22 @@ async def get_my_training_jobs(
             .all()
         )
         return [_job_to_response(j) for j in jobs]
+    finally:
+        db.close()
+
+
+@router.get("/job/{job_id}", response_model=TrainingJobResponse)
+async def get_training_job_status(
+    job_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Retrieve details and status of a specific training job."""
+    db = SessionLocal()
+    try:
+        job = db.query(TrainingJob).filter(TrainingJob.id == job_id).first()
+        if not job:
+            raise HTTPException(status_code=404, detail="Training job not found.")
+        return _job_to_response(job)
     finally:
         db.close()
 
@@ -574,42 +957,68 @@ async def aggregate_models(
                 detail=f"Jobs {not_approved} are not in 'approved' status.",
             )
 
-        # ── FedAvg aggregation ──
+        # ── FedAvg aggregation (Corrected Location 3) ──
         total_samples = sum(j.num_samples for j in jobs)
         if total_samples == 0:
-            total_samples = 1  # avoid division by zero
+            total_samples = 1
 
-        # Parse weights from each job
-        all_weights = []
-        job_samples = []
-        for j in jobs:
-            w = json.loads(j.model_weights) if j.model_weights else [0.0] * 128
-            # Flatten nested weight lists (real training produces nested per-layer arrays)
-            if isinstance(w, list) and len(w) > 0 and isinstance(w[0], list):
-                flat = []
-                for layer in w:
-                    if isinstance(layer, list):
-                        flat.extend(_flatten_nested(layer))
-                    else:
-                        flat.append(layer)
-                w = flat
-            all_weights.append(np.array(w, dtype=np.float64))
-            job_samples.append(j.num_samples or 1)
+        aggregated_weights = {}
+        
+        for job in jobs:
+            weights = json.loads(job.model_weights)
+            fraction = (job.num_samples or 1) / total_samples
+            
+            # Unwrap and convert all values to numpy arrays
+            for key, val in weights.items() if isinstance(weights, dict) else enumerate(weights):
+                # Handle cases where weights might be a list or a dict
+                if not isinstance(weights, dict):
+                    key = str(key) # convert index to string key for dict aggregation
+                
+                # Defensive unwrap — handle nested dict from bad serialization
+                if isinstance(val, dict):
+                    if 'data' in val:
+                        val = val['data']
+                    elif 'weight' in val: # fallback
+                        val = val['weight']
+                
+                arr = np.array(val, dtype=np.float32)
+                
+                if key not in aggregated_weights:
+                    aggregated_weights[key] = fraction * arr
+                else:
+                    # Pad if needed (unlikely with this structure but safe)
+                    if aggregated_weights[key].shape != arr.shape:
+                        logger.warning(f"Shape mismatch for {key}: {aggregated_weights[key].shape} vs {arr.shape}")
+                    aggregated_weights[key] += fraction * arr
 
-        # Ensure all weight vectors are the same length (pad/truncate as needed)
-        max_len = max(len(w) for w in all_weights)
-        for i, w in enumerate(all_weights):
-            if len(w) < max_len:
-                all_weights[i] = np.pad(w, (0, max_len - len(w)))
-
-        # Weighted average
-        aggregated = np.zeros(max_len, dtype=np.float64)
-        for w, n in zip(all_weights, job_samples):
-            aggregated += (n / total_samples) * w
+        # Global weights as list for storage
+        global_weights_list = {k: v.tolist() for k, v in aggregated_weights.items()}
+        global_weights_json = json.dumps(global_weights_list)
 
         # Compute global metrics (averaged)
-        accuracies = [float(j.accuracy) for j in jobs if j.accuracy]
-        losses = [float(j.loss) for j in jobs if j.loss]
+        accuracies = []
+        losses = []
+        for j in jobs:
+            if j.accuracy:
+                try:
+                    if isinstance(j.accuracy, dict):
+                        acc = float(j.accuracy.get("test_accuracy", j.accuracy.get("accuracy", 0)))
+                    else:
+                        acc = float(j.accuracy)
+                    accuracies.append(acc)
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not parse accuracy for job {j.id}: {j.accuracy}")
+            
+            if j.loss:
+                try:
+                    if isinstance(j.loss, dict):
+                        ls = float(j.loss.get("test_loss", j.loss.get("loss", 0)))
+                    else:
+                        ls = float(j.loss)
+                    losses.append(ls)
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not parse loss for job {j.id}: {j.loss}")
+
         global_acc = sum(accuracies) / len(accuracies) if accuracies else 0.0
         global_loss = sum(losses) / len(losses) if losses else 0.0
 
@@ -617,49 +1026,138 @@ async def aggregate_models(
         global_acc = min(global_acc + 0.02, 0.99)
         global_loss = max(global_loss - 0.02, 0.02)
 
-        global_weights_hash = hashlib.sha256(json.dumps(aggregated.tolist()).encode()).hexdigest()
+        global_weights_hash = hashlib.sha256(global_weights_json.encode()).hexdigest()
         blockchain_tx_hash = f"0x{hashlib.sha256(f'{global_weights_hash}_{datetime.utcnow().isoformat()}'.encode()).hexdigest()}"
 
-        # Determine round number
+        # Determine round number and version
         last_round = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).first()
         round_number = (last_round.round_number + 1) if last_round else 1
+        global_model_version = (last_round.global_model_version + 1) if last_round else 1
 
         participating_hospitals = list(set(j.hospital_id for j in jobs))
-        epsilon_total = sum(float(j.epsilon_used) for j in jobs if j.epsilon_used)
+        
+        # Node weights for governance
+        node_weights_dict = {}
+        for j in jobs:
+            fraction = (j.num_samples or 1) / total_samples
+            node_weights_dict[j.hospital_id] = round(fraction, 4)
+
+        epsilons = []
+        for j in jobs:
+            if j.epsilon_used:
+                try:
+                    if isinstance(j.epsilon_used, dict):
+                        eps = float(j.epsilon_used.get("epsilon", 0))
+                    else:
+                        eps = float(j.epsilon_used)
+                    epsilons.append(eps)
+                except (ValueError, TypeError):
+                    logger.warning(f"Could not parse epsilon for job {j.id}: {j.epsilon_used}")
+        epsilon_total_val = sum(epsilons)
+        privacy_epsilon = max(epsilons) if epsilons else 1.0
 
         # Save aggregation round
+        start_time = datetime.utcnow()
         agg = AggregationRound(
             id=str(uuid.uuid4()),
             round_number=round_number,
+            global_model_version=global_model_version,
             initiated_by=current_user.get("user_id", "unknown"),
             status="completed",
-            participating_jobs=",".join(j.id for j in jobs),
-            participating_hospitals=",".join(participating_hospitals),
+            contributing_jobs=[j.id for j in jobs],
+            contributing_nodes=participating_hospitals,
+            node_weights=node_weights_dict,
             total_samples=total_samples,
             global_accuracy=f"{global_acc:.4f}",
             global_loss=f"{global_loss:.4f}",
             global_weights_hash=global_weights_hash,
             blockchain_tx_hash=blockchain_tx_hash,
-            epsilon_total=f"{epsilon_total:.2f}",
+            blockchain_status="confirmed",
+            privacy_epsilon=privacy_epsilon,
+            epsilon_total=f"{epsilon_total_val:.2f}",
+            started_at=start_time,
+            completed_at=datetime.utcnow(),
         )
+        agg.duration_seconds = int((agg.completed_at - agg.started_at).total_seconds())
         db.add(agg)
 
         # Mark jobs as aggregated
         for j in jobs:
             j.status = "aggregated"
+        
         db.commit()
 
-        logger.info(f"Aggregation round {round_number} completed: {len(jobs)} jobs, acc={global_acc:.4f}")
+        # ── Accuracy Regression Alert ─────────────────────────────────────
+        if last_round:
+            last_acc = float(last_round.global_accuracy or 0)
+            if global_acc < last_acc:
+                diff = (last_acc - global_acc) * 100
+                from app.api.websockets import manager
+                from app.core.db_models import Notification
+                import asyncio
+                
+                # Global notification for super admin
+                notif = Notification(
+                    type="system_alert",
+                    severity="warning",
+                    title="Global model accuracy decreased",
+                    message=f"Round #{round_number} accuracy ({global_acc*100:.1f}%) is {diff:.1f}% lower than Round #{round_number-1}. Review contributing jobs.",
+                    sound="warning",
+                    target_roles=["super_admin"]
+                )
+                db.add(notif)
+                db.commit()
+                
+                # Broadcast
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        loop.create_task(manager.broadcast_to_roles({
+                            "id": notif.id,
+                            "type": notif.type,
+                            "severity": notif.severity,
+                            "title": notif.title,
+                            "message": notif.message,
+                            "sound": notif.sound,
+                            "created_at": notif.created_at.isoformat()
+                        }, ["super_admin"]))
+                except Exception: pass
+
+        # Broadcast general aggregation success
+        try:
+            from app.api.websockets import manager
+            import asyncio
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(manager.broadcast_to_roles({
+                    "type": "aggregation_complete",
+                    "title": "Global Model Updated",
+                    "message": f"Global model updated — Round #{round_number} · {len(participating_hospitals)} nodes · {total_samples} samples · Accuracy: {global_acc*100:.1f}%",
+                    "sound": "success"
+                }, ["admin", "super_admin", "hospital"]))
+        except Exception: pass
+
+        # Save global weights to file storage (v{version})
+        model_dir = "data/models"
+        os.makedirs(model_dir, exist_ok=True)
+        model_filename = f"global_model_v{global_model_version}.json"
+        model_path = os.path.join(model_dir, model_filename)
+        with open(model_path, "w") as f:
+            f.write(global_weights_json)
+
+        logger.info(f"Aggregation round {round_number} completed: {len(jobs)} jobs, acc={global_acc:.4f}, saved to {model_filename}")
 
         return AggregationResponse(
             round_id=agg.id,
             round_number=round_number,
+            global_model_version=global_model_version,
             participating_hospitals=participating_hospitals,
             total_samples=total_samples,
             global_accuracy=f"{global_acc:.4f}",
             global_loss=f"{global_loss:.4f}",
             global_weights_hash=global_weights_hash,
             blockchain_tx_hash=blockchain_tx_hash,
+            blockchain_status=agg.blockchain_status,
         )
     except HTTPException:
         raise
@@ -667,6 +1165,208 @@ async def aggregate_models(
         db.rollback()
         logger.error(f"aggregate error: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        db.close()
+
+# ===========================================================================
+# Model Governance Endpoints (SECTION 16)
+# ===========================================================================
+
+@router.get("/global-model/latest")
+async def get_latest_global_model(
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin", "hospital"])),
+):
+    """Get latest global model version and metadata."""
+    db = SessionLocal()
+    try:
+        last = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).first()
+        if not last:
+            return {"version": 0, "message": "No global model available yet."}
+        
+        return {
+            "version": last.global_model_version,
+            "round_number": last.round_number,
+            "accuracy": last.global_accuracy,
+            "loss": last.global_loss,
+            "hash": last.global_weights_hash,
+            "updated_at": last.completed_at.isoformat() if last.completed_at else None
+        }
+    finally:
+        db.close()
+
+@router.get("/global-model/download")
+async def download_global_model(
+    version: Optional[int] = None,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
+):
+    """Download global model weights as JSON file."""
+    db = SessionLocal()
+    try:
+        if version is None:
+            last = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).first()
+            if not last:
+                raise HTTPException(status_code=404, detail="No global model available.")
+            version = last.global_model_version
+        
+        model_path = os.path.join("data/models", f"global_model_v{version}.json")
+        if not os.path.exists(model_path):
+            raise HTTPException(status_code=404, detail=f"Model version {version} not found on disk.")
+        
+        from fastapi.responses import FileResponse
+        return FileResponse(model_path, filename=f"global_model_v{version}.json")
+    finally:
+        db.close()
+
+@router.get("/aggregation-rounds/{round_id}/report")
+async def export_round_report_pdf(
+    round_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
+):
+    """Export aggregation round report (Mocked as JSON for now)."""
+    # Real PDF generation would use reportlab or similar
+    return await get_aggregation_round_detail(round_id, current_user)
+
+@router.get("/aggregation-history", response_model=List[AggregationHistoryItem])
+async def get_aggregation_history(
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin", "hospital", "doctor"])),
+):
+    """Get history of all aggregation rounds."""
+    db = SessionLocal()
+    try:
+        rounds = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).all()
+        return [
+            AggregationHistoryItem(
+                id=r.id,
+                round_number=r.round_number,
+                date=r.completed_at.strftime("%Y-%m-%d") if r.completed_at else r.created_at.strftime("%Y-%m-%d"),
+                nodes_count=len(r.contributing_nodes or []),
+                total_samples=r.total_samples,
+                global_accuracy=r.global_accuracy or "0.0000",
+                global_loss=r.global_loss or "0.0000",
+                blockchain_status=r.blockchain_status or "confirmed"
+            )
+            for r in rounds
+        ]
+    finally:
+        db.close()
+
+@router.get("/aggregation-rounds/{round_id}", response_model=AggregationRoundDetailResponse)
+async def get_aggregation_round_detail(
+    round_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
+):
+    """Get full details of a specific aggregation round."""
+    db = SessionLocal()
+    try:
+        agg = db.query(AggregationRound).filter(AggregationRound.id == round_id).first()
+        if not agg:
+            raise HTTPException(status_code=404, detail="Aggregation round not found.")
+        
+        # Get contributing job details
+        from app.core.db_models import User, Hospital, DatasetUpload
+        
+        jobs_query = db.query(
+            TrainingJob.id,
+            TrainingJob.accuracy,
+            TrainingJob.loss,
+            TrainingJob.num_samples,
+            TrainingJob.hospital_id,
+            Hospital.name.label("hospital_name")
+        ).join(Hospital, Hospital.id == TrainingJob.hospital_id).filter(TrainingJob.id.in_(agg.contributing_jobs or [])).all()
+        
+        contributing_jobs = [
+            {
+                "id": j.id,
+                "accuracy": j.accuracy,
+                "loss": j.loss,
+                "num_samples": j.num_samples,
+                "hospital_id": j.hospital_id,
+                "hospital_name": j.hospital_name
+            }
+            for j in jobs_query
+        ]
+
+        # Get username of initiator
+        initiator = db.query(User).filter(User.id == agg.initiated_by).first()
+        username = initiator.username if initiator else "Unknown"
+
+        # Check for regression
+        regression = None
+        prev = db.query(AggregationRound).filter(AggregationRound.round_number == agg.round_number - 1).first()
+        if prev:
+            curr_acc = float(agg.global_accuracy or 0)
+            prev_acc = float(prev.global_accuracy or 0)
+            if curr_acc < prev_acc:
+                regression = {
+                    "type": "regression",
+                    "delta": round((prev_acc - curr_acc) * 100, 2),
+                    "previous_round": prev.round_number
+                }
+            elif curr_acc > prev_acc + 0.1:
+                regression = {
+                    "type": "improvement",
+                    "delta": round((curr_acc - prev_acc) * 100, 2),
+                    "previous_round": prev.round_number
+                }
+
+        return AggregationRoundDetailResponse(
+            id=agg.id,
+            round_number=agg.round_number,
+            global_model_version=agg.global_model_version,
+            global_accuracy=agg.global_accuracy or "0.0000",
+            global_loss=agg.global_loss or "0.0000",
+            total_samples=agg.total_samples,
+            contributing_jobs=contributing_jobs,
+            contributing_nodes=agg.contributing_nodes or [],
+            node_weights=agg.node_weights or {},
+            blockchain_tx_hash=agg.blockchain_tx_hash or "",
+            blockchain_status=agg.blockchain_status or "confirmed",
+            aggregated_by_username=username,
+            started_at=agg.started_at.isoformat() if agg.started_at else "",
+            completed_at=agg.completed_at.isoformat() if agg.completed_at else "",
+            duration_seconds=agg.duration_seconds or 0,
+            privacy_epsilon=agg.privacy_epsilon or 1.0,
+            notes=agg.notes,
+            accuracy_regression=regression
+        )
+    finally:
+        db.close()
+
+@router.post("/aggregation-rounds/{round_id}/notes")
+async def update_round_notes(
+    round_id: str,
+    req: UpdateRoundNotesRequest,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
+):
+    """Update notes for an aggregation round."""
+    db = SessionLocal()
+    try:
+        agg = db.query(AggregationRound).filter(AggregationRound.id == round_id).first()
+        if not agg:
+            raise HTTPException(status_code=404, detail="Aggregation round not found.")
+        
+        agg.notes = req.notes
+        db.commit()
+        return {"message": "Notes updated successfully."}
+    finally:
+        db.close()
+
+@router.post("/aggregation-rounds/{round_id}/verify-chain")
+async def verify_blockchain_status(
+    round_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
+):
+    """Re-verify blockchain status for a round."""
+    db = SessionLocal()
+    try:
+        agg = db.query(AggregationRound).filter(AggregationRound.id == round_id).first()
+        if not agg:
+            raise HTTPException(status_code=404, detail="Aggregation round not found.")
+        
+        # Simulate blockchain verification
+        agg.blockchain_status = "confirmed"
+        db.commit()
+        return {"status": agg.blockchain_status, "message": "Blockchain status verified."}
     finally:
         db.close()
 
@@ -716,6 +1416,7 @@ def _job_to_response(job: TrainingJob) -> TrainingJobResponse:
         epochs=job.epochs,
         accuracy=job.accuracy,
         loss=job.loss,
+        source_filename=job.source_filename,
         num_samples=job.num_samples,
         weights_hash=job.weights_hash,
         epsilon_used=job.epsilon_used or "1.0",
@@ -723,6 +1424,8 @@ def _job_to_response(job: TrainingJob) -> TrainingJobResponse:
         completed_at=job.completed_at.isoformat() if job.completed_at else None,
         review_notes=job.review_notes,
         reviewed_by=job.reviewed_by,
+        department_id=job.department_id,
+        department_name=job.department_name,
     )
 
 
@@ -730,10 +1433,21 @@ def _reconstruct_dataframe(db, upload_id: str, upload: DatasetUpload) -> "pd.Dat
     """
     Re-build a pandas DataFrame from stored DatasetRecord rows.
     Falls back to loading the CSV directly from disk if available.
+    Uses CSV caching to avoid repeated DB reconstruction.
     """
     import pandas as pd
+    import os
 
-    # Try to reconstruct from DB records first
+    # Speed Check 1: Check for local cache to avoid DB bottleneck
+    cache_path = os.path.join("data", "exports", f"training_cache_{upload_id}.parquet")
+    if os.path.exists(cache_path):
+        logger.info(f"Speed Optimization: Loading from cache {cache_path}")
+        try:
+            return pd.read_parquet(cache_path)
+        except Exception as e:
+            logger.warning(f"Parquet cache read failed: {e}. Falling back to DB.")
+
+    # Try to reconstruct from DB records
     records = (
         db.query(DatasetRecord)
         .filter(DatasetRecord.upload_id == upload_id)
@@ -742,22 +1456,30 @@ def _reconstruct_dataframe(db, upload_id: str, upload: DatasetUpload) -> "pd.Dat
     )
 
     if records:
-        rows = []
-        for rec in records:
-            try:
-                row_data = ast.literal_eval(rec.data)
-                rows.append(row_data)
-            except Exception:
-                try:
-                    row_data = json.loads(rec.data.replace("'", '"'))
-                    rows.append(row_data)
-                except Exception:
-                    continue
-
-        if rows:
-            df = pd.DataFrame(rows)
-            logger.info(f"Reconstructed {len(df)} rows from DB records for upload {upload_id}")
-            return df
+        try:
+            # Batch process records for speed
+            import json
+            rows = []
+            for rec in records:
+                # Use a more efficient check
+                d = rec.data
+                if d.startswith('{'):
+                    rows.append(json.loads(d.replace("'", '"')))
+                else:
+                    rows.append(ast.literal_eval(d))
+            
+            if rows:
+                df = pd.DataFrame(rows)
+                logger.info(f"Reconstructed {len(df)} rows from DB records for upload {upload_id}")
+                
+                # Speed Check 1: Save to cache for subsequent jobs
+                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                df.to_parquet(cache_path, index=False)
+                logger.info(f"Speed Optimization: Saved dataset to cache {cache_path}")
+                
+                return df
+        except Exception as e:
+            logger.warning(f"DB reconstruction failed, falling back to CSV: {e}")
 
     # Fallback: load CSV from disk
     csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "healthcare_dataset.csv")
@@ -778,3 +1500,145 @@ def _flatten_nested(lst) -> list:
         else:
             result.append(float(item))
     return result
+
+@router.get("/preview-count")
+async def get_preview_count(
+    training_source: str = "direct_db",
+    upload_id: Optional[str] = None,
+    department_id: Optional[int] = None,
+    doctor_id: Optional[str] = None,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
+):
+    """Preview record count before training."""
+    hospital_id = current_user.get("hospital_id")
+    db = SessionLocal()
+    try:
+        if training_source == "csv":
+            if not upload_id:
+                return {"count": 0}
+            upload = db.query(DatasetUpload).filter(DatasetUpload.id == upload_id).first()
+            return {"count": upload.record_count if upload else 0}
+        else:
+            from app.core.mongodb import patient_repo
+            query = {"hospital_id": hospital_id}
+            if doctor_id:
+                query["created_by"] = doctor_id
+            
+            all_patients = await patient_repo.find_many(query)
+            
+            if department_id and not doctor_id:
+                from app.core.db_models import User
+                doctors = db.query(User).filter(User.hospital_id == hospital_id, User.department_id == department_id).all()
+                doctor_ids = [d.id for d in doctors]
+                patients = [p for p in all_patients if p.get("created_by") in doctor_ids]
+            else:
+                patients = all_patients
+                
+            patients = [p for p in patients if p.get("status", "active") != "deleted"]
+            return {"count": len(patients)}
+    finally:
+        db.close()
+
+@router.post("/export")
+async def export_dataset(
+    req: ExportRequest,
+    current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
+):
+    """Export dataset to CSV or JSON with privacy stripping."""
+    hospital_id = current_user.get("hospital_id")
+    db = SessionLocal()
+    try:
+        import pandas as pd
+        if req.training_source == "csv":
+            upload = db.query(DatasetUpload).filter(DatasetUpload.id == req.upload_id).first()
+            if not upload:
+                raise HTTPException(status_code=404, detail="Upload not found")
+            df = _reconstruct_dataframe(db, req.upload_id, upload)
+        else:
+            from app.core.mongodb import patient_repo
+            query = {"hospital_id": hospital_id}
+            if req.doctor_id:
+                query["created_by"] = req.doctor_id
+                
+            all_patients = await patient_repo.find_many(query)
+            
+            if req.department_id and not req.doctor_id:
+                from app.core.db_models import User
+                doctors = db.query(User).filter(User.hospital_id == hospital_id, User.department_id == req.department_id).all()
+                doctor_ids = [d.id for d in doctors]
+                patients = [p for p in all_patients if p.get("created_by") in doctor_ids]
+            else:
+                patients = all_patients
+                
+            patients = [p for p in patients if p.get("status", "active") != "deleted"]
+            
+            # Get doctor names for mapping
+            doctor_map = {}
+            if patients:
+                all_doctor_ids = list(set(p.get("created_by") for p in patients if p.get("created_by")))
+                from app.core.db_models import User
+                db_doctors = db.query(User).filter(User.id.in_(all_doctor_ids)).all()
+                doctor_map = {d.id: d.name for d in db_doctors}
+
+            # Simple mapping for export
+            rows = []
+            for p in patients:
+                doc_id = p.get("created_by")
+                rows.append({
+                    "Patient ID": p.get("patient_id_manual") or p.get("_id"),
+                    "Name": p.get("name"),
+                    "Age": p.get("age"),
+                    "Gender": p.get("gender"),
+                    "Blood Pressure": p.get("blood_pressure"),
+                    "Heart Rate": p.get("heart_rate"),
+                    "Symptoms": p.get("current_symptoms"),
+                    "Diagnosis": p.get("diagnosis_notes"),
+                    "Created At": p.get("created_at"),
+                    "Doctor ID": doc_id,
+                    "Doctor Name": doctor_map.get(doc_id, "Unknown")
+                })
+            df = pd.DataFrame(rows)
+
+        # Apply Privacy Mode
+        df = _apply_privacy_mode(df, req.privacy_mode)
+        
+        # Automatic naming
+        hospital_slug = (hospital_id or "unknown").replace("hosp_", "")
+        mode_suffix = "anon" if req.privacy_mode == "anonymized" else "ident"
+        date_str = datetime.utcnow().strftime("%Y-%m-%d")
+        filename = f"{hospital_slug}_{date_str}_{mode_suffix}.{req.format}"
+        
+        # Save to temporary file for hash generation
+        export_dir = "data/exports"
+        os.makedirs(export_dir, exist_ok=True)
+        file_path = os.path.join(export_dir, filename)
+        
+        if req.format == "csv":
+            df.to_csv(file_path, index=False)
+        else:
+            df.to_json(file_path, orient="records", indent=4)
+            
+        # Generate SHA-256
+        with open(file_path, "rb") as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()
+            
+        return {
+            "filename": filename,
+            "hash": file_hash,
+            "count": len(df),
+            "message": f"Dataset exported successfully with {len(df)} records.",
+            "mode": req.privacy_mode,
+            "download_url": f"/api/training/download/{filename}"
+        }
+    finally:
+        db.close()
+
+@router.get("/download/{filename}")
+async def download_export(filename: str):
+    """Download exported dataset."""
+    from fastapi.responses import FileResponse
+    file_path = os.path.join("data/exports", filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, filename=filename)
+

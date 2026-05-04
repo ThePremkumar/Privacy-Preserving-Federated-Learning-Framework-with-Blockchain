@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "HealthConnect is a secure healthcare analytics platform that uses AI, federated learning, and privacy-preserving technologies to analyze medical data, detect anomalies, and provide intelligent insights for hospitals and doctors.",
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

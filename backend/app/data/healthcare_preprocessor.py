@@ -507,7 +507,7 @@ class HealthcareDataProcessor:
         test_size: float = 0.2,
         val_size: float = 0.1,
         batch_size: int = 64,
-        num_workers: int = 0,
+        num_workers: int = 4,
     ) -> Dict[str, DataLoader]:
         """
         Split data and create train/val/test DataLoaders.
@@ -528,7 +528,14 @@ class HealthcareDataProcessor:
                 torch.FloatTensor(X_np),
                 torch.LongTensor(y_np),
             )
-            return DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+            return DataLoader(
+                ds, 
+                batch_size=batch_size, 
+                shuffle=shuffle, 
+                num_workers=num_workers,
+                pin_memory=True,
+                persistent_workers=True if num_workers > 0 else False
+            )
 
         loaders = {
             "train": _make_loader(X_train, y_train, shuffle=True),
@@ -569,7 +576,14 @@ class HealthcareDataProcessor:
                 torch.FloatTensor(X_train[indices]),
                 torch.LongTensor(y_train[indices]),
             )
-            client_loaders[f"client_{i}"] = DataLoader(ds, batch_size=batch_size, shuffle=True)
+            client_loaders[f"client_{i}"] = DataLoader(
+                ds, 
+                batch_size=batch_size, 
+                shuffle=True,
+                num_workers=2, # Lower per-client to avoid process overhead
+                pin_memory=True,
+                persistent_workers=True
+            )
             logger.info(f"Client {i}: {len(indices)} samples")
 
         test_ds = TensorDataset(torch.FloatTensor(X_test), torch.LongTensor(y_test))

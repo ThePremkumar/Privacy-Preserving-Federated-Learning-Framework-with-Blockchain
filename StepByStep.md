@@ -67,25 +67,35 @@ The frontend is a Next.js application providing a high-tech dashboard for differ
 
 Use these credentials to access the platform. Access levels are restricted based on roles.
 
-### Super Admin (Full System Access)
+### 👑 Super Admin (Full System Access)
 - **Specialist ID**: `superadmin`
-- **Secure Passcode**: `admin123`
-- *Note: Global control over all nodes, users, and training.*
+- **Secure Passcode**: `changeme`
+- *Platform-wide control over all nodes, users, and training.*
 
-### System Admin (Registry Management)
-- **Specialist ID**: `admin`
-- **Secure Passcode**: `admin123`
-- *Note: Can manage hospital node registries and training monitoring.*
+### 👨‍💼 System Admin (Registry Management)
+- Created via Super Admin → Admin Management page.
+- *Can manage hospital node registries and training monitoring.*
 
-### Hospital Node (Local Node Admin)
-- **Specialist ID**: `hospital`
-- **Secure Passcode**: `hospital123`
-- *Note: Can register doctors to their specific node and manage local data.*
+### 🏥 Hospital Node — HIMSR (Hosur)
+- **Specialist ID**: `himsr_node_1`
+- **Secure Passcode**: `node@1`
+- *Hosur Institute of Medical Sciences & Research*
 
-### Clinical Doctor (Medical Access)
-- **Specialist ID**: `doctor_valerie`
-- **Secure Passcode**: `doctorpassword123`
-- *Note: Can view patient predictions, anomalies, and NLP insights.*
+### 🏥 Hospital Node — Apollo (Chennai)
+- **Specialist ID**: `apollo_node_1`
+- **Secure Passcode**: `node@1`
+- *Apollo Hospitals, Chennai*
+
+### 🏥 Hospital Node — AIIMS (Delhi)
+- **Specialist ID**: `aiims_node_1`
+- **Secure Passcode**: `node@1`
+- *All India Institute of Medical Sciences, New Delhi*
+
+### 🩺 Clinical Doctor (Medical Access)
+- Created via Hospital Node → Doctor Management page.
+- *Can view patient predictions, anomalies, and NLP insights.*
+
+> **Note:** The Super Admin and all three Hospital Node accounts are **auto-seeded** on first startup. Admin and Doctor accounts must be created through the platform UI.
 
 ---
 

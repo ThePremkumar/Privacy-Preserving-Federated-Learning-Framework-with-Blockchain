@@ -34,7 +34,9 @@ function cn(...inputs: ClassValue[]) {
 // ─── Types ───────────────────────────────────────────────
 interface Notification {
   id: string;
-  type: 'alert' | 'success' | 'warning' | 'info';
+  type: string;
+  severity: 'info' | 'success' | 'warning' | 'critical';
+  sound: 'chime' | 'success' | 'warning' | 'critical' | 'ping' | 'silent';
   title: string;
   message: string;
   time: string;
@@ -98,12 +100,10 @@ const searchIndex: SearchResult[] = [
   { href: '/dashboard/model-comparison', label: 'Model Comparison', category: 'Training', icon: TrendingUp },
 ];
 
-// ─── Default notifications (real ones loaded from API) ────
 const DEFAULT_NOTIFICATIONS: Notification[] = [
-  { id: '1', type: 'alert', title: 'High-Risk Patient', message: 'Anomaly score > 8.5 detected for a patient', time: '2m ago', is_read: false },
-  { id: '2', type: 'warning', title: 'Model Drift Detected', message: 'Feature distribution shift on Hospital Node 3', time: '18m ago', is_read: false },
-  { id: '3', type: 'success', title: 'Blockchain Verified', message: 'Round #12 immutably stored on-chain', time: '1h ago', is_read: true },
-  { id: '4', type: 'info', title: 'Training Completed', message: 'Hospital Node 1 completed local training (94.2% acc)', time: '2h ago', is_read: true },
+  { id: '1', type: 'prediction_high_risk', severity: 'critical', sound: 'critical', title: 'High-Risk Patient', message: 'Anomaly score > 8.5 detected for a patient', time: '2m ago', is_read: false },
+  { id: '2', type: 'system_alert', severity: 'warning', sound: 'warning', title: 'Model Drift Detected', message: 'Feature distribution shift on Hospital Node 3', time: '18m ago', is_read: false },
+  { id: '3', type: 'aggregation_complete', severity: 'success', sound: 'success', title: 'Blockchain Verified', message: 'Round #12 immutably stored on-chain', time: '1h ago', is_read: true },
 ];
 
 function useBreadcrumbs(pathname: string) {
@@ -126,19 +126,97 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState<Notification[]>(DEFAULT_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectAttemptsRef = useRef(0);
 
   const breadcrumbs = useBreadcrumbs(pathname);
   const config = user ? roleConfig[user.role] || roleConfig.doctor : roleConfig.doctor;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  // ── Close on outside click ──────────────────────────────
+  // ── Sound Helper ─────────────────────────────────────────
+  const playNotificationSound = useCallback((soundType: Notification['sound'], severity: Notification['severity']) => {
+    if (soundType === 'silent') return;
+    const soundEnabled = true; // Assume ON
+    const isFocused = document.hasFocus();
+    
+    if (severity === 'critical' || soundEnabled || !isFocused) {
+      const audio = new Audio(`/sounds/${soundType}.mp3`);
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    }
+  }, []);
+
+  // ── WebSocket with Reconnection ──────────────────────────
+  const connectWebSocket = useCallback(() => {
+    if (!user?.id) return;
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+
+    const token = localStorage.getItem('auth_token');
+    const wsUrl = `ws://localhost:8001/api/v1/ws/notifications/${user.id}?token=${token}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      reconnectAttemptsRef.current = 0;
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.send("ping");
+      }, 30000);
+      (ws as any).pingInterval = pingInterval;
+    };
+
+    ws.onmessage = (event) => {
+      if (event.data === "pong") return;
+      try {
+        const payload = JSON.parse(event.data);
+        const newNotif: Notification = {
+          ...payload,
+          time: 'Just now',
+          is_read: false
+        };
+        setNotifications(prev => [newNotif, ...prev]);
+        playNotificationSound(newNotif.sound, newNotif.severity);
+      } catch (e) {
+        console.error("Error parsing notification", e);
+      }
+    };
+
+    ws.onclose = () => {
+      clearInterval((ws as any).pingInterval);
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+      reconnectAttemptsRef.current++;
+      reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+    };
+
+    ws.onerror = () => ws.close();
+  }, [user?.id, playNotificationSound]);
+
+  useEffect(() => {
+    connectWebSocket();
+    return () => {
+      if (wsRef.current) wsRef.current.close();
+      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+    };
+  }, [connectWebSocket]);
+
+  useEffect(() => {
+    api.get('/notifications').then(res => {
+      if (Array.isArray(res.data)) {
+        setNotifications(res.data.map((n: any) => ({
+          ...n,
+          time: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' today'
+        })));
+      }
+    }).catch(() => setNotifications(DEFAULT_NOTIFICATIONS));
+  }, []);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (alertsRef.current && !alertsRef.current.contains(e.target as Node)) setIsAlertsOpen(false);
@@ -149,7 +227,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // ── Cmd+K command palette ───────────────────────────────
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -167,42 +244,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => document.removeEventListener('keydown', handleKey);
   }, []);
 
-  // ── Try fetching real notifications & listen to WebSocket ──
-  useEffect(() => {
-    // Fetch initial notifications
-    api.get('/notifications').then(res => {
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        setNotifications(res.data.map((n: any) => ({
-          ...n,
-          time: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' today'
-        })));
-      }
-    }).catch(() => { /* Use defaults */ });
-
-    // WebSocket connection
-    let ws: WebSocket;
-    if (user?.id) {
-      const wsUrl = `ws://localhost:8001/api/v1/ws/notifications?user_id=${user.id}`;
-      ws = new WebSocket(wsUrl);
-
-      ws.onmessage = (event) => {
-        try {
-          const newNotif = JSON.parse(event.data);
-          setNotifications(prev => [{
-            ...newNotif,
-            time: new Date(newNotif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' today'
-          }, ...prev]);
-        } catch (e) {
-          console.error("Error parsing notification", e);
-        }
-      };
-    }
-
-    return () => {
-      if (ws) ws.close();
-    };
-  }, [user]);
-
   const markAllRead = useCallback(() => {
     api.post('/notifications/read-all').then(() => {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
@@ -215,7 +256,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }).catch(console.error);
   }, []);
 
-  // ── Filtered search ─────────────────────────────────────
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return searchIndex.slice(0, 6);
     const q = searchQuery.toLowerCase();
@@ -230,14 +270,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [logout, router]);
 
   const notifIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-    alert: AlertTriangle,
-    success: Zap,
-    warning: ShieldCheck,
-    info: BrainCircuit,
+    prediction_high_risk: AlertTriangle,
+    aggregation_complete: Zap,
+    training_approved: BrainCircuit,
+    system_alert: ShieldCheck,
   };
 
   const notifColors: Record<string, string> = {
-    alert: 'bg-red-50 text-red-600 border-red-100',
+    critical: 'bg-red-50 text-red-600 border-red-100',
     success: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     warning: 'bg-amber-50 text-amber-700 border-amber-100',
     info: 'bg-blue-50 text-blue-700 border-blue-100',
@@ -247,17 +287,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <Sidebar />
       <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-        {/* ── Top Bar ─────────────────────────────────── */}
         <header className="sticky top-0 z-40 flex h-[68px] w-full items-center justify-between border-b border-slate-100 bg-white/95 backdrop-blur-xl px-4 md:px-6 shadow-sm shadow-slate-100/50">
-          {/* Left: Breadcrumbs */}
           <div className="flex items-center gap-2 min-w-0">
-            {/* Org icon — hidden on mobile */}
             <div className="hidden md:flex items-center gap-2">
               <Building2 size={15} className="text-slate-400 shrink-0" />
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">{config.orgLabel}</span>
               <ChevronRight size={12} className="text-slate-300" />
             </div>
-            {/* Breadcrumb trail */}
             <nav className="hidden md:flex items-center gap-1" aria-label="Breadcrumb">
               {breadcrumbs.map((bc, i) => (
                 <React.Fragment key={bc.href}>
@@ -272,15 +308,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </React.Fragment>
               ))}
             </nav>
-            {/* Mobile: just current page */}
-            <span className="md:hidden text-sm font-black text-slate-900 truncate">
-              {breadcrumbs[breadcrumbs.length - 1]?.label || 'Dashboard'}
-            </span>
           </div>
 
-          {/* Right controls */}
           <div className="flex items-center gap-1.5">
-            {/* Global Search */}
             <div className="hidden md:flex relative" ref={searchRef}>
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-700 transition-colors" size={14} />
@@ -294,7 +324,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
 
-            {/* Notifications bell */}
             <div className="relative" ref={alertsRef}>
               <button
                 onClick={() => { setIsAlertsOpen(!isAlertsOpen); setIsProfileOpen(false); }}
@@ -302,7 +331,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   'relative rounded-xl p-2 transition-all duration-200',
                   isAlertsOpen ? 'bg-blue-700 text-white shadow-lg shadow-blue-200' : 'text-slate-400 hover:bg-slate-50 hover:text-blue-700'
                 )}
-                aria-label={`Notifications (${unreadCount} unread)`}
               >
                 <Bell size={18} />
                 {unreadCount > 0 && !isAlertsOpen && (
@@ -319,11 +347,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">Notifications</h4>
                       <p className="text-[9px] font-bold text-slate-400 mt-0.5">{unreadCount} unread</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={markAllRead} className="flex items-center gap-1 text-[9px] font-black text-blue-700 uppercase tracking-widest hover:underline">
-                        <CheckCheck size={11} /> Mark all read
-                      </button>
-                    </div>
+                    <button onClick={markAllRead} className="flex items-center gap-1 text-[9px] font-black text-blue-700 uppercase tracking-widest hover:underline">
+                      <CheckCheck size={11} /> Mark all read
+                    </button>
                   </div>
                   <div className="divide-y divide-slate-50 max-h-[360px] overflow-y-auto no-scrollbar">
                     {notifications.length === 0 ? (
@@ -344,7 +370,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             )}
                           >
                             <div className="flex gap-3">
-                              <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border', notifColors[notif.type])}>
+                              <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border', notifColors[notif.severity])}>
                                 <Icon size={14} />
                               </div>
                               <div className="space-y-0.5 min-w-0 flex-1">
@@ -356,9 +382,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 </div>
                                 <p className="text-[10px] font-medium text-slate-500 leading-relaxed">{notif.message}</p>
                               </div>
-                              {!notif.is_read && (
-                                <div className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-1" />
-                              )}
                             </div>
                           </div>
                         );
@@ -376,12 +399,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <div className="h-6 w-px bg-slate-100 mx-0.5" />
 
-            {/* Profile Dropdown */}
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => { setIsProfileOpen(!isProfileOpen); setIsAlertsOpen(false); }}
                 className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-slate-50 transition-all group"
-                aria-label="Profile menu"
               >
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="text-[11px] font-black tracking-tight text-slate-900 uppercase group-hover:text-blue-700 transition-colors">
@@ -405,9 +426,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="px-4 py-4 border-b border-slate-50 bg-gradient-to-br from-slate-50 to-white">
                     <p className="text-xs font-black text-slate-900 truncate">{user?.username}</p>
                     <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{user?.email}</p>
-                    <span className={cn('inline-block mt-2 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border', config.bgColor, config.color)}>
-                      {config.label}
-                    </span>
                   </div>
                   <div className="p-2">
                     <button
@@ -429,13 +447,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* ── Dashboard Content ───────────────────── */}
         <main className="flex-1 p-4 md:p-8 animate-fade-in">
           {children}
         </main>
       </div>
 
-      {/* ── Command Palette (Cmd+K) ──────────────── */}
       {isSearchOpen && (
         <>
           <div className="cmd-palette-overlay" onClick={() => setIsSearchOpen(false)} />
@@ -478,10 +494,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   );
                 })
               )}
-            </div>
-            <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/50 flex items-center gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-              <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-500">↵</kbd> Select</span>
-              <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-500">Esc</kbd> Close</span>
             </div>
           </div>
         </>

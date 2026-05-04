@@ -17,6 +17,10 @@ from typing import Dict, Any
 # Core imports
 from app.core.config import settings
 from app.core.database import init_db, get_db
+
+# Initialize DB tables before importing services that might seed data
+init_db()
+
 from app.api import auth, federated, blockchain, predictions, admin, hospital, doctor, patients, data_upload, training
 from app.services.blockchain_service import blockchain_service
 from app.services.federated_service import federated_service
@@ -58,8 +62,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Federated Learning Healthcare Platform...")
     
-    # Initialize SQLAlchemy database
-    init_db()
+    # Initialize SQLAlchemy database (now handled at top level)
+    # init_db()
     
     # Initialize services
     # (In a real app, these might need async initialization)
@@ -85,13 +89,49 @@ app = FastAPI(
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.middleware("http")(add_request_id)
+@app.middleware("http")
+async def add_request_id_middleware(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+    
+    # Skip logging for OPTIONS requests to reduce noise and potential issues
+    if request.method == "OPTIONS":
+        return await call_next(request)
+        
+    start_time = time.time()
+    try:
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        
+        response.headers["X-Request-ID"] = request_id
+        response.headers["X-Process-Time"] = str(process_time)
+        
+        logger.info(
+            f"Request {request_id} - {request.method} {request.url.path} - "
+            f"Status: {response.status_code} - Time: {process_time:.4f}s"
+        )
+        return response
+    except Exception as e:
+        logger.error(f"Middleware error for request {request_id}: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "request_id": request_id}
+        )
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
@@ -104,6 +144,12 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administration"]
 app.include_router(patients.router, prefix="/api/v1/patients", tags=["Patients Project"])
 app.include_router(data_upload.router, prefix="/api/v1/data", tags=["Data Upload"])
 app.include_router(training.router, prefix="/api/v1/training", tags=["Training"])
+
+from app.api.catalog import router as catalog_router
+app.include_router(catalog_router, prefix="/api/v1/catalog", tags=["Catalog"])
+
+from app.api.departments import router as departments_router
+app.include_router(departments_router, prefix="/api/v1/orgs", tags=["Departments"])
 
 from app.api.websockets import router as websockets_router
 app.include_router(websockets_router, prefix="/api/v1", tags=["WebSockets"])

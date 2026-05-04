@@ -43,6 +43,39 @@ class SystemConfig(BaseModel):
 
 
 # ══════════════════════════════════════════════════════════
+# HOSPITAL MANAGEMENT
+# ══════════════════════════════════════════════════════════
+
+@router.get("/hospitals")
+async def list_all_hospitals(
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin", "hospital", "doctor"])),
+):
+    """List all registered hospitals with their identity and branding."""
+    db = SessionLocal()
+    try:
+        hospitals = db.query(db_models.Hospital).all()
+        return [
+            {
+                "id": h.id,
+                "name": h.name,
+                "short_name": h.short_name,
+                "city": h.city,
+                "state": h.state,
+                "country": h.country,
+                "lat": h.lat,
+                "lng": h.lng,
+                "logo_initials": h.logo_initials,
+                "website": h.website,
+                "phone": h.phone,
+                "department_count": h.department_count,
+                "created_at": h.created_at.isoformat() if h.created_at else None,
+            }
+            for h in hospitals
+        ]
+    finally:
+        db.close()
+
+# ══════════════════════════════════════════════════════════
 # USER MANAGEMENT (CRUD)
 # ══════════════════════════════════════════════════════════
 
@@ -250,7 +283,7 @@ async def change_own_password(
 
 @router.get("/analytics/overview")
 async def analytics_overview(
-    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin", "hospital", "doctor"])),
 ):
     """Platform-wide analytics overview for dashboards & reports."""
     db = SessionLocal()
@@ -319,7 +352,7 @@ async def blockchain_audit_trail(
                 "hash": r.global_weights_hash or "",
                 "tx_hash": r.blockchain_tx_hash or "",
                 "status": "confirmed",
-                "hospitals": r.participating_hospitals.split(",") if r.participating_hospitals else [],
+                "hospitals": r.contributing_nodes if r.contributing_nodes else [],
                 "samples": r.total_samples,
                 "accuracy": r.global_accuracy,
                 "loss": r.global_loss,

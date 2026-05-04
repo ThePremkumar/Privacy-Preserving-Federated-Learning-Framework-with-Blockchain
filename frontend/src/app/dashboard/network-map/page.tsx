@@ -7,6 +7,7 @@ import { HospitalNode } from './types';
 import MapOverlays from './MapOverlays';
 import HospitalSidePanel from './HospitalSidePanel';
 import { AnimatePresence } from 'framer-motion';
+import api from '@/lib/api';
 
 // Import MapView dynamically to avoid SSR issues with Leaflet
 const MapView = dynamic(() => import('./MapView'), { 
@@ -21,35 +22,39 @@ const MapView = dynamic(() => import('./MapView'), {
   )
 });
 
-const MOCK_HOSPITALS: HospitalNode[] = [
-  { id: 'h1', name: 'Apollo Hospitals', city: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707, status: 'active', lastSeen: 'Just now', trainingJobs: 12, approvedJobs: 10, privacyBudgetUsed: 3.2, contributionScore: 87, isActive: true },
-  { id: 'h2', name: 'AIIMS Delhi', city: 'New Delhi', state: 'Delhi', lat: 28.5672, lng: 77.2100, status: 'active', lastSeen: '5 min ago', trainingJobs: 18, approvedJobs: 16, privacyBudgetUsed: 5.1, contributionScore: 94, isActive: true },
-  { id: 'h3', name: 'Fortis Bangalore', city: 'Bengaluru', state: 'Karnataka', lat: 12.9716, lng: 77.5946, status: 'idle', lastSeen: '3 hours ago', trainingJobs: 7, approvedJobs: 5, privacyBudgetUsed: 1.8, contributionScore: 61, isActive: true },
-  { id: 'h4', name: 'Kokilaben Hospital', city: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777, status: 'active', lastSeen: '12 min ago', trainingJobs: 15, approvedJobs: 13, privacyBudgetUsed: 4.4, contributionScore: 91, isActive: true },
-  { id: 'h5', name: 'PGIMER', city: 'Chandigarh', state: 'Punjab', lat: 30.7333, lng: 76.7794, status: 'offline', lastSeen: '2 days ago', trainingJobs: 3, approvedJobs: 2, privacyBudgetUsed: 0.6, contributionScore: 22, isActive: false },
-  { id: 'h6', name: 'Narayana Health', city: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639, status: 'idle', lastSeen: '6 hours ago', trainingJobs: 9, approvedJobs: 7, privacyBudgetUsed: 2.3, contributionScore: 55, isActive: true },
-  { id: 'h7', name: 'Care Hospitals', city: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867, status: 'active', lastSeen: '1 min ago', trainingJobs: 11, approvedJobs: 10, privacyBudgetUsed: 3.9, contributionScore: 83, isActive: true },
-  { id: 'h8', name: 'Medanta', city: 'Gurugram', state: 'Haryana', lat: 28.4595, lng: 77.0266, status: 'idle', lastSeen: '4 hours ago', trainingJobs: 6, approvedJobs: 4, privacyBudgetUsed: 1.1, contributionScore: 48, isActive: true },
-];
-
 export default function NetworkMapPage() {
-  const [nodes, setNodes] = useState<HospitalNode[]>(MOCK_HOSPITALS);
+  const [nodes, setNodes] = useState<HospitalNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<HospitalNode | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'idle' | 'offline'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // TODO: Replace with API call
-  /*
   useEffect(() => {
     const fetchNodes = async () => {
       try {
-        const res = await api.get('/auth/hospitals');
-        // Map and set nodes...
-      } catch (err) { console.error(err); }
+        const res = await api.get('/admin/hospitals');
+        // Map backend hospital data to HospitalNode interface
+        const mappedNodes: HospitalNode[] = res.data.map((h: any) => ({
+          id: h.id,
+          name: h.name,
+          city: h.city,
+          state: h.state,
+          lat: h.lat || 20.5937 + (Math.random() * 10 - 5), // Fallback to random if no lat
+          lng: h.lng || 78.9629 + (Math.random() * 10 - 5), // Fallback to random if no lng
+          status: 'active', // Mock status for now, could be dynamic
+          lastSeen: 'Live',
+          trainingJobs: 0,
+          approvedJobs: 0,
+          privacyBudgetUsed: 0,
+          contributionScore: 75,
+          isActive: true
+        }));
+        setNodes(mappedNodes);
+      } catch (err) { 
+        console.error('Failed to fetch hospital nodes:', err); 
+      }
     };
     fetchNodes();
   }, []);
-  */
 
   const filteredNodes = useMemo(() => {
     return nodes.filter(n => {

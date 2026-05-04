@@ -313,13 +313,13 @@ export const Sidebar = () => {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-[15px] font-black tracking-tight text-slate-900">
-                  Health<span className="text-blue-700">Connect</span>
+                  {user.hospital?.short_name || 'Health'}<span className="text-blue-700">{user.hospital?.short_name ? '' : 'Connect'}</span>
                 </span>
                 <span className={cn(
                   'text-[8px] font-black uppercase tracking-[0.2em] mt-0.5 px-1.5 py-0.5 rounded text-white w-fit',
                   role.color
                 )}>
-                  {role.label}
+                  {user.hospital?.name || role.label}
                 </span>
               </div>
             </div>
@@ -423,12 +423,12 @@ export const Sidebar = () => {
                 'flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-xs shrink-0',
                 role.color
               )}>
-                {user.name.charAt(0).toUpperCase()}
+                {user.hospital?.logo_initials || user.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex flex-col overflow-hidden">
                 <span className="text-xs font-black text-slate-900 leading-none truncate">{user.name}</span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">
-                  {user.role.replace('_', ' ')}
+                  {user.department?.name || user.role.replace('_', ' ')}
                 </span>
               </div>
             </div>

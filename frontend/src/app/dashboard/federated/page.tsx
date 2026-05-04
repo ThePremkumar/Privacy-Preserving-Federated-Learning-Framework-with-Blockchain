@@ -30,6 +30,7 @@ import {
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
+import { DataTrainingAssistant } from '@/components/federated/DataTrainingAssistant';
 
 interface TrainingJob {
   id: string;
@@ -68,6 +69,7 @@ export default function FederatedTrainingPage() {
   const [trainingJobs, setTrainingJobs] = useState<TrainingJob[]>([]);
   const [aggregationHistory, setAggregationHistory] = useState<AggregationRound[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [showAssistant, setShowAssistant] = useState(false);
 
   const isHospital = user?.role === 'hospital';
 
@@ -136,10 +138,27 @@ export default function FederatedTrainingPage() {
              {isHospital ? 'Your Training Jobs & Global Model Status' : 'Multi-Institutional Training Overview'}
           </p>
         </div>
-        <Button variant="outline" className="h-12 border-2 px-6" onClick={fetchData}>
-           {isSyncing ? <RefreshCcw className="animate-spin mr-2" size={18} /> : <RefreshCcw className="mr-2" size={18} />} Refresh
-        </Button>
+        <div className="flex gap-4">
+          {isHospital && (
+            <Button className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-200" onClick={() => setShowAssistant(true)}>
+              Launch Training Assistant <BrainCircuit size={18} className="ml-2" />
+            </Button>
+          )}
+          <Button variant="outline" className="h-12 border-2 px-6" onClick={fetchData}>
+            {isSyncing ? <RefreshCcw className="animate-spin mr-2" size={18} /> : <RefreshCcw className="mr-2" size={18} />} Refresh
+          </Button>
+        </div>
       </div>
+
+      {showAssistant && (
+        <DataTrainingAssistant 
+          onClose={() => setShowAssistant(false)} 
+          onSuccess={() => {
+            fetchData();
+            alert('Training job launched successfully! Monitor progress in the jobs list.');
+          }}
+        />
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">

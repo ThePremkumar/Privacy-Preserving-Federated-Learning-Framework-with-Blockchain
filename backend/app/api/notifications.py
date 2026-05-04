@@ -34,6 +34,8 @@ async def get_notifications(
         result.append({
             "id": n.id,
             "type": n.type,
+            "severity": n.severity or "info",
+            "sound": n.sound or "chime",
             "title": n.title,
             "message": n.message,
             "is_read": n.is_read,

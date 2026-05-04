@@ -128,12 +128,14 @@ The platform implements a complete **federated learning lifecycle** where hospit
 
 ### Login Credentials
 
-| Role | Username | Password | Dashboard |
-|------|----------|----------|-----------|
-| 👑 **Super Admin** | `superadmin` | `changeme` | Platform Governance, User Management, Model Governance, Aggregation |
-| 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | Organizations, User Management, Model Review, Network Monitor |
-| 🏥 **Hospital Node** | `hospital_node1` | `test1234` | Data Upload, Training, Model Participation |
-| 🩺 **Doctor** | `Harish Raj` | `Harish` | Patients Registry, Diagnostics, Clinical Docs |
+| Role | Username | Password | Hospital | Dashboard |
+|------|----------|----------|----------|-----------|
+| 👑 **Super Admin** | `superadmin` | `changeme` | — (Platform-wide) | Platform Governance, User Management, Model Governance, Aggregation |
+| 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | — | Organizations, User Management, Model Review, Network Monitor |
+| 🏥 **Hospital Node (HIMSR)** | `himsr_node_1` | `node@1` | HIMSR, Hosur | Data Upload, Training, Model Participation, Doctor Management |
+| 🩺 **Doctor** | `Harish Raj` | `Harish` | HIMSR, Hosur | Patients Registry, Diagnostics, Clinical Docs |
+
+> **Note:** Hospital node accounts and the super admin account are auto-seeded on first startup. Admin and Doctor accounts must be created through the platform UI.
 
 ### Permission Matrix
 
@@ -164,6 +166,34 @@ The platform implements a complete **federated learning lifecycle** where hospit
 | NLP Clinical Note Analysis | ❌ | ❌ | ✅ | ✅ |
 | Review Patient Referrals | ❌ | ❌ | ✅ | ❌ |
 | Manage Doctor Referrals | ❌ | ❌ | ✅ | ❌ |
+
+---
+
+## 🏛️ Organization Types & Department Catalog
+<!-- updated: 2026-05-04 -->
+The platform uses a three-tier identity model to ensure data integrity and proper routing:
+**Organization Type** (e.g., Heart Hospital) → **Specializations** (e.g., Cardiology) → **Departments** (e.g., ICU).
+See [DEPARTMENTS.md](./DEPARTMENTS.md) for the full catalog.
+
+---
+
+## 📊 Dataset Requirements & Naming Convention
+<!-- updated: 2026-05-04 -->
+All uploads must adhere to the standard naming convention:
+`{hospital_slug}_{data_type}_{YYYY-MM-DD}.csv`
+- **Keyword Blocklist**: Prevents administrative data from polluting clinical models.
+- **Slug Verification**: Ensures dataset matches the uploading node.
+- **Integrity**: Every upload is hashed (SHA-256) and recorded on-chain.
+See [DATASET.md](./DATASET.md) for full details.
+
+---
+
+## 🧠 Training Configuration & Diagnostics
+<!-- updated: 2026-05-04 -->
+- **Default Parameters**: 50 Epochs, 128 Batch Size, ε=1.0.
+- **Readiness Checks**: Automated validation of record count (>100), column presence, and signal strength.
+- **Performance**: Parquet caching and multi-process data loading for high-velocity training.
+See [TRAINING.md](./TRAINING.md) for diagnostic rules and speed optimizations.
 
 ---
 
@@ -280,8 +310,8 @@ GET  /api/v1/data/uploads                 # List upload history (hospital)
 
 ### Training Lifecycle
 ```http
-POST /api/v1/training/analyze-csv          # Analyze CSV columns (hospital/admin)
-POST /api/v1/training/start                # Start local training (hospital)
+POST /api/v1/training/analyze-csv          # Run Readiness Check (Section 12)
+POST /api/v1/training/start                # Start local training (inc. force bypass)
 GET  /api/v1/training/training-report/{id} # Get detailed training report
 POST /api/v1/training/{id}/submit-for-review  # Submit for admin review (hospital)
 GET  /api/v1/training/my-jobs              # List own training jobs (hospital)
@@ -336,7 +366,7 @@ GET  /api/v1/predictions/anomalies      # Get high-risk clinical alerts
 | `hospitals` | Registered hospital nodes | id, name, contact_email, address, zip_code, is_active |
 | `dataset_uploads` | CSV upload metadata | id, filename, hospital_id, record_count, sha256_hash |
 | `dataset_records` | Individual CSV rows | id, upload_id, row_index, data (JSON) |
-| `training_jobs` | Local training runs | id, hospital_id, upload_id, status, epochs, accuracy, loss, weights_hash, model_weights |
+| `training_jobs` | Local training runs | id, hospital_id, upload_id, source_filename, status, epochs, accuracy, loss, weights_hash |
 | `aggregation_rounds` | Global model aggregation | id, round_number, global_accuracy, global_loss, blockchain_tx_hash |
 | `audit_logs` | Access and action logs | id, user_id, action, resource, details, timestamp |
 
@@ -370,6 +400,14 @@ pending → training → completed → submitted → approved → aggregated
 - **Production**: Ethereum-based smart contracts via Web3.py
 - Every aggregation round generates a **SHA-256 hash** of the global model weights
 - Transaction hash is stored on-chain for tamper-proof verification
+
+---
+
+## 🔔 Notification System
+<!-- updated: 2026-05-04 -->
+- **Real-time**: WebSocket-based event distribution for job completion, failures, and referrals.
+- **Audible Alerts**: Success, Warning, and Error sound mappings to improve node admin responsiveness.
+See [NOTIFICATIONS.md](./NOTIFICATIONS.md) for event details and sound mappings.
 
 ---
 
@@ -613,6 +651,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   note={Enterprise platform for secure collaborative healthcare AI}
 }
 ```
+
+---
+
+---
+
+## 📜 Changelog
+<!-- updated: 2026-05-04 -->
+- **2026-05-04**: Implemented Blockchain Clinical Audit Trail for patient records and modernized Patient Registry UI.
+- **2026-05-04**: Added dataset naming convention, upload validation, and training readiness checks.
+- **2026-05-04**: Implemented Parquet caching and speed optimizations for training.
+- **2026-05-03**: Finalized dynamic identity catalog and doctor registration flow.
+
+See [CHANGELOG.md](./CHANGELOG.md) for full history.
 
 ---
 

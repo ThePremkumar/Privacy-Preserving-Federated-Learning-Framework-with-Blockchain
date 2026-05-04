@@ -45,10 +45,10 @@ def main():
 
     result = train_healthcare_csv(
         csv_path=csv_path,
-        epochs=30,
-        batch_size=64,
+        epochs=50,
+        batch_size=128,
         learning_rate=0.001,
-        patience=7,
+        patience=50,
         save_dir=os.path.join(os.path.dirname(csv_path), "trained_models"),
     )
 

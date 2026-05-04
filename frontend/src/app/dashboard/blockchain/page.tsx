@@ -72,7 +72,9 @@ export default function BlockchainAuditPage() {
 
   const totalAggregations = entries.filter(e => e.type === 'aggregation').length;
   const totalSubmissions = entries.filter(e => e.type === 'training_submission').length;
-  const totalSamples = entries.reduce((sum, e) => sum + (e.samples || 0), 0);
+  const totalSamples = entries
+    .filter(e => e.type === 'aggregation')
+    .reduce((sum, e) => sum + (e.samples || 0), 0);
 
   return (
     <RoleGuard allowedRoles={['super_admin', 'admin']}>

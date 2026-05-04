@@ -56,6 +56,7 @@ interface TrainingJob {
   completed_at: string | null;
   review_notes: string | null;
   reviewed_by: string | null;
+  source_filename?: string | null;
 }
 
 export default function DataUploadPage() {
@@ -72,6 +73,12 @@ export default function DataUploadPage() {
   const [isTraining, setIsTraining] = useState(false);
   const [trainingResult, setTrainingResult] = useState<TrainingJob | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
+  const [suggestedFilename, setSuggestedFilename] = useState<string | null>(null);
+  const [confirmWarning, setConfirmWarning] = useState(false);
+  const [showValidationUI, setShowValidationUI] = useState(false);
+  const [readinessReport, setReadinessReport] = useState<any | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchUploadHistory = useCallback(async () => {
@@ -103,6 +110,11 @@ export default function DataUploadPage() {
       return;
     }
     setSelectedFile(file);
+    setValidationWarnings([]);
+    setSuggestedFilename(null);
+    setConfirmWarning(false);
+    setShowValidationUI(false);
+    setReadinessReport(null);
   };
 
   const handleUpload = async () => {
@@ -121,6 +133,9 @@ export default function DataUploadPage() {
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
+      if (confirmWarning) formData.append('confirm_warning', 'true');
+      if (suggestedFilename && confirmWarning) formData.append('suggested_filename', suggestedFilename);
+      
       const res = await api.post('/data/upload-csv', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
       clearInterval(progressInterval);
@@ -128,24 +143,75 @@ export default function DataUploadPage() {
       setUploadComplete(true);
       setUploadResult({ record_count: res.data.record_count, sha256_hash: res.data.sha256_hash, filename: res.data.filename, id: res.data.id });
       fetchUploadHistory();
+      setShowValidationUI(false);
+      
+      // Call Readiness Check (Analyze CSV)
+      setIsAnalyzing(true);
+      try {
+        const analyzeRes = await api.post('/training/analyze-csv', { upload_id: res.data.id });
+        setReadinessReport(analyzeRes.data.readiness_report);
+      } catch (err) {
+        console.error("Analysis failed", err);
+      } finally {
+        setIsAnalyzing(false);
+      }
     } catch (err: any) {
       clearInterval(progressInterval);
-      setErrorMessage(err?.response?.data?.detail || 'Upload failed. Please try again.');
+      if (err?.response?.status === 400 && err?.response?.data?.detail?.warnings) {
+        setValidationWarnings(err.response.data.detail.warnings);
+        setSuggestedFilename(err.response.data.detail.suggestion);
+        setShowValidationUI(true);
+        setErrorMessage(null);
+      } else {
+        setErrorMessage(err?.response?.data?.detail || 'Upload failed. Please try again.');
+      }
     } finally {
       setIsUploading(false);
     }
   };
 
+  const handleRenameAndUpload = async () => {
+    if (!selectedFile || !suggestedFilename) return;
+    setConfirmWarning(true);
+    // The actual upload will happen in the next tick or by calling handleUpload directly with params
+    // But since handleUpload uses state, I'll update state and then call it
+  };
+
+  useEffect(() => {
+    if (confirmWarning && selectedFile && showValidationUI) {
+      handleUpload();
+    }
+  }, [confirmWarning]);
+
   const handleStartTraining = async (uploadId: string) => {
     setIsTraining(true);
     setErrorMessage(null);
+    setTrainingResult(null); // Reset previous result
+    
     try {
       const res = await api.post('/training/start', { upload_id: uploadId, epochs: 50, learning_rate: 0.001 });
-      setTrainingResult(res.data);
-      fetchTrainingJobs();
+      const jobId = res.data.id;
+      
+      // Start polling for this specific job
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusRes = await api.get(`/training/job/${jobId}`);
+          const jobData = statusRes.data;
+          
+          if (jobData.status === 'completed' || jobData.status === 'failed') {
+            clearInterval(pollInterval);
+            setTrainingResult(jobData);
+            setIsTraining(false);
+            fetchTrainingJobs();
+          }
+        } catch (err) {
+          clearInterval(pollInterval);
+          setIsTraining(false);
+        }
+      }, 3000); // Poll every 3 seconds
+
     } catch (err: any) {
       setErrorMessage(err?.response?.data?.detail || 'Training failed.');
-    } finally {
       setIsTraining(false);
     }
   };
@@ -218,7 +284,7 @@ export default function DataUploadPage() {
             </div>
 
             {/* Selected file */}
-            {selectedFile && !uploadComplete && (
+            {selectedFile && !uploadComplete && !showValidationUI && (
               <div className="flex items-center justify-between p-4 rounded-xl bg-blue-50 border border-blue-100">
                 <div className="flex items-center gap-3">
                   <FileText size={20} className="text-blue-600" />
@@ -234,6 +300,56 @@ export default function DataUploadPage() {
                     {isUploading ? `${uploadProgress}%` : 'Upload'}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Validation Warnings UI (Section 12) */}
+            {showValidationUI && selectedFile && (
+              <div className="p-6 bg-red-50 border-2 border-red-200 rounded-2xl space-y-6 animate-in zoom-in-95 duration-200">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-black text-red-900 italic">Naming Convention Validation</h4>
+                    <div className="mt-2 space-y-2">
+                      {validationWarnings.map((w, i) => (
+                        <p key={i} className="text-[10px] font-bold text-red-700 uppercase leading-relaxed">• {w}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {suggestedFilename && (
+                  <div className="bg-white p-4 rounded-xl border border-red-100 space-y-3">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Suggested Filename</p>
+                    <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 font-mono text-[10px] text-slate-600">
+                      {suggestedFilename}
+                      <Button size="sm" className="h-7 bg-blue-600 hover:bg-blue-700 text-[9px]" onClick={() => { setConfirmWarning(true); }}>
+                        Rename and Upload
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-red-100">
+                   <label className="flex items-center gap-2 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        checked={confirmWarning} 
+                        onChange={(e) => setConfirmWarning(e.target.checked)}
+                        className="rounded border-red-200 text-red-600 focus:ring-red-500 h-4 w-4"
+                      />
+                      <span className="text-[10px] font-black text-red-900 uppercase tracking-widest group-hover:text-red-700 transition-colors">Confirm to proceed with current name</span>
+                   </label>
+                   <Button size="sm" variant="outline" className="h-8 border-red-200 text-red-700 hover:bg-red-100" onClick={() => setShowValidationUI(false)}>Cancel</Button>
+                </div>
+                
+                {confirmWarning && !suggestedFilename && (
+                  <Button className="w-full h-10 bg-red-600 hover:bg-red-700" onClick={handleUpload}>
+                     Upload Anyway
+                  </Button>
+                )}
               </div>
             )}
 
@@ -259,24 +375,97 @@ export default function DataUploadPage() {
                     <div>
                       <p className="text-sm font-black">Upload verified & hash recorded</p>
                       <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{uploadResult.record_count.toLocaleString()} records stored</p>
+                      <div className="mt-2 p-2 bg-emerald-100/50 rounded-lg border border-emerald-100 font-mono text-[8px] text-emerald-800 break-all">
+                         <span className="font-black">SHA-256:</span> {uploadResult.sha256_hash}
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Training Readiness Report (Section 12) */}
+                {(isAnalyzing || readinessReport) && (
+                  <div className="bg-slate-50 border border-slate-100 p-5 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Training Readiness</h4>
+                      {isAnalyzing && <Loader2 size={12} className="animate-spin text-blue-600" />}
+                    </div>
+
+                    {readinessReport && (
+                      <div className="space-y-3">
+                        {readinessReport.errors.map((e: string, i: number) => (
+                          <div key={i} className="flex gap-2 text-red-600 bg-red-50 p-2 rounded-lg border border-red-100">
+                            <X size={14} className="shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold leading-relaxed">{e}</p>
+                          </div>
+                        ))}
+                        {readinessReport.warnings.map((w: string, i: number) => (
+                          <div key={i} className="flex gap-2 text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold leading-relaxed">{w}</p>
+                          </div>
+                        ))}
+                        {readinessReport.info.map((info: string, i: number) => (
+                          <div key={i} className="flex gap-2 text-blue-600 bg-blue-50 p-2 rounded-lg border border-blue-100">
+                            <BarChart3 size={14} className="shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold leading-relaxed">{info}</p>
+                          </div>
+                        ))}
+                        {readinessReport.errors.length === 0 && readinessReport.warnings.length === 0 && (
+                          <div className="flex gap-2 text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold leading-relaxed">System confirmed: Dataset is optimal for training.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Training trigger */}
-                {!trainingResult && (
-                  <div className="bg-blue-50 border border-blue-100 p-5 rounded-xl">
+                {!trainingResult && !isTraining && (
+                  <div className={cn(
+                    "p-5 rounded-xl transition-all",
+                    readinessReport?.status === 'blocked' ? "bg-slate-100 opacity-50 grayscale" : "bg-blue-50 border border-blue-100"
+                  )}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Brain size={20} className="text-blue-600" />
                         <div>
-                          <p className="text-sm font-black text-slate-900">Ready for Local Training</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">50 epochs • LR 0.001 • ε = 1.0</p>
+                          <p className="text-sm font-black text-slate-900">
+                            {readinessReport?.status === 'blocked' ? 'Training Blocked' : 'Ready for Local Training'}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            {readinessReport?.status === 'blocked' ? 'Critical errors detected' : '50 epochs • LR 0.001 • ε = 1.0'}
+                          </p>
                         </div>
                       </div>
-                      <Button size="sm" onClick={() => handleStartTraining(uploadResult.id)} disabled={isTraining} className="shadow-lg shadow-blue-200">
-                        {isTraining ? <><Loader2 size={14} className="animate-spin mr-1" /> Training...</> : <><Play size={14} className="mr-1" /> Start Training</>}
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleStartTraining(uploadResult.id)} 
+                        className="shadow-lg shadow-blue-200"
+                        disabled={readinessReport?.status === 'blocked'}
+                      >
+                         <Play size={14} className="mr-1" /> Start Training
                       </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Training in progress */}
+                {isTraining && !trainingResult && (
+                  <div className="bg-blue-900 text-white p-6 rounded-xl space-y-4 animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Loader2 size={24} className="animate-spin text-blue-400" />
+                        <div>
+                          <p className="text-sm font-black">Neural Network Training...</p>
+                          <p className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Executing background task</p>
+                        </div>
+                      </div>
+                      <span className="bg-blue-800 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-blue-700">In Progress</span>
+                    </div>
+                    <div className="h-2 bg-blue-800 rounded-full overflow-hidden">
+                       <div className="h-full bg-blue-400 rounded-full animate-progress-indeterminate w-1/3" />
                     </div>
                   </div>
                 )}
@@ -358,7 +547,11 @@ export default function DataUploadPage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <BarChart3 size={14} className="text-blue-600" />
-                          <p className="text-xs font-black text-slate-900">{job.epochs} epochs • {job.num_samples.toLocaleString()} samples</p>
+                          <p className="text-[10px] font-black text-slate-900 truncate max-w-[150px]" title={job.source_filename || "Direct DB"}>
+                            {job.source_filename || "Direct DB"}
+                          </p>
+                          <span className="text-slate-300 mx-1">•</span>
+                          <p className="text-xs font-black text-slate-900">{job.epochs} ep • {job.num_samples.toLocaleString()} records</p>
                         </div>
                         <span className={cn("px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border", statusColor(job.status))}>
                           {job.status}

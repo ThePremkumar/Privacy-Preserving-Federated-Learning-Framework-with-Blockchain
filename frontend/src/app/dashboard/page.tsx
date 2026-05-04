@@ -355,25 +355,39 @@ function AdminDashboard({ analytics, modelHealth, isSuperAdmin }: {
 // HOSPITAL DASHBOARD
 // ═══════════════════════════════════════════
 function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
+  const { user } = useAuth();
   const completedJobs = jobs.filter(j => j.accuracy);
   const latestJob = completedJobs[0];
   const latestAcc = latestJob?.accuracy ? (parseFloat(latestJob.accuracy) * 100).toFixed(1) : '—';
   const totalSamples = jobs.reduce((sum, j) => sum + (j.num_samples || 0), 0);
   const submittedCount = jobs.filter(j => j.status === 'submitted' || j.status === 'approved' || j.status === 'aggregated').length;
 
+  const hospital = user?.hospital;
+  const activeSpecs = hospital?.active_specializations || [];
+  const activeDepts = hospital?.active_departments || [];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.1]">
-            Facility <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
-          </h1>
-          <p className="mt-3 text-sm font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Calendar size={16} className="text-blue-600" /> Hospital Node Portal
-          </p>
+        <div className="flex items-center gap-6">
+           <div className="h-16 w-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-2xl border-4 border-blue-100 shadow-xl shadow-blue-100">
+              {hospital?.name?.charAt(0).toUpperCase() || 'H'}
+           </div>
+           <div>
+              <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.1]">
+                {hospital?.name || 'Facility'} <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
+              </h1>
+              <div className="flex items-center gap-3 mt-3">
+                 <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100">{hospital?.organization_type || 'General Clinic'}</span>
+                 <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Calendar size={16} className="text-blue-600" /> Operational Status: <span className="text-emerald-600 font-black italic">Active Node</span>
+                 </p>
+              </div>
+           </div>
         </div>
         <Link href="/dashboard/data-upload">
-          <Button className="h-12 px-8 shadow-xl shadow-blue-200">Upload Dataset <Layers size={18} className="ml-2" /></Button>
+          <Button className="h-14 px-10 shadow-2xl shadow-blue-200 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest text-xs">Initiate Upload <Layers size={18} className="ml-2" /></Button>
         </Link>
       </div>
 
@@ -385,44 +399,99 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Node Identity Card */}
+        <Card className="lg:col-span-4 border-none shadow-2xl shadow-slate-100 bg-white p-8 space-y-8 rounded-3xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-10 opacity-5 -rotate-12"><Hospital size={150} /></div>
+           <div className="relative z-10">
+              <h3 className="text-xl font-black text-slate-900 mb-1">Node <span className="text-blue-600">Identity</span></h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Catalog Synchronization</p>
+           </div>
+
+           <div className="space-y-6 relative z-10">
+              <div>
+                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Active Specializations</label>
+                 <div className="flex flex-wrap gap-2">
+                    {activeSpecs.length > 0 ? activeSpecs.map((spec: string) => (
+                      <span key={spec} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-tight flex items-center gap-2">
+                         <Stethoscope size={10} className="text-blue-500" /> {spec}
+                      </span>
+                    )) : (
+                      <span className="text-xs text-slate-300 italic">No specializations assigned</span>
+                    )}
+                 </div>
+              </div>
+
+              <div>
+                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Operational Departments</label>
+                 <div className="grid grid-cols-2 gap-2">
+                    {activeDepts.length > 0 ? activeDepts.map((dept: string) => (
+                      <div key={dept} className="px-4 py-3 bg-blue-50/50 border border-blue-100/50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-tight flex items-center justify-between">
+                         <span className="truncate">{dept}</span>
+                         <CheckCircle2 size={12} className="text-blue-400" />
+                      </div>
+                    )) : (
+                      <span className="text-xs text-slate-300 italic">No departments active</span>
+                    )}
+                 </div>
+              </div>
+           </div>
+
+           <div className="pt-6 border-t border-slate-50 relative z-10">
+              <Link href="/dashboard/settings">
+                 <Button variant="outline" className="w-full border-2 border-slate-100 h-11 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all">Organization Settings</Button>
+              </Link>
+           </div>
+        </Card>
+
         {/* Training History */}
-        <Card className="lg:col-span-8 border-none shadow-2xl shadow-slate-100">
-          <CardHeader className="border-b border-slate-50 pb-5">
-            <CardTitle className="text-xl font-black">Training <span className="text-blue-600">History</span></CardTitle>
-            <CardDescription className="text-sm font-bold text-slate-400">Your local model training runs</CardDescription>
+        <Card className="lg:col-span-8 border-none shadow-2xl shadow-slate-100 rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="border-b border-slate-50 p-8">
+            <div className="flex items-center justify-between">
+               <div>
+                  <CardTitle className="text-xl font-black">Training <span className="text-blue-600">Intelligence</span></CardTitle>
+                  <CardDescription className="text-sm font-bold text-slate-400 mt-1">Decentralized model contribution ledger</CardDescription>
+               </div>
+               <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[9px] font-black uppercase tracking-widest">Network Online</span>
+               </div>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-slate-50">
               {jobs.length === 0 ? (
-                <div className="p-12 text-center">
-                  <BrainCircuit size={40} className="mx-auto text-slate-200 mb-3" />
-                  <p className="text-sm font-bold text-slate-400">No training jobs yet</p>
-                  <p className="text-[10px] font-bold text-slate-300 mt-1">Upload a CSV dataset and start your first training</p>
+                <div className="p-20 text-center">
+                  <BrainCircuit size={60} className="mx-auto text-slate-100 mb-6" />
+                  <p className="text-lg font-black text-slate-900 uppercase tracking-tight">No training active</p>
+                  <p className="text-xs font-bold text-slate-400 mt-2 max-w-[280px] mx-auto leading-relaxed">Your node is currently idle. Upload a dataset to contribute to the global model.</p>
+                  <Link href="/dashboard/data-upload" className="inline-block mt-8">
+                     <Button className="h-11 px-8 rounded-2xl bg-blue-600 shadow-xl shadow-blue-100 font-black text-[10px] uppercase tracking-widest">Start First Round</Button>
+                  </Link>
                 </div>
               ) : (
                 jobs.map((job) => (
-                  <div key={job.id} className="px-6 py-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                        <Cpu size={18} />
+                  <div key={job.id} className="px-8 py-6 hover:bg-slate-50 transition-all group cursor-default flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border-2 border-white shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <Cpu size={24} />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-900">{job.num_samples.toLocaleString()} samples</p>
-                        <p className="text-[10px] font-bold text-slate-400">
-                          {job.completed_at ? new Date(job.completed_at).toLocaleString() : 'In progress'}
+                        <p className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors">{job.num_samples.toLocaleString()} Samples Processed</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                          {job.completed_at ? new Date(job.completed_at).toLocaleString() : 'Processing in Background...'}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-8">
                       <div className="text-right">
-                        <p className="text-xs font-black text-emerald-600">
+                        <p className="text-xl font-black text-slate-900 italic">
                           {job.accuracy ? `${(parseFloat(job.accuracy) * 100).toFixed(1)}%` : '—'}
                         </p>
-                        <p className="text-[10px] font-bold text-slate-400">
-                          Loss: {job.loss || '—'}
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Local Accuracy
                         </p>
                       </div>
-                      <span className={cn("px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border",
+                      <div className={cn("px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest border-2 min-w-[100px] text-center",
                         job.status === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                         job.status === 'submitted' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                         job.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
@@ -430,7 +499,7 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
                         'bg-slate-50 text-slate-600 border-slate-100'
                       )}>
                         {job.status}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -438,13 +507,13 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="lg:col-span-4 space-y-6">
-          <QuickAction href="/dashboard/data-upload" icon={Upload} title="Upload & Train" desc="Upload CSV and start training" color="blue" />
-          <QuickAction href="/dashboard/federated" icon={Globe} title="Model Participation" desc="View global model status" color="purple" />
-          <QuickAction href="/dashboard/doctor-management" icon={Stethoscope} title="Doctor Management" desc="Manage doctor users" color="emerald" />
-        </div>
+      {/* Quick Actions Footer */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <QuickAction href="/dashboard/data-upload" icon={Upload} title="Dataset Upload" desc="Secure CSV synchronization" color="blue" />
+        <QuickAction href="/dashboard/federated" icon={Globe} title="Global Topology" desc="Monitor federated network" color="purple" />
+        <QuickAction href="/dashboard/doctor-management" icon={Stethoscope} title="Staff Registry" desc="Manage clinical specialists" color="emerald" />
       </div>
     </div>
   );
@@ -454,6 +523,7 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
 // DOCTOR DASHBOARD
 // ═══════════════════════════════════════════// Doctor Dashboard
 function DoctorDashboard() {
+  const { user } = useAuth();
   const [summary, setSummary] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -474,24 +544,43 @@ function DoctorDashboard() {
   if (isLoading) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
   const s = summary || { total_patients: 0, anomaly_count: 0, active_predictions: 0, latest_accuracy: '0.00', recent_activity: [], recent_patients: [], risk_distribution: { low: 0, moderate: 0, high: 0 }, total_reports: 0 };
+  
+  const userDepts = user?.department_ids || (user?.department?.name ? [user.department.name] : []);
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900">
-            Clinical <span className="gradient-text">Intelligence.</span>
-          </h1>
-          <p className="mt-1 text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <Calendar size={14} className="text-blue-700" /> Medical Practitioner Portal
-          </p>
+        <div className="flex items-center gap-5">
+           <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 text-white flex items-center justify-center font-black text-2xl border-4 border-blue-100 shadow-xl shadow-blue-200">
+              {user?.username?.charAt(0).toUpperCase()}
+           </div>
+           <div>
+              <h1 className="text-3xl font-black text-slate-900 leading-tight">
+                Welcome back, <span className="text-blue-700 underline decoration-blue-100 underline-offset-4">Dr. {user?.username}</span>
+              </h1>
+              <div className="flex items-center gap-3 mt-1.5">
+                 <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Clinical Identity:</span>
+                    <div className="flex gap-1.5">
+                       {userDepts.length > 0 ? userDepts.slice(0, 2).map((d: string) => (
+                         <span key={d} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[9px] font-black uppercase tracking-tighter border border-blue-100">{d}</span>
+                       )) : <span className="text-[9px] font-bold text-slate-400">General Clinical</span>}
+                       {userDepts.length > 2 && <span className="text-[9px] font-black text-blue-600">+{userDepts.length - 2}</span>}
+                    </div>
+                 </div>
+                 <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Hospital size={12} className="text-blue-700" /> {user?.hospital?.name || 'Local Node'}
+                 </p>
+              </div>
+           </div>
         </div>
         <div className="flex gap-3">
           <Link href="/dashboard/patients">
-            <Button variant="outline" className="h-10 px-5 text-xs border-2 font-black border-slate-200">Patient List</Button>
+            <Button variant="outline" className="h-11 px-6 text-xs border-2 font-black border-slate-200 rounded-xl hover:bg-slate-50 transition-all">Patient Registry</Button>
           </Link>
           <Link href="/dashboard/predictions">
-            <Button className="h-10 px-6 text-xs bg-blue-700 text-white shadow-lg shadow-blue-200 hover:bg-blue-800">Run Prediction <Zap size={14} className="ml-2" /></Button>
+            <Button className="h-11 px-8 text-xs bg-blue-700 text-white shadow-xl shadow-blue-200 hover:bg-blue-800 rounded-xl font-black uppercase tracking-widest">Execute Prediction <Zap size={14} className="ml-2" /></Button>
           </Link>
         </div>
       </div>

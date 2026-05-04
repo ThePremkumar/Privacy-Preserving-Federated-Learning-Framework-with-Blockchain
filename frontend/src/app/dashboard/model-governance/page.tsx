@@ -53,25 +53,22 @@ interface TrainingJob {
   reviewed_by: string | null;
 }
 
-interface AggregationRound {
+interface AggregationHistoryItem {
   id: string;
   round_number: number;
-  status: string;
-  participating_hospitals: string[];
+  date: string;
+  nodes_count: number;
   total_samples: number;
   global_accuracy: string;
   global_loss: string;
-  global_weights_hash: string;
-  blockchain_tx_hash: string;
-  epsilon_total: string;
-  created_at: string;
+  blockchain_status: string;
 }
 
 export default function ModelGovernancePage() {
   const { user } = useAuth();
   const [pendingJobs, setPendingJobs] = useState<TrainingJob[]>([]);
   const [allJobs, setAllJobs] = useState<TrainingJob[]>([]);
-  const [aggregationHistory, setAggregationHistory] = useState<AggregationRound[]>([]);
+  const [aggregationHistory, setAggregationHistory] = useState<AggregationHistoryItem[]>([]);
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [isReviewing, setIsReviewing] = useState<string | null>(null);
   const [isAggregating, setIsAggregating] = useState(false);
@@ -202,7 +199,7 @@ export default function ModelGovernancePage() {
                   <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/30">{latestRound ? 'Active' : 'Initializing'}</span>
                 </div>
                 <p className="text-white/40 text-xs font-bold uppercase tracking-widest">
-                  {latestRound ? `Round ${latestRound.round_number} • ${latestRound.total_samples.toLocaleString()} Samples • ${latestRound.participating_hospitals.length} Nodes` : 'No aggregation rounds yet'}
+                  {latestRound ? `Round ${latestRound.round_number} • ${latestRound.total_samples.toLocaleString()} Samples • ${latestRound.nodes_count} Nodes` : 'No aggregation rounds yet'}
                 </p>
               </div>
             </div>
@@ -397,52 +394,107 @@ export default function ModelGovernancePage() {
             </Card>
           )}
 
-          {/* Aggregation History */}
-          <Card className="border-none shadow-2xl shadow-slate-100">
-            <CardHeader className="border-b border-slate-50 pb-5">
-              <CardTitle className="text-lg font-black">Aggregation <span className="text-blue-600">History</span></CardTitle>
+          {/* Aggregation History (SECTION 16) */}
+          <Card className="border-none shadow-2xl shadow-slate-100 overflow-hidden">
+            <CardHeader className="border-b border-slate-50 pb-5 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-slate-800">
+                    Aggregation <span className="text-blue-600">Archive</span>
+                  </CardTitle>
+                  <CardDescription className="text-xs font-bold text-slate-400 mt-1">
+                    {aggregationHistory.length} aggregation rounds · Best accuracy: {
+                      aggregationHistory.length > 0 
+                        ? Math.max(...aggregationHistory.map(r => parseFloat(r.global_accuracy || '0'))) * 100 
+                        : 0
+                    }%
+                  </CardDescription>
+                </div>
+                <div className="bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest italic">Governance Log</span>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-slate-50">
-                {aggregationHistory.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <Globe size={20} className="mx-auto text-slate-300 mb-2" />
-                    <p className="text-sm font-bold text-slate-400">No aggregation rounds yet.</p>
-                  </div>
-                ) : (
-                  aggregationHistory.map((round) => (
-                    <div key={round.id} className="px-5 py-4 hover:bg-slate-50 transition-colors">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black">R{round.round_number}</div>
-                          <div>
-                            <p className="text-xs font-black text-slate-900">Round #{round.round_number}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{new Date(round.created_at).toLocaleDateString()} • {round.participating_hospitals.length} nodes</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-100">
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Round</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Nodes</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Samples</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Global Acc</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Loss</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Chain</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {aggregationHistory.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-6 py-12 text-center">
+                          <div className="max-w-[300px] mx-auto">
+                            <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                              <History size={24} className="text-slate-300" />
+                            </div>
+                            <p className="text-sm font-black text-slate-500 uppercase tracking-tight">No aggregation rounds yet</p>
+                            <p className="text-[10px] font-bold text-slate-300 mt-1 leading-relaxed">
+                              Approve at least one training job and trigger aggregation from the panel above.
+                            </p>
                           </div>
-                        </div>
-                        <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-[8px] font-black uppercase tracking-widest border border-purple-100">completed</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 mt-2">
-                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
-                          <p className="text-[8px] font-black text-slate-400 uppercase">Accuracy</p>
-                          <p className="text-sm font-black text-emerald-600">{(parseFloat(round.global_accuracy) * 100).toFixed(1)}%</p>
-                        </div>
-                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
-                          <p className="text-[8px] font-black text-slate-400 uppercase">Loss</p>
-                          <p className="text-sm font-black text-blue-600">{parseFloat(round.global_loss).toFixed(4)}</p>
-                        </div>
-                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
-                          <p className="text-[8px] font-black text-slate-400 uppercase">Samples</p>
-                          <p className="text-sm font-black text-slate-700">{round.total_samples.toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center gap-1">
-                        <Database size={10} className="text-slate-400" />
-                        <span className="text-[9px] font-mono text-slate-400">tx: {round.blockchain_tx_hash.substring(0, 24)}...</span>
-                      </div>
-                    </div>
-                  ))
-                )}
+                        </td>
+                      </tr>
+                    ) : (
+                      aggregationHistory.map((round) => (
+                        <tr 
+                          key={round.id} 
+                          className="group hover:bg-slate-50/80 transition-all cursor-pointer"
+                          onClick={() => window.location.href = `/dashboard/model-governance/${round.id}`}
+                        >
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-black italic text-blue-600">#{round.round_number}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-[11px] font-bold text-slate-600">
+                              {round.date}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-black border border-slate-200">
+                              {round.nodes_count}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-xs font-bold text-slate-500 tracking-tight">
+                              {round.total_samples?.toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-sm font-black text-emerald-600 italic">
+                              {(parseFloat(round.global_accuracy || '0') * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-xs font-bold text-blue-500 font-mono">
+                              {parseFloat(round.global_loss || '0').toFixed(4)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex justify-center">
+                              <div className="h-5 w-5 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-100 shadow-sm">
+                                <CheckCircle2 size={10} />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

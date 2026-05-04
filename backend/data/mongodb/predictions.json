@@ -1,1 +1,15 @@
-{}
+{
+    "pred_1": {
+        "_id": "pred_1",
+        "type": "ai_prediction",
+        "patient_id": "7b4ca645-684b-4973-9822-dae64c4868a6",
+        "patient_name": "Prem Kumar",
+        "hospital_id": "hosp_himsr",
+        "timestamp": "2026-05-03T14:00:00.000Z",
+        "results": {
+            "prediction": "Stable",
+            "risk_score": 2.5,
+            "confidence": 94.2
+        }
+    }
+}

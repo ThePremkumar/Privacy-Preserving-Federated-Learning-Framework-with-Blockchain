@@ -32,6 +32,9 @@ class RegisterUserRequest(BaseModel):
     password: str
     role: str
     hospital_id: Optional[str] = None
+    department_id: Optional[int] = None
+    specializations: Optional[List[str]] = None
+    department_ids: Optional[List[int]] = None
 
 class RegisterHospitalRequest(BaseModel):
     name: str
@@ -45,6 +48,10 @@ class RegisterHospitalRequest(BaseModel):
     country: str = "India"
     zip_code: Optional[str] = None
     is_active: bool = True
+    active_specializations: Optional[List[str]] = None
+    active_departments: Optional[List[str]] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 class UpdateHospitalRequest(BaseModel):
     name: Optional[str] = None
@@ -58,6 +65,8 @@ class UpdateHospitalRequest(BaseModel):
     country: Optional[str] = None
     zip_code: Optional[str] = None
     is_active: Optional[bool] = None
+    active_specializations: Optional[List[str]] = None
+    active_departments: Optional[List[str]] = None
 
 class UpdateProfileRequest(BaseModel):
     email: EmailStr
@@ -105,6 +114,8 @@ async def login(login_data: LoginRequest):
                 detail="Invalid username or password"
             )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -115,7 +126,7 @@ async def register_user(user_data: RegisterUserRequest, current_user: User = Dep
     try:
         # Validate role
         try:
-            role = UserRole(user_data.role)
+            role = UserRole(user_data.role.lower())
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -139,7 +150,10 @@ async def register_user(user_data: RegisterUserRequest, current_user: User = Dep
             email=user_data.email,
             password=user_data.password,
             role=role,
-            hospital_id=target_hospital_id
+            hospital_id=target_hospital_id,
+            department_id=user_data.department_id,
+            specializations=user_data.specializations,
+            department_ids=user_data.department_ids
         )
         
         return {
@@ -149,7 +163,9 @@ async def register_user(user_data: RegisterUserRequest, current_user: User = Dep
                 "username": user.username,
                 "email": user.email,
                 "role": user.role.value,
-                "hospital_id": user.hospital_id
+                "hospital_id": user.hospital_id,
+                "specializations": user.specializations,
+                "department_ids": user.department_ids
             }
         }
     except ValueError as e:
@@ -173,7 +189,11 @@ async def register_hospital(hospital_data: RegisterHospitalRequest, current_user
             state=hospital_data.state,
             country=hospital_data.country,
             zip_code=hospital_data.zip_code,
-            is_active=hospital_data.is_active
+            is_active=hospital_data.is_active,
+            active_specializations=hospital_data.active_specializations,
+            active_departments=hospital_data.active_departments,
+            lat=hospital_data.lat,
+            lng=hospital_data.lng
         )
         
         return {
@@ -189,7 +209,9 @@ async def register_hospital(hospital_data: RegisterHospitalRequest, current_user
                 "city": hospital.city,
                 "state": hospital.state,
                 "country": hospital.country,
-                "is_active": hospital.is_active
+                "is_active": hospital.is_active,
+                "active_specializations": hospital.active_specializations,
+                "active_departments": hospital.active_departments
             }
         }
     except Exception as e:
@@ -212,7 +234,9 @@ async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest
             state=hospital_data.state,
             country=hospital_data.country,
             zip_code=hospital_data.zip_code,
-            is_active=hospital_data.is_active
+            is_active=hospital_data.is_active,
+            active_specializations=hospital_data.active_specializations,
+            active_departments=hospital_data.active_departments
         )
         
         if not hospital:
@@ -231,7 +255,9 @@ async def update_hospital(hospital_id: str, hospital_data: UpdateHospitalRequest
                 "city": hospital.city,
                 "state": hospital.state,
                 "country": hospital.country,
-                "is_active": hospital.is_active
+                "is_active": hospital.is_active,
+                "active_specializations": hospital.active_specializations,
+                "active_departments": hospital.active_departments
             }
         }
     except Exception as e:
@@ -254,16 +280,31 @@ async def delete_hospital(hospital_id: str, current_user: User = Depends(require
 
 @router.get("/me")
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Get current user information"""
+    """Get current user information with full hospital and department identity"""
     return {
         "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email,
         "role": current_user.role.value,
         "hospital_id": current_user.hospital_id,
+        "department_id": current_user.department_id,
+        "specializations": current_user.specializations,
+        "department_ids": current_user.department_ids,
         "hospital": {
-            "name": getattr(current_user, "hospital").name if getattr(current_user, "hospital", None) else None
-        } if current_user.hospital_id else None,
+            "id": current_user.hospital.id,
+            "name": current_user.hospital.name,
+            "short_name": current_user.hospital.short_name,
+            "city": current_user.hospital.city,
+            "state": current_user.hospital.state,
+            "country": current_user.hospital.country,
+            "logo_initials": current_user.hospital.logo_initials,
+            "website": current_user.hospital.website,
+            "phone": current_user.hospital.phone,
+            "organization_type": current_user.hospital.organization_type,
+            "active_specializations": current_user.hospital.active_specializations,
+            "active_departments": current_user.hospital.active_departments,
+        } if current_user.hospital else None,
+        "department": current_user.department,
         "permissions": [p.value for p in current_user.permissions],
         "is_active": current_user.is_active
     }
@@ -314,12 +355,13 @@ async def update_current_user_profile(profile_data: UpdateProfileRequest, curren
                 "notification_type": "info"
             }
             for target in targets:
-                # Wrap it in asyncio.create_task or run immediately since it's an async endpoint
                 asyncio.create_task(manager.send_personal_message(message, target.id))
         except ImportError:
             pass
             
         return {"message": "Profile updated successfully", "email": profile_data.email}
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         logger.error(f"Profile update error: {e}")
@@ -342,7 +384,11 @@ async def get_users(current_user: User = Depends(require_permission(Permission.M
             "email": u.email,
             "role": u.role.value,
             "hospital_id": u.hospital_id,
-            "hospital_name": getattr(u, "hospital").name if getattr(u, "hospital", None) else None,
+            "department_id": u.department_id,
+            "specializations": u.specializations,
+            "department_ids": u.department_ids,
+            "hospital_name": u.hospital.name if u.hospital else None,
+            "department_name": u.department["name"] if u.department else None,
             "is_active": u.is_active,
             "created_at": u.created_at
         }
@@ -366,7 +412,9 @@ async def get_hospitals(current_user: User = Depends(require_permission(Permissi
             "state": h.state,
             "country": h.country,
             "zip_code": h.zip_code,
-            "is_active": h.is_active
+            "is_active": h.is_active,
+            "active_specializations": h.active_specializations,
+            "active_departments": h.active_departments
         }
         for h in result.get("items", [])
     ]

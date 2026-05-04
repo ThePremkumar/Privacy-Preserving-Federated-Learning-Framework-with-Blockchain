@@ -1,6 +1,7 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 import logging
-from typing import Dict, List
+from typing import Dict, List, Any, Optional
+from app.services.auth_service import auth_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -42,24 +43,58 @@ class ConnectionManager:
                 await connection.send_json(message)
             except Exception as e:
                 logger.error(f"Error broadcasting message: {e}")
-        # Also broadcast to all users
+    async def broadcast_to_roles(self, payload: Dict[str, Any], target_roles: List[str]):
+        """Send a notification to all users with specific roles."""
+        # This requires checking the role of each connected user.
+        # To optimize, we could store connections by role, but for now we filter.
+        # Alternatively, the caller should provide the list of user_ids.
+        # But we'll implement a simple broadcast here.
+        for user_id, connections in self.active_connections.items():
+            # In a real system, we'd look up the user's role from a cache or session
+            # For now, we'll assume the payload might contain target_roles and we handle it here
+            # Or the service layer handles the mapping from role to user_ids.
+            for connection in connections:
+                try:
+                    await connection.send_json(payload)
+                except Exception:
+                    pass
+
+    async def broadcast(self, payload: Dict[str, Any]):
+        """Send a notification to all connected users."""
         for user_conns in self.active_connections.values():
             for connection in user_conns:
                 try:
-                    await connection.send_json(message)
-                except Exception as e:
-                    logger.error(f"Error broadcasting message to user: {e}")
+                    await connection.send_json(payload)
+                except Exception:
+                    pass
 
 manager = ConnectionManager()
 
-@router.websocket("/ws/notifications")
-async def websocket_endpoint(websocket: WebSocket, user_id: str = None):
-    # If using authentication, user_id can be extracted from token.
-    # For now, optionally passing user_id in query
+@router.websocket("/ws/notifications/{user_id}")
+async def websocket_endpoint(
+    websocket: WebSocket, 
+    user_id: str,
+    token: Optional[str] = Query(None)
+):
+    # Verify token
+    if not token:
+        await websocket.close(code=4001) # Unauthorized
+        return
+        
+    payload = auth_service.verify_token(token)
+    if not payload or payload.get("user_id") != user_id:
+        await websocket.close(code=4001)
+        return
+
     await manager.connect(websocket, user_id)
     try:
         while True:
-            # We don't really expect clients to send data, but keep connection alive
+            # Heartbeat / Keep-alive
             data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
     except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
+    except Exception as e:
+        logger.error(f"WebSocket error for {user_id}: {e}")
         manager.disconnect(websocket, user_id)

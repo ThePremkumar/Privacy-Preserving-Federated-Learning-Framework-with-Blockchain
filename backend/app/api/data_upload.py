@@ -3,7 +3,7 @@ Data Upload API – accepts CSV files from hospital nodes,
 parses them, and stores records in the SQLite database.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from pydantic import BaseModel
 from datetime import datetime
@@ -44,6 +44,8 @@ class UploadHistoryItem(BaseModel):
 @router.post("/upload-csv", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_csv(
     file: UploadFile = File(...),
+    confirm_warning: bool = False,
+    suggested_filename: Optional[str] = None,
     current_user: Dict[str, Any] = Depends(require_role(["hospital"])),
 ):
     """
@@ -51,11 +53,78 @@ async def upload_csv(
     - Only hospital-role users are allowed.
     - The file is parsed, hashed, and each row is stored in the database.
     """
-    if not file.filename or not file.filename.lower().endswith(".csv"):
+    # --- FILENAME VALIDATION & NAMING CONVENTION (SECTION 12) ---
+    from app.core.db_models import Hospital, AuditLog
+    db_val = SessionLocal()
+    hospital = db_val.query(Hospital).filter(Hospital.id == current_user.get("hospital_id")).first()
+    node_slug = (hospital.short_name or hospital.name.split()[0]).lower().replace(" ", "") if hospital else "unknown"
+    org_type = hospital.organization_type if hospital else "Multispecialty"
+    db_val.close()
+
+    filename = suggested_filename if suggested_filename else file.filename
+    filename_lower = filename.lower()
+    
+    warnings = []
+    warning_bypassed = False
+
+    # 1. Keyword Blocklist
+    blocklist = [
+        "covid", "covid-19", "covid19", "nursing_home", "nursinghome", "cms", "cms_", 
+        "census", "billing_only", "public_health", "population_study", "cdc_", "who_", 
+        "nhs_", "medicare_export", "medicaid_export", "aggregate_report", "research_study"
+    ]
+    for kw in blocklist:
+        if kw in filename_lower:
+            warnings.append(f"Warning: This filename contains a keyword ('{kw}') that suggests it may be an unrelated public health or administrative dataset rather than patient records from this node.")
+            break
+
+    # 2. Format Pattern: {slug}_{type}_{YYYY-MM-DD}.csv
+    import re
+    # Pattern: ^[a-z0-9]+_[a-z0-9_]+_\d{4}-\d{2}-\d{2}\.csv$
+    pattern = r"^[a-z0-9]+_[a-z0-9_]+_\d{4}-\d{2}-\d{2}\.csv$"
+    is_valid_format = bool(re.match(pattern, filename_lower))
+    if not is_valid_format:
+        warnings.append(f"Filename does not follow the required format: {{hospital_slug}}_{{data_type}}_{{YYYY-MM-DD}}.csv")
+
+    # 3. Hospital Slug Mismatch
+    extracted_slug = filename_lower.split('_')[0] if '_' in filename_lower else ""
+    if is_valid_format and extracted_slug != node_slug:
+        warnings.append(f"Warning: The filename prefix '{extracted_slug}' does not match this node's identifier '{node_slug}'.")
+
+    # 4. Organization Type Mismatch
+    if is_valid_format:
+        parts = filename_lower.replace(".csv", "").split('_')
+        data_type = "_".join(parts[1:-1])
+        org_map = {
+            "General clinic": ["patient_records", "clinical_export", "training_dataset"],
+            "Heart hospital": ["cardiac_records", "patient_records", "training_dataset"],
+            "Neuro center": ["neuro_records", "patient_records", "training_dataset"],
+            "Ortho & spine": ["ortho_records", "patient_records", "training_dataset"],
+            "Maternity & child": ["maternal_records", "patient_records", "training_dataset"],
+            "Cancer center": ["oncology_records", "patient_records", "training_dataset"],
+            "Eye hospital": ["ophthalmic_records", "patient_records", "training_dataset"],
+            "Multispecialty": ["patient_records", "clinical_export", "training_dataset"]
+        }
+        allowed_types = org_map.get(org_type, ["patient_records", "clinical_export", "training_dataset"])
+        if data_type not in allowed_types:
+            warnings.append(f"Warning: This node is registered as a {org_type}. The filename data type '{data_type}' may not be appropriate for this node type.")
+
+    # Handle Warnings
+    if warnings and not confirm_warning:
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        suggestion = f"{node_slug}_patient_records_{today}.csv"
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only CSV files are accepted.",
+            detail={
+                "message": "Filename validation warnings detected.",
+                "warnings": warnings,
+                "suggestion": suggestion
+            }
         )
+    
+    if warnings and confirm_warning:
+        warning_bypassed = True
+    # ------------------------------------------------------------
 
     # Read file contents
     raw_bytes = await file.read()
@@ -96,7 +165,7 @@ async def upload_csv(
         # Create upload record
         upload_record = DatasetUpload(
             id=upload_id,
-            filename=file.filename,
+            filename=filename,
             hospital_id=hospital_id,
             uploaded_by=user_id,
             record_count=len(rows),
@@ -105,6 +174,33 @@ async def upload_csv(
             status="completed",
         )
         db.add(upload_record)
+
+        # Audit Log (Section 12)
+        audit_action = 'dataset_uploaded'
+        audit_details = {
+            "filename": filename,
+            "sha256_hash": sha256_hash,
+            "record_count": len(rows),
+            "warning_bypassed": warning_bypassed
+        }
+        
+        # If bypassed warnings, log that too
+        if warning_bypassed:
+            bypass_audit = AuditLog(
+                user_id=user_id,
+                action='upload_filename_warning_bypassed',
+                resource=f"upload:{upload_id}",
+                details={"filename": filename, "warnings": warnings}
+            )
+            db.add(bypass_audit)
+
+        audit = AuditLog(
+            user_id=user_id,
+            action=audit_action,
+            resource=f"upload:{upload_id}",
+            details=audit_details
+        )
+        db.add(audit)
 
         # Store individual data rows
         for idx, row_data in enumerate(rows):
@@ -143,6 +239,7 @@ async def upload_csv(
 
 
 @router.get("/uploads", response_model=List[UploadHistoryItem])
+@router.get("/my-uploads", response_model=List[UploadHistoryItem])
 async def get_upload_history(
     current_user: Dict[str, Any] = Depends(require_role(["hospital", "super_admin", "admin"])),
 ):

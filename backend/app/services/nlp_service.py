@@ -6,6 +6,7 @@ Handles symptom extraction, clinical keyword identification, and sentiment analy
 import re
 from typing import List, Dict, Any, Set
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -13,49 +14,58 @@ class NLPService:
     """Enterprise NLP service for clinical text analysis"""
     
     def __init__(self):
-        # Basic clinical keyword dictionary (extend for production use)
-        # In production, use specialized tools like MetaMap, cTAKES, or BioBERT
         self.symptom_keywords = {
             'fever', 'cough', 'dyspnea', 'fatigue', 'headache', 'nausea', 
             'vomiting', 'diarrhea', 'chest pain', 'shortness of breath',
-            'dizziness', 'abdominal pain', 'rash', 'sore throat'
+            'dizziness', 'abdominal pain', 'rash', 'sore throat', 'joint pain',
+            'swelling', 'numbness', 'palpitation', 'blurred vision'
         }
         
         self.clinical_entities = {
             'diabetes', 'hypertension', 'asthma', 'pneumonia', 'cardiac',
-            'glucose', 'insulin', 'blood pressure', 'oxygen', 'heart rate'
+            'glucose', 'insulin', 'blood pressure', 'oxygen', 'heart rate',
+            'cholesterol', 'mri', 'ct scan', 'x-ray', 'ecg', 'blood test'
         }
         
+        self.task_keywords = [
+            (r'(schedule|book|arrange)\s+(a|an)?\s+(\w+\s+)?(appointment|test|scan|mri|ct|x-ray)', 'appointment'),
+            (r'(increase|decrease|change|stop|start)\s+(the\s+)?(dosage|medication|dose|medicine)', 'medication'),
+            (r'(refer|send)\s+(to|for)\s+(\w+\s+)?(specialist|department|surgeon|consultation)', 'referral'),
+            (r'(follow-up|check-up)\s+(in|after)\s+(\w+\s+)?(days|weeks|months)', 'follow-up')
+        ]
+        
         # Sentiment lexicons
-        self.positive_medical = {'improving', 'stable', 'responding', 'active', 'healthy'}
-        self.negative_medical = {'worsening', 'deteriorating', 'unresponsive', 'acute', 'severe'}
+        self.positive_medical = {'improving', 'stable', 'responding', 'active', 'healthy', 'normal'}
+        self.negative_medical = {'worsening', 'deteriorating', 'unresponsive', 'acute', 'severe', 'painful', 'critical'}
 
     def analyze_medical_note(self, text: str) -> Dict[str, Any]:
-        """
-        Perform complete NLP analysis on a clinical note
-        """
+        """Perform complete NLP analysis on a clinical note"""
         text_lower = text.lower()
         
         symptoms = self.extract_symptoms(text_lower)
-        keywords = self.extract_clinical_keywords(text_lower)
+        entities = self.extract_clinical_keywords(text_lower)
         sentiment = self.analyze_sentiment(text_lower)
+        tasks = self.extract_tasks(text_lower)
         
         # Risk indicators
-        is_emergency = any(word in text_lower for word in ['critical', 'emergency', 'arrest', 'stroke', 'failure'])
+        is_emergency = any(word in text_lower for word in ['critical', 'emergency', 'arrest', 'stroke', 'failure', 'seizure', 'unconscious'])
+        
+        urgency_score = self._calculate_urgency(symptoms, sentiment, is_emergency)
         
         return {
             "symptoms": list(symptoms),
-            "clinical_entities": list(keywords),
+            "clinical_entities": list(entities),
             "sentiment": sentiment,
+            "tasks": tasks,
             "risk_assessment": {
                 "is_emergency": is_emergency,
-                "urgency_score": self._calculate_urgency(symptoms, sentiment, is_emergency)
+                "urgency_score": urgency_score,
+                "risk_level": "High" if urgency_score > 7 else "Moderate" if urgency_score > 4 else "Low"
             },
-            "summary": self._generate_summary(symptoms, keywords, sentiment)
+            "summary": self._generate_summary(symptoms, entities, sentiment, tasks)
         }
 
     def extract_symptoms(self, text: str) -> Set[str]:
-        """Extract symptoms from text using keyword matching"""
         found = set()
         for symptom in self.symptom_keywords:
             if re.search(r'\b' + re.escape(symptom) + r'\b', text):
@@ -63,15 +73,25 @@ class NLPService:
         return found
 
     def extract_clinical_keywords(self, text: str) -> Set[str]:
-        """Extract clinical entities from text"""
         found = set()
         for entity in self.clinical_entities:
             if re.search(r'\b' + re.escape(entity) + r'\b', text):
                 found.add(entity)
         return found
 
+    def extract_tasks(self, text: str) -> List[Dict[str, str]]:
+        tasks = []
+        for pattern, task_type in self.task_keywords:
+            matches = re.finditer(pattern, text)
+            for match in matches:
+                tasks.append({
+                    "type": task_type,
+                    "description": match.group(0).capitalize(),
+                    "status": "pending"
+                })
+        return tasks
+
     def analyze_sentiment(self, text: str) -> str:
-        """Simple rule-based sentiment analysis for medical context"""
         pos_count = sum(1 for word in self.positive_medical if word in text)
         neg_count = sum(1 for word in self.negative_medical if word in text)
         
@@ -82,22 +102,25 @@ class NLPService:
         return 'NEUTRAL/STABLE'
 
     def _calculate_urgency(self, symptoms: Set[str], sentiment: str, is_emergency: bool) -> int:
-        """Calculate urgency score (1-10)"""
         score = 1
         if is_emergency: score += 7
         if sentiment == 'NEGATIVE/DETERIORATING': score += 2
         score += min(2, len(symptoms))
         return min(10, score)
 
-    def _generate_summary(self, symptoms: Set[str], keywords: Set[str], sentiment: str) -> str:
-        """Generate a human-readable summary of analysis"""
-        if not symptoms and not keywords:
-            return "No significant clinical entities detected."
+    def _generate_summary(self, symptoms: Set[str], entities: Set[str], sentiment: str, tasks: List[Dict[str, str]]) -> str:
+        if not symptoms and not entities and not tasks:
+            return "No significant clinical entities or tasks detected."
             
         sym_str = ", ".join(symptoms) if symptoms else "none"
-        ent_str = ", ".join(keywords) if keywords else "none"
+        ent_str = ", ".join(entities) if entities else "none"
+        task_count = len(tasks)
         
-        return f"Detected symptoms: {sym_str}. Relevant clinical entities: {ent_str}. Patient status is {sentiment}."
+        summary = f"Detected symptoms: {sym_str}. Relevant clinical entities: {ent_str}. Patient status is {sentiment}."
+        if task_count > 0:
+            summary += f" Extracted {task_count} follow-up tasks."
+            
+        return summary
 
 # Global instance
 nlp_service = NLPService()

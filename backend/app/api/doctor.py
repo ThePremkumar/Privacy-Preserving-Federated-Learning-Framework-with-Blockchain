@@ -157,6 +157,31 @@ async def get_doctor_patients(current_user: Dict[str, Any] = Depends(require_rol
     patients = await patient_repo.find_many({"hospital_id": hospital_id})
     return patients
 
+@router.get("/hospital-doctors")
+async def get_hospital_doctors(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital", "admin", "super_admin"]))):
+    """List all doctors in the current hospital."""
+    hospital_id = current_user.get("hospital_id")
+    if not hospital_id:
+        raise HTTPException(status_code=400, detail="Hospital ID not found in session")
+    
+    db = SessionLocal()
+    try:
+        from app.core.db_models import User
+        doctors = db.query(User).filter(
+            User.hospital_id == hospital_id,
+            User.role == "doctor"
+        ).all()
+        return [
+            {
+                "id": d.id,
+                "name": d.username,
+                "username": d.username,
+                "department_id": d.department_id,
+            } for d in doctors
+        ]
+    finally:
+        db.close()
+
 # New: List all doctors (admin/super_admin access)
 @router.get("/doctors")
 async def list_doctors(limit: int = 100, offset: int = 0, current_user: Dict[str, Any] = Depends(require_role(["admin", "super_admin"]))):

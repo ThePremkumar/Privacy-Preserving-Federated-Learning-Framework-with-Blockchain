@@ -28,7 +28,7 @@ export function usePatientFilters(patients: any[], currentUserId: string | undef
     if (filters.hasDocuments) count++;
     if (filters.hasHistory) count++;
     if (filters.symptoms.length > 0) count++;
-    if (filters.registrationSource === 'all') count++; // 'me' is default
+    if (filters.registrationSource !== 'all') count++;
     return count;
   }, [filters]);
 

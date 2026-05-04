@@ -45,7 +45,7 @@ graph LR
 
 ## Test Results
 
-### Hospital Workflow (hospital_node1)
+### Hospital Workflow (himsr_node / apollo_node / aiims_node)
 | Step | Result |
 |------|--------|
 | Upload CSV (55,500 records) | ✅ Success |

@@ -6,9 +6,10 @@ interface ActiveFilterChipsProps {
   filters: PatientFilters;
   updateFilter: <K extends keyof PatientFilters>(key: K, value: PatientFilters[K]) => void;
   clearFilters: () => void;
+  doctors: any[];
 }
 
-export function ActiveFilterChips({ filters, updateFilter, clearFilters }: ActiveFilterChipsProps) {
+export function ActiveFilterChips({ filters, updateFilter, clearFilters, doctors }: ActiveFilterChipsProps) {
   const chips: { label: string; onRemove: () => void }[] = [];
 
   if (filters.dateFrom || filters.dateTo) {
@@ -52,8 +53,9 @@ export function ActiveFilterChips({ filters, updateFilter, clearFilters }: Activ
     chips.push({ label: `Symptoms: ${filters.symptoms.join(', ')}`, onRemove: () => updateFilter('symptoms', []) });
   }
 
-  if (filters.registrationSource === 'all') {
-    chips.push({ label: 'Source: All Doctors', onRemove: () => updateFilter('registrationSource', 'me') });
+  if (filters.doctor_id) {
+    const doc = doctors.find(d => d.id === filters.doctor_id);
+    chips.push({ label: `Doctor: ${doc ? doc.name : filters.doctor_id}`, onRemove: () => updateFilter('doctor_id', null) });
   }
 
   if (chips.length === 0) return null;

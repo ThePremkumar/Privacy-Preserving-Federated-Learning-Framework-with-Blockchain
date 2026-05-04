@@ -13,6 +13,11 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 import os
 import uuid
+import hashlib
+import json
+import time
+from app.core.blockchain import blockchain_service
+from app.services.blockchain.audit_service import ClinicalRecord
 
 router = APIRouter(tags=["patients"])
 
@@ -60,6 +65,22 @@ async def create_patient(patient: PatientCreate, current_user: Dict[str, Any] = 
     patient_data["reports"] = []
     
     patient_id = await patient_repo.insert_one(patient_data)
+    
+    # Log to Blockchain
+    try:
+        record = ClinicalRecord(
+            record_id=f"REG-{patient_id[:8].upper()}",
+            hospital_id=current_user.get("hospital_id"),
+            patient_id=patient_id,
+            action="registration",
+            data_hash=hashlib.sha256(json.dumps(patient_data, default=str).encode()).hexdigest(),
+            timestamp=int(time.time()),
+            metadata={"name": patient.name, "created_by": current_user.get("username")}
+        )
+        blockchain_service.log_clinical_record(record)
+    except Exception as e:
+        print(f"Blockchain logging failed: {e}")
+
     return {"id": patient_id, "message": "Patient registered successfully"}
 
 @router.patch("/{patient_id}")
@@ -90,6 +111,21 @@ async def update_patient(
     
     patient_repo.data[patient_id] = patient
     patient_repo._save()
+    
+    # Log to Blockchain
+    try:
+        record = ClinicalRecord(
+            record_id=f"UPD-{patient_id[:8].upper()}-{int(time.time())}",
+            hospital_id=current_user.get("hospital_id"),
+            patient_id=patient_id,
+            action="update",
+            data_hash=hashlib.sha256(json.dumps(update_data, default=str).encode()).hexdigest(),
+            timestamp=int(time.time()),
+            metadata={"updated_fields": list(update_data.keys()), "updated_by": current_user.get("username")}
+        )
+        blockchain_service.log_clinical_record(record)
+    except Exception as e:
+        print(f"Blockchain logging failed: {e}")
     
     return {"message": "Patient updated successfully", "updated_fields": list(update_data.keys())}
 
@@ -159,14 +195,54 @@ async def upload_patient_report(
     patient_repo.data[patient_id] = patient
     patient_repo._save()
     
+    # Log to Blockchain
+    try:
+        record = ClinicalRecord(
+            record_id=f"REP-{file_id[:8].upper()}",
+            hospital_id=current_user.get("hospital_id"),
+            patient_id=patient_id,
+            action="report_upload",
+            data_hash=hashlib.sha256(content).hexdigest(),
+            timestamp=int(time.time()),
+            metadata={"filename": file.filename, "type": file.content_type}
+        )
+        blockchain_service.log_clinical_record(record)
+    except Exception as e:
+        print(f"Blockchain logging failed: {e}")
+    
     return {"message": "Report uploaded successfully", "report": report_meta}
 
 @router.get("/", response_model=List[Dict[str, Any]])
-async def list_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
-    """List active patients for the current hospital/doctor"""
+async def list_patients(
+    department_id: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))
+):
+    """List active patients for the current hospital/doctor. Optionally filter by department."""
     hospital_id = current_user.get("hospital_id")
+    
+    # If department_id is provided, we need to filter by doctors in that department
+    filter_criteria = {"hospital_id": hospital_id}
+    
+    if department_id:
+        db = SessionLocal()
+        try:
+            # Find all doctors in this department
+            doctors = db.query(User).filter(
+                User.hospital_id == hospital_id,
+                User.department_id == department_id
+            ).all()
+            doctor_ids = [d.id for d in doctors]
+            
+            # MongoDB simulation find_many doesn't support $in easily in our mock
+            # so we'll fetch all and filter manually for simplicity in this mock repo
+            all_patients = await patient_repo.find_many({"hospital_id": hospital_id})
+            results = [p for p in all_patients if p.get("created_by") in doctor_ids and p.get("status", "active") != "deleted"]
+            return results
+        finally:
+            db.close()
+    
+    # Default: show all patients for hospital (or could be scoped to doctor only if preferred)
     all_patients = await patient_repo.find_many({"hospital_id": hospital_id})
-    # Filter out deleted patients
     return [p for p in all_patients if p.get("status", "active") != "deleted"]
 
 class ReviewSubmit(BaseModel):

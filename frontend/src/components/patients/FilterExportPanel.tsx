@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
-import { X, Search, FileText, Download, Filter, ChevronDown, CheckCircle2 } from 'lucide-react';
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { 
+  X, 
+  Search, 
+  FileText, 
+  Download, 
+  Filter, 
+  ChevronDown, 
+  CheckCircle2, 
+  User, 
+  Activity, 
+  ShieldAlert,
+  BarChart3,
+  Stethoscope
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PatientFilters } from '@/lib/patientFilters';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { cn } from '@/lib/utils';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { exportPDF, exportCSV, exportJSON } from '@/lib/exportPatients';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface FilterExportPanelProps {
   isOpen: boolean;
@@ -16,42 +36,36 @@ interface FilterExportPanelProps {
   filteredPatients: any[];
   doctorName: string;
   hospitalName: string;
+  doctors: any[];
 }
 
 const COMMON_SYMPTOMS = ['Fever', 'Headache', 'Chest pain', 'Shortness of breath', 'Fatigue', 'Nausea', 'Dizziness'];
 
 export function FilterExportPanel({ 
-  isOpen, onClose, filters, updateFilter, clearFilters, filteredPatients, doctorName, hospitalName
+  isOpen, onClose, filters, updateFilter, clearFilters, filteredPatients, doctorName, hospitalName, doctors
 }: FilterExportPanelProps) {
   const [symptomSearch, setSymptomSearch] = useState('');
   const [exportingAs, setExportingAs] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [exportMode, setExportMode] = useState<'detailed' | 'doctor_summary'>('detailed');
 
   if (!isOpen) return null;
 
-  const setDateRange = (range: 'today' | 'week' | 'month' | '3month' | 'year') => {
+  const setDateRange = (range: 'today' | 'week' | 'month' | 'year') => {
     const to = new Date();
     const from = new Date();
     if (range === 'today') {
       // already today
     } else if (range === 'week') {
-      const day = from.getDay() || 7; 
-      if(day !== 1) from.setHours(-24 * (day - 1)); 
+      from.setDate(from.getDate() - 7);
     } else if (range === 'month') {
-      from.setDate(1);
-    } else if (range === '3month') {
-      from.setDate(from.getDate() - 90);
+      from.setMonth(from.getMonth() - 1);
     } else if (range === 'year') {
-      from.setMonth(0, 1);
+      from.setFullYear(from.getFullYear() - 1);
     }
     updateFilter('dateFrom', from.toISOString().split('T')[0]);
     updateFilter('dateTo', to.toISOString().split('T')[0]);
-  };
-
-  const isQuickDate = (range: string) => {
-    // Basic logic to highlight if it matches roughly. Just checking if from/to are set
-    return false; // Could be implemented more robustly
   };
 
   const toggleGender = (g: 'Male' | 'Female' | 'Other') => {
@@ -68,306 +82,227 @@ export function FilterExportPanel({
     updateFilter('symptoms', next);
   };
 
-  const addSymptomSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && symptomSearch.trim()) {
-      e.preventDefault();
-      if (!filters.symptoms.includes(symptomSearch.trim())) {
-        updateFilter('symptoms', [...filters.symptoms, symptomSearch.trim()]);
+  const doctorAnalytics = useMemo(() => {
+    const analytics: Record<string, { name: string, count: number, highRisk: number, normal: number }> = {};
+    
+    filteredPatients.forEach(p => {
+      const dId = p.doctor_id || 'unassigned';
+      const dName = p.doctor_name || 'Unassigned';
+      if (!analytics[dId]) {
+        analytics[dId] = { name: dName, count: 0, highRisk: 0, normal: 0 };
       }
-      setSymptomSearch('');
-    }
-  };
+      analytics[dId].count++;
+      if (p.risk_score > 7) analytics[dId].highRisk++;
+      else analytics[dId].normal++;
+    });
+    
+    return Object.values(analytics);
+  }, [filteredPatients]);
 
   const runExport = async (type: 'pdf' | 'csv' | 'json') => {
     setExportingAs(type);
-    
-    // Slight delay to allow UI to show loading state
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600));
     
     try {
+      const dataToExport = exportMode === 'detailed' ? filteredPatients : doctorAnalytics;
+      
       if (type === 'pdf') {
-        exportPDF(filteredPatients, doctorName, hospitalName, filters);
+        exportPDF(dataToExport, doctorName, hospitalName, filters);
       } else if (type === 'csv') {
-        exportCSV(filteredPatients, filters);
+        exportCSV(dataToExport, filters);
       } else if (type === 'json') {
-        exportJSON(filteredPatients, filters);
+        exportJSON(dataToExport, filters);
       }
       
-      setToastMessage(`Exported ${filteredPatients.length} records as ${type.toUpperCase()}`);
+      setToastMessage(`Exported ${dataToExport.length} items as ${type.toUpperCase()}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } catch (e) {
       console.error(e);
-      alert('Failed to export');
     } finally {
       setExportingAs(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[100] flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" onClick={onClose} />
       
       {/* Panel */}
-      <div className="relative w-full max-w-[420px] bg-white h-full shadow-2xl flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
+      <div className="relative w-full max-w-[450px] bg-white h-full shadow-2xl flex flex-col border-l border-slate-100 animate-in slide-in-from-right duration-500">
         
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
           <div>
-            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <Filter size={18} className="text-blue-600" /> Filter & Export Records
+            <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
+              <Filter size={20} className="text-blue-600" /> Filter & <span className="text-blue-600">Export</span>
             </h2>
-            <p className="text-sm font-bold text-slate-500 mt-1">
-              Showing: <span className="text-blue-600">{filteredPatients.length}</span> patients
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+              {filteredPatients.length} Data points available
             </p>
           </div>
-          <button onClick={onClose} className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900">
-            <X size={16} />
+          <button onClick={onClose} className="h-10 w-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 shadow-sm transition-all">
+            <X size={18} />
           </button>
         </div>
 
         {/* Scrollable Filters */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-10 custom-scrollbar">
           
+          {/* Export Mode Toggle */}
+          <div className="space-y-4">
+            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+              Export Type <div className="h-px bg-slate-100 flex-1" />
+            </h3>
+            <div className="flex p-1 bg-slate-100 rounded-2xl">
+              <button 
+                onClick={() => setExportMode('detailed')}
+                className={cn(
+                  "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  exportMode === 'detailed' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400"
+                )}
+              >
+                <User size={14} /> Patient Detail
+              </button>
+              <button 
+                onClick={() => setExportMode('doctor_summary')}
+                className={cn(
+                  "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                  exportMode === 'doctor_summary' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400"
+                )}
+              >
+                <BarChart3 size={14} /> Doctor Analytics
+              </button>
+            </div>
+          </div>
+
           {/* Date range */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Date range <div className="h-px bg-slate-100 flex-1" />
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase">From date</label>
-                <input type="date" value={filters.dateFrom || ''} onChange={e => updateFilter('dateFrom', e.target.value)}
-                  className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100" />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase">To date</label>
-                <input type="date" value={filters.dateTo || ''} onChange={e => updateFilter('dateTo', e.target.value)}
-                  className="w-full mt-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100" />
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-[10px] font-bold text-slate-400 self-center">Quick:</span>
-              {(['today', 'week', 'month', '3month'] as const).map(range => (
-                <button key={range} type="button" onClick={() => setDateRange(range)}
-                  className="px-2.5 py-1 text-[10px] font-bold border border-slate-200 rounded-full text-slate-600 hover:bg-slate-50">
-                  {range === 'today' ? 'Today' : range === 'week' ? 'This week' : range === 'month' ? 'This month' : 'Last 3 mo'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Gender */}
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Gender <div className="h-px bg-slate-100 flex-1" />
-            </h3>
-            <div className="flex gap-2">
-              {(['Male', 'Female', 'Other'] as const).map(g => (
-                <button key={g} onClick={() => toggleGender(g)}
-                  className={cn("px-4 py-1.5 text-xs font-bold rounded-full border transition-colors",
-                    filters.genders.includes(g) ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
-                  )}>
-                  {filters.genders.includes(g) && "✓ "} {g}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Age range */}
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Age range <div className="h-px bg-slate-100 flex-1" />
-            </h3>
-            <div className="flex items-center gap-4 px-2 pt-2">
-              <span className="text-xs font-bold text-slate-500 w-8">Min</span>
-              <div className="flex-1">
-                <Slider range min={0} max={120} value={[filters.ageMin, filters.ageMax]} 
-                  onChange={(val: any) => { updateFilter('ageMin', val[0]); updateFilter('ageMax', val[1]); }}
-                  styles={{ track: { backgroundColor: '#185FA5' }, handle: { borderColor: '#185FA5', backgroundColor: '#fff', opacity: 1 } }} />
-              </div>
-              <span className="text-xs font-bold text-slate-500 w-8 text-right">Max</span>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <input type="number" min={0} max={120} value={filters.ageMin} onChange={e => updateFilter('ageMin', Number(e.target.value))} className="w-16 text-xs px-2 py-1 border border-slate-200 rounded text-center" />
-              <span className="text-xs font-bold text-slate-500">Ages {filters.ageMin} – {filters.ageMax}</span>
-              <input type="number" min={0} max={120} value={filters.ageMax} onChange={e => updateFilter('ageMax', Number(e.target.value))} className="w-16 text-xs px-2 py-1 border border-slate-200 rounded text-center" />
-            </div>
-          </div>
-
-          {/* Vitals / Risk */}
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Risk / Vitals <div className="h-px bg-slate-100 flex-1" />
+              Clinical Period <div className="h-px bg-slate-100 flex-1" />
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                  Blood pressure {filters.bloodPressure !== 'any' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                </label>
-                <select value={filters.bloodPressure} onChange={e => updateFilter('bloodPressure', e.target.value as any)}
-                  className="w-full mt-1 text-xs py-2 px-2 border border-slate-200 rounded-lg">
-                  <option value="any">Any</option>
-                  <option value="normal">Normal (&lt; 120/80)</option>
-                  <option value="elevated">Elevated (120-129)</option>
-                  <option value="high">High (≥ 130)</option>
-                  <option value="critical">Critical (≥ 180)</option>
-                </select>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">From</label>
+                <input type="date" value={filters.dateFrom || ''} onChange={e => updateFilter('dateFrom', e.target.value)}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-4 focus:ring-blue-100 transition-all" />
               </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                  Sugar level {filters.sugarLevel !== 'any' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                </label>
-                <select value={filters.sugarLevel} onChange={e => updateFilter('sugarLevel', e.target.value as any)}
-                  className="w-full mt-1 text-xs py-2 px-2 border border-slate-200 rounded-lg">
-                  <option value="any">Any</option>
-                  <option value="normal">Normal (70-140)</option>
-                  <option value="prediabetic">Pre-diabetic (140-200)</option>
-                  <option value="diabetic">Diabetic (&gt; 200)</option>
-                  <option value="low">Low (&lt; 70)</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                  Heart rate {filters.heartRate !== 'any' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                </label>
-                <select value={filters.heartRate} onChange={e => updateFilter('heartRate', e.target.value as any)}
-                  className="w-full mt-1 text-xs py-2 px-2 border border-slate-200 rounded-lg">
-                  <option value="any">Any</option>
-                  <option value="normal">Normal (60-100)</option>
-                  <option value="bradycardia">Bradycardia (&lt; 60)</option>
-                  <option value="tachycardia">Tachycardia (&gt; 100)</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                  Temperature {filters.temperature !== 'any' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                </label>
-                <select value={filters.temperature} onChange={e => updateFilter('temperature', e.target.value as any)}
-                  className="w-full mt-1 text-xs py-2 px-2 border border-slate-200 rounded-lg">
-                  <option value="any">Any</option>
-                  <option value="normal">Normal (36.1-37.2)</option>
-                  <option value="lowgrade">Low-grade fever (37.3-38)</option>
-                  <option value="fever">Fever (&gt; 38)</option>
-                  <option value="hypothermia">Hypothermia (&lt; 36)</option>
-                </select>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">To</label>
+                <input type="date" value={filters.dateTo || ''} onChange={e => updateFilter('dateTo', e.target.value)}
+                  className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-4 focus:ring-blue-100 transition-all" />
               </div>
             </div>
-          </div>
-
-          {/* Diagnosis status */}
-          <div className="space-y-3">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Diagnosis status <div className="h-px bg-slate-100 flex-1" />
-            </h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={filters.hasNotes} onChange={e => updateFilter('hasNotes', e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-bold text-slate-700">Has diagnosis notes</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={filters.hasDocuments} onChange={e => updateFilter('hasDocuments', e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-bold text-slate-700">Has attached documents</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={filters.hasHistory} onChange={e => updateFilter('hasHistory', e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-bold text-slate-700">Has pre-existing history</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Symptoms */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 flex-1">
-                Symptoms <div className="h-px bg-slate-100 flex-1" />
-              </h3>
-              <select value={filters.symptomMode} onChange={e => updateFilter('symptomMode', e.target.value as any)}
-                className="text-[10px] font-bold text-slate-500 border-none bg-transparent outline-none cursor-pointer p-0 ml-2">
-                <option value="any">Match Any</option>
-                <option value="all">Match All</option>
-              </select>
-            </div>
-            
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-              <input type="text" value={symptomSearch} onChange={e => setSymptomSearch(e.target.value)} onKeyDown={addSymptomSearch}
-                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Search symptoms... (press Enter)" />
-            </div>
-
-            {filters.symptoms.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {filters.symptoms.map(s => (
-                  <span key={s} className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded flex items-center gap-1">
-                    {s} <button onClick={() => toggleSymptom(s)}><X size={10} /></button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              <span className="text-[10px] font-bold text-slate-400 self-center">Common:</span>
-              {COMMON_SYMPTOMS.filter(s => !filters.symptoms.includes(s)).map(s => (
-                <button key={s} onClick={() => toggleSymptom(s)}
-                  className="px-2 py-1 bg-slate-50 border border-slate-100 text-slate-600 text-[10px] font-bold rounded hover:bg-slate-100 transition-colors">
-                  {s}
+            <div className="flex gap-2">
+              {['today', 'week', 'month', 'year'].map(r => (
+                <button key={r} onClick={() => setDateRange(r as any)} 
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-white hover:text-blue-600 transition-all">
+                  {r}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Registration Source */}
-          <div className="space-y-3 pb-8">
+          {/* Doctor Filter */}
+          <div className="space-y-4">
             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              Registration source <div className="h-px bg-slate-100 flex-1" />
+              Physician Scope <div className="h-px bg-slate-100 flex-1" />
             </h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="source" checked={filters.registrationSource === 'me'} onChange={() => updateFilter('registrationSource', 'me')} className="text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-bold text-slate-700">Registered by me</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="source" checked={filters.registrationSource === 'all'} onChange={() => updateFilter('registrationSource', 'all')} className="text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm font-bold text-slate-700">All doctors in hospital</span>
-              </label>
+            <div className="relative group">
+              <Stethoscope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600" size={16} />
+              <select 
+                value={filters.doctorId || ''} 
+                onChange={e => updateFilter('doctorId', e.target.value)}
+                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-xs font-bold appearance-none focus:ring-4 focus:ring-blue-100 transition-all"
+              >
+                <option value="">All Organizations Doctors</option>
+                {doctors.map(d => (
+                  <option key={d.id} value={d.id}>{d.username || d.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
             </div>
           </div>
-          
+
+          {/* Gender Filter */}
+          <div className="space-y-4">
+            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+              Patient Profile <div className="h-px bg-slate-100 flex-1" />
+            </h3>
+            <div className="flex gap-3">
+              {(['Male', 'Female', 'Other'] as const).map(g => (
+                <button key={g} onClick={() => toggleGender(g)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all",
+                    filters.genders.includes(g) ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100" : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                  )}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Risk Range */}
+          <div className="space-y-6">
+            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+              Risk Severity (1-10) <div className="h-px bg-slate-100 flex-1" />
+            </h3>
+            <div className="px-2">
+              <Slider 
+                range 
+                min={1} 
+                max={10} 
+                defaultValue={[filters.riskMin || 1, filters.riskMax || 10]}
+                onChange={(val: any) => { updateFilter('riskMin', val[0]); updateFilter('riskMax', val[1]); }}
+                styles={{ 
+                  track: { backgroundColor: '#2563eb', height: 4 }, 
+                  handle: { borderColor: '#2563eb', backgroundColor: '#fff', opacity: 1, width: 16, height: 16, marginTop: -6 } 
+                }} 
+              />
+              <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <span>Min: {filters.riskMin || 1}</span>
+                <span>Max: {filters.riskMax || 10}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Footer - Export Actions */}
-        <div className="p-5 border-t border-slate-200 bg-slate-50 space-y-4">
+        {/* Footer Actions */}
+        <div className="p-8 border-t border-slate-50 bg-slate-50/30 space-y-6">
           <div className="flex justify-between items-center">
-            <button onClick={clearFilters} className="text-xs font-bold text-slate-500 hover:text-blue-600 underline underline-offset-2 decoration-slate-300">
-              Clear all filters
+            <button onClick={clearFilters} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-colors">
+              Reset Filters
             </button>
+            <span className="text-[10px] font-black text-slate-900 bg-white px-3 py-1 rounded-full border border-slate-100 shadow-sm">
+              {exportMode === 'detailed' ? 'Exporting Rows' : 'Exporting Analytics'}
+            </span>
           </div>
 
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 mb-2">Export <span className="text-slate-900 font-black">{filteredPatients.length}</span> filtered records as:</p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 text-xs border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
-                onClick={() => runExport('pdf')} disabled={!!exportingAs || filteredPatients.length === 0}>
-                {exportingAs === 'pdf' ? '...' : '📄 PDF'}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: 'pdf', label: 'PDF', icon: '📄', color: 'hover:border-red-200 hover:bg-red-50 hover:text-red-700' },
+              { id: 'csv', label: 'CSV', icon: '📊', color: 'hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700' },
+              { id: 'json', label: 'JSON', icon: '🗂', color: 'hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700' }
+            ].map(btn => (
+              <Button 
+                key={btn.id}
+                variant="outline" 
+                className={cn("h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all", btn.color)}
+                onClick={() => runExport(btn.id as any)}
+                disabled={!!exportingAs || filteredPatients.length === 0}
+              >
+                {exportingAs === btn.id ? <div className="h-4 w-4 border-2 border-slate-400 border-t-transparent animate-spin rounded-full" /> : `${btn.icon} ${btn.label}`}
               </Button>
-              <Button variant="outline" className="flex-1 text-xs border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                onClick={() => runExport('csv')} disabled={!!exportingAs || filteredPatients.length === 0}>
-                {exportingAs === 'csv' ? '...' : '📊 CSV'}
-              </Button>
-              <Button variant="outline" className="flex-1 text-xs border-slate-200 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                onClick={() => runExport('json')} disabled={!!exportingAs || filteredPatients.length === 0}>
-                {exportingAs === 'json' ? '...' : '🗂 JSON'}
-              </Button>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Success Toast */}
+        {/* Success Notification */}
         {showToast && (
-          <div className="absolute bottom-24 left-4 right-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg animate-in slide-in-from-bottom-2">
-            <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-            <p className="text-xs font-bold">{toastMessage}</p>
+          <div className="absolute bottom-32 left-8 right-8 bg-emerald-600 text-white p-4 rounded-2xl flex items-center gap-3 shadow-2xl shadow-emerald-200 animate-in slide-in-from-bottom-4 duration-500">
+            <CheckCircle2 size={20} className="text-emerald-100 shrink-0" />
+            <p className="text-[11px] font-black uppercase tracking-widest">{toastMessage}</p>
           </div>
         )}
 

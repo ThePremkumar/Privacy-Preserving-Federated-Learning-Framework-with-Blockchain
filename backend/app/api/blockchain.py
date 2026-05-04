@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 from datetime import datetime
 
-from app.api.auth import get_current_user, require_permission
+from app.core.dependencies import get_current_user, require_permission, require_role
 from app.services.auth_service import User, Permission
 from app.services.blockchain.audit_service import BlockchainAuditService, AuditTrailManager
 
@@ -15,12 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Initialize blockchain service
-import os
-blockchain_url = os.getenv("BLOCKCHAIN_URL", "http://localhost:8545")
-contract_address = os.getenv("CONTRACT_ADDRESS")
-private_key = os.getenv("BLOCKCHAIN_PRIVATE_KEY")
-blockchain_service = BlockchainAuditService(blockchain_url, contract_address, private_key)
+from app.core.blockchain import blockchain_service
 
 @router.get("/training-rounds")
 async def get_training_rounds(limit: int = 100,
@@ -34,6 +29,22 @@ async def get_training_rounds(limit: int = 100,
         }
     except Exception as e:
         logger.error(f"Get audit trail error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/clinical-audits")
+async def get_clinical_audits(limit: int = 100, 
+                             current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital", "admin", "super_admin"]))):
+    """Get clinical record audit trail"""
+    try:
+        all_records = blockchain_service.get_audit_trail(limit)
+        # Filter for clinical records only
+        clinical_records = [r for r in all_records if 'patient_id' in r]
+        return {
+            "audit_trail": clinical_records,
+            "total_records": len(clinical_records)
+        }
+    except Exception as e:
+        logger.error(f"Get clinical audits error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/compliance-report")

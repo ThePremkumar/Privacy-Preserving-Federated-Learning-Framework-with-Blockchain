@@ -308,9 +308,9 @@ class HealthcareTrainer:
 def train_healthcare_csv(
     csv_path: str,
     epochs: int = 50,
-    batch_size: int = 64,
+    batch_size: int = 128,
     learning_rate: float = 0.001,
-    patience: int = 10,
+    patience: int = 50,
     device: str = None,
     save_dir: str = None,
 ) -> Dict[str, Any]:
@@ -432,8 +432,12 @@ def train_healthcare_csv(
         logger.warning(f"Gradient Boosting training failed: {e}")
 
     # ── 7. Compute model weights hash ─────────────────────────────────────
-    weights_list = [p.data.cpu().numpy().tolist() for p in model.parameters()]
-    weights_json = json.dumps(weights_list, separators=(",", ":"))
+    # Correct weight extraction for aggregation (Location 1 fix)
+    weights_dict = {
+        key: value.cpu().numpy().tolist()
+        for key, value in model.state_dict().items()
+    }
+    weights_json = json.dumps(weights_dict, separators=(",", ":"))
     weights_hash = hashlib.sha256(weights_json.encode()).hexdigest()
 
     # ── 8. Save model (optional) ──────────────────────────────────────────

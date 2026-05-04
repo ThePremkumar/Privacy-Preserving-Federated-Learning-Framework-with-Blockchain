@@ -84,10 +84,15 @@ class User:
     email: str
     role: UserRole
     hospital_id: Optional[str] = None
+    department_id: Optional[int] = None
     is_active: bool = True
     created_at: datetime = None
     last_login: datetime = None
     permissions: List[Permission] = None
+    hospital: Optional["Hospital"] = None
+    department: Optional[Dict[str, Any]] = None
+    specializations: Optional[List[str]] = None
+    department_ids: Optional[List[int]] = None
 
     def __post_init__(self):
         if self.created_at is None:
@@ -110,9 +115,19 @@ class Hospital:
     state: str = ""
     country: str = "India"
     zip_code: str = ""
+    short_name: str = ""
+    logo_initials: str = ""
+    pincode: str = ""
+    phone: str = ""
+    website: str = ""
+    lat: float = 0.0
+    lng: float = 0.0
+    department_count: int = 0
     is_active: bool = True
     created_at: datetime = None
     compliance_certificates: List[str] = None
+    active_specializations: Optional[List[str]] = None
+    active_departments: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.created_at is None:
@@ -127,16 +142,26 @@ class Hospital:
 
 def _db_user_to_dataclass(db_user) -> User:
     """Convert a db_models.User row to the service-level User dataclass."""
-    role = UserRole(db_user.role.value if hasattr(db_user.role, 'value') else db_user.role)
+    db_role = db_user.role.value if hasattr(db_user.role, 'value') else db_user.role
+    role = UserRole(str(db_role).lower())
     return User(
         id=db_user.id,
         username=db_user.username,
         email=db_user.email,
         role=role,
         hospital_id=db_user.hospital_id,
+        department_id=db_user.department_id,
         is_active=db_user.is_active,
         created_at=db_user.created_at,
         last_login=db_user.last_login,
+        hospital=_db_hospital_to_dataclass(db_user.hospital) if db_user.hospital else None,
+        department={
+            "id": db_user.department.id,
+            "name": db_user.department.name,
+            "code": db_user.department.code
+        } if db_user.department else None,
+        specializations=db_user.specializations,
+        department_ids=db_user.department_ids
     )
 
 
@@ -154,8 +179,18 @@ def _db_hospital_to_dataclass(db_hosp) -> Hospital:
         state=db_hosp.state or "",
         country=db_hosp.country or "India",
         zip_code=db_hosp.zip_code or "",
+        short_name=db_hosp.short_name or "",
+        logo_initials=db_hosp.logo_initials or "",
+        pincode=db_hosp.pincode or "",
+        phone=db_hosp.phone or "",
+        website=db_hosp.website or "",
+        lat=db_hosp.lat or 0.0,
+        lng=db_hosp.lng or 0.0,
+        department_count=db_hosp.department_count or 0,
         is_active=db_hosp.is_active,
         created_at=db_hosp.created_at,
+        active_specializations=db_hosp.active_specializations,
+        active_departments=db_hosp.active_departments,
     )
 
 
@@ -244,6 +279,9 @@ class AuthenticationService:
         password: str,
         role: UserRole,
         hospital_id: str = None,
+        department_id: int = None,
+        specializations: List[str] = None,
+        department_ids: List[int] = None,
     ) -> User:
         from app.core.db_models import User as DBUser, UserRole as DBUserRole
 
@@ -270,6 +308,9 @@ class AuthenticationService:
                 password_hash=hashed_password,
                 role=DBUserRole(role.value),
                 hospital_id=hospital_id,
+                department_id=department_id,
+                specializations=specializations,
+                department_ids=department_ids,
                 is_active=True,
             )
             db.add(db_user)
@@ -421,7 +462,7 @@ class AuthenticationService:
     # Hospital registration (persisted)
     # ------------------------------------------------------------------
 
-    def register_hospital(self, name: str, contact_email: str, address: str, organization_type: str = "Hospital", admin_name: str = "", contact_phone: str = "", city: str = "", state: str = "", country: str = "India", zip_code: str = "", is_active: bool = True) -> Hospital:
+    def register_hospital(self, name: str, contact_email: str, address: str, organization_type: str = "Hospital", admin_name: str = "", contact_phone: str = "", city: str = "", state: str = "", country: str = "India", zip_code: str = "", is_active: bool = True, active_specializations: List[str] = None, active_departments: List[str] = None, lat: float = None, lng: float = None) -> Hospital:
         from app.core.db_models import Hospital as DBHospital
         import uuid
 
@@ -441,6 +482,10 @@ class AuthenticationService:
                 country=country,
                 zip_code=zip_code,
                 is_active=is_active,
+                active_specializations=active_specializations,
+                active_departments=active_departments,
+                lat=lat,
+                lng=lng
             )
             db.add(db_hosp)
             db.commit()
@@ -463,7 +508,7 @@ class AuthenticationService:
         finally:
             db.close()
 
-    def update_hospital(self, hospital_id: str, name: str = None, contact_email: str = None, address: str = None, organization_type: str = None, admin_name: str = None, contact_phone: str = None, city: str = None, state: str = None, country: str = None, zip_code: str = None, is_active: bool = None) -> Optional[Hospital]:
+    def update_hospital(self, hospital_id: str, name: str = None, contact_email: str = None, address: str = None, organization_type: str = None, admin_name: str = None, contact_phone: str = None, city: str = None, state: str = None, country: str = None, zip_code: str = None, is_active: bool = None, active_specializations: List[str] = None, active_departments: List[str] = None, lat: float = None, lng: float = None) -> Optional[Hospital]:
         """Update an existing hospital's details or status."""
         from app.core.db_models import Hospital as DBHospital
         db = self._get_db()
@@ -494,6 +539,14 @@ class AuthenticationService:
                 db_hosp.zip_code = zip_code
             if is_active is not None:
                 db_hosp.is_active = is_active
+            if active_specializations is not None:
+                db_hosp.active_specializations = active_specializations
+            if active_departments is not None:
+                db_hosp.active_departments = active_departments
+            if lat is not None:
+                db_hosp.lat = lat
+            if lng is not None:
+                db_hosp.lng = lng
             
             db.commit()
             db.refresh(db_hosp)
