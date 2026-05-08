@@ -63,10 +63,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await api.get('/auth/me');
       const userData = response.data;
-      setUser({
+      const mapped: User = {
         id: userData.id,
         username: userData.username,
-        name: userData.username, // Using username as name if full name not available
+        name: userData.username,
         role: userData.role as UserRole,
         hospital_id: userData.hospital_id,
         hospital_name: userData.hospital?.name,
@@ -74,10 +74,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         hospital: userData.hospital,
         department: userData.department,
         permissions: userData.permissions || [],
-      });
+      };
+      setUser(mapped);
     } catch (error) {
       console.error('Auth check failed:', error);
-      // Only remove token if it's explicitly an auth error
+      // Only clear on an explicit 401 — network errors should not log the user out
       if ((error as any)?.response?.status === 401) {
         localStorage.removeItem('auth_token');
         setUser(null);
@@ -85,9 +86,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setUser]);
 
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    // Validate token against the server in the background;
+    // the cached user is already shown while this runs.
     fetchUser();
   }, [fetchUser]);
 
@@ -102,13 +111,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isLoading, 
-      setUser, 
-      refreshUser: fetchUser, 
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      setUser,
+      refreshUser: fetchUser,
       logout,
-      hasRole
+      hasRole,
     }}>
       {children}
     </AuthContext.Provider>

@@ -225,39 +225,40 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-20">
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-10 pb-20">
       {/* Header section */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic">System <span className="text-blue-600">Configuration</span></h1>
-        <p className="text-sm font-medium text-slate-500 uppercase tracking-widest italic">Global protocol and access management panel</p>
+        <h1 className="page-title text-slate-900 uppercase tracking-tighter italic">System <span className="text-blue-600">Configuration</span></h1>
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-widest italic">Global protocol and access management panel</p>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         {/* Navigation Sidebar */}
-        <div className="col-span-12 lg:col-span-3 space-y-4">
-          <div className="bg-white rounded-3xl border border-slate-100 p-3 shadow-xl shadow-slate-200/40">
+        <div className="col-span-1 lg:col-span-3 space-y-4">
+          <div className="bg-white rounded-3xl border border-slate-100 p-2 md:p-3 shadow-xl shadow-slate-200/40 flex flex-row lg:flex-col gap-1 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => {
                 const allowed = !tab.roleRestraint || (user && tab.roleRestraint.includes(user.role as UserRole));
                 if (!allowed) return null;
                 
-                return (
+              return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as Tab)}
-                    className={`nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                    className={`nav-btn flex-shrink-0 lg:w-full flex items-center gap-3 px-4 lg:px-5 py-3 lg:py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                       activeTab === tab.id 
                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
                         : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600'
                     }`}
                   >
-                    <tab.icon size={18} />
-                    {tab.label}
+                    <tab.icon size={16} />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden text-[9px]">{tab.label.split(' ')[0]}</span>
                   </button>
                 )
             })}
           </div>
 
-          <div className="bg-slate-900 rounded-3xl p-6 text-white space-y-4 shadow-2xl overflow-hidden relative group">
+          <div className="hidden lg:block bg-slate-900 rounded-3xl p-6 text-white space-y-4 shadow-2xl overflow-hidden relative group">
              <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-150 transition-transform duration-700">
                 <Lock size={120} />
              </div>
@@ -267,7 +268,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Content Area */}
-        <div className="col-span-12 lg:col-span-9">
+        <div className="col-span-1 lg:col-span-9">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -275,7 +276,7 @@ export default function SettingsPage() {
               animate="visible"
               exit="hidden"
               variants={containerVariants}
-              className="bg-white rounded-[40px] border border-slate-100 p-10 shadow-2xl shadow-slate-200/50 min-h-[600px]"
+              className="bg-white rounded-[24px] md:rounded-[40px] border border-slate-100 p-5 md:p-10 shadow-2xl shadow-slate-200/50 min-h-[400px] md:min-h-[600px]"
             >
               {successMessage && (
                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3 text-emerald-700 mb-6">
@@ -300,7 +301,7 @@ export default function SettingsPage() {
                      </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                      <div className="col-span-2 md:col-span-1 space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Specialist ID</label>
                         <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center gap-3">

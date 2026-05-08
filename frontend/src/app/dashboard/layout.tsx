@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Activity,
   Building2,
+  Menu,
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -118,7 +119,7 @@ function useBreadcrumbs(pathname: string) {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -127,6 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -283,12 +285,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     info: 'bg-blue-50 text-blue-700 border-blue-100',
   };
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xl shadow-blue-200">
+            <BrainCircuit size={28} />
+          </div>
+          <span className="text-sm font-black tracking-widest text-slate-400 uppercase">Authenticating...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
+      {/* Mobile sidebar overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+      {/* Mobile sidebar drawer */}
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-[70] w-[264px] bg-white shadow-2xl transition-transform duration-300 ease-in-out md:hidden',
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <Sidebar />
+      </div>
       <Sidebar />
-      <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-        <header className="sticky top-0 z-40 flex h-[68px] w-full items-center justify-between border-b border-slate-100 bg-white/95 backdrop-blur-xl px-4 md:px-6 shadow-sm shadow-slate-100/50">
+      <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden min-w-0">
+        <header className="sticky top-0 z-40 flex h-[68px] w-full items-center justify-between border-b border-slate-100 bg-white/95 backdrop-blur-xl px-3 md:px-6 shadow-sm shadow-slate-100/50">
           <div className="flex items-center gap-2 min-w-0">
+            {/* Mobile hamburger button */}
+            <button
+              className="flex md:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-blue-700 transition-all mr-1"
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              aria-label="Open navigation"
+            >
+              {isMobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
             <div className="hidden md:flex items-center gap-2">
               <Building2 size={15} className="text-slate-400 shrink-0" />
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">{config.orgLabel}</span>
@@ -447,7 +489,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8 animate-fade-in">
+        <main className="flex-1 px-3 py-4 md:px-8 md:py-8 animate-fade-in min-w-0">
           {children}
         </main>
       </div>

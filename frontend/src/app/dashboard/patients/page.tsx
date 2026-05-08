@@ -162,15 +162,15 @@ export default function PatientsPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="px-3 py-1 bg-blue-50 border border-blue-100 rounded-lg">
-              <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest italic">Clinical Data Ledger v4.0</span>
+              <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Clinical Data Ledger v4.0</span>
             </div>
             <div className="h-1 w-1 bg-slate-200 rounded-full"></div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic flex items-center gap-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Clock size={12} className="text-slate-300" /> Auto-sync: 5m
             </span>
           </div>
-          <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 leading-none">
-            Patient <span className="text-blue-600 underline decoration-blue-100 underline-offset-[12px]">Direct Registry</span>
+          <h1 className="patients-title page-title text-slate-900">
+            Patient <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Direct Registry</span>
           </h1>
           <div className="flex items-center gap-4 pt-2">
             <div className="flex -space-x-3">
@@ -183,20 +183,20 @@ export default function PatientsPage() {
                 +{patients.length}
               </div>
             </div>
-            <p className="text-sm font-bold text-slate-400 italic max-w-lg mt-4 leading-relaxed flex items-center gap-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-4 leading-relaxed flex items-center gap-2">
                <ShieldCheck size={16} className="text-emerald-500" /> Secure Phygital Records Management
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3">
           <Button 
             variant="outline" 
-            className="h-14 px-8 rounded-2xl border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[10px] text-slate-700 hover:bg-white hover:border-blue-200 hover:text-blue-600 transition-all shadow-xl shadow-slate-200/50"
+            className="h-12 md:h-14 px-5 md:px-8 rounded-2xl border-slate-200 bg-white/50 backdrop-blur-md font-black uppercase tracking-widest text-[10px] text-slate-700 hover:bg-white hover:border-blue-200 hover:text-blue-600 transition-all shadow-xl shadow-slate-200/50"
             onClick={() => setShowFilterPanel(true)}
           >
             <Filter size={16} className="mr-3" />
-            Insights & Filters {activeFilterCount > 0 && (
+            Insights &amp; Filters {activeFilterCount > 0 && (
               <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white rounded-full text-[8px]">
                 {activeFilterCount}
               </span>
@@ -204,7 +204,7 @@ export default function PatientsPage() {
           </Button>
 
           <Button 
-            className="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-blue-600 transition-all shadow-2xl shadow-blue-200 group"
+            className="h-12 md:h-14 px-5 md:px-8 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-blue-600 transition-all shadow-2xl shadow-blue-200 group"
             onClick={() => router.push('/dashboard/patients/new')}
           >
             Register Patient
@@ -240,7 +240,7 @@ export default function PatientsPage() {
       )}
 
       {/* --- KPI SECTION ------------------------------------- */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 relative z-10">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 relative z-10">
         {[
           { label: 'Total Patients', value: isLoading ? '...' : patients.length.toString(), sub: 'Registered to Node', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Risk Indices', value: patients.filter(p => (p.medical_history?.length || 0) > 3).length.toString(), sub: 'High Complexity Cases', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50' },
@@ -254,10 +254,10 @@ export default function PatientsPage() {
                 <stat.icon size={28} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">{stat.label}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
                 <div className="flex items-baseline gap-2">
-                  <p className={cn("text-4xl font-black italic tracking-tighter leading-none", stat.color)}>{stat.value}</p>
-                  <span className="text-[10px] font-bold text-slate-400 italic uppercase">{stat.sub}</span>
+                  <p className={cn("text-2xl font-black tracking-tight leading-none", stat.color)}>{stat.value}</p>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.sub}</span>
                 </div>
               </div>
             </div>
@@ -271,8 +271,8 @@ export default function PatientsPage() {
           <div className="flex items-center gap-6">
             <div className="h-14 w-1 bg-blue-600 rounded-full" />
             <div>
-              <h2 className="text-3xl font-black italic text-slate-900 tracking-tight">Clinical <span className="text-blue-600 underline underline-offset-8 decoration-blue-100">Database</span></h2>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Quantum-secure Ledger Protocol</p>
+              <h2 className="section-title text-slate-900">Clinical <span className="text-blue-600 underline underline-offset-8 decoration-blue-100">Database</span></h2>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Quantum-secure Ledger Protocol</p>
             </div>
           </div>
           
@@ -303,7 +303,7 @@ export default function PatientsPage() {
             <div className="relative group max-w-2xl">
                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
                <input 
-                 className="h-16 w-full rounded-2xl bg-white pl-14 pr-6 text-sm font-black italic tracking-tight border border-slate-100 transition-all focus:ring-4 focus:ring-blue-100 focus:outline-none shadow-sm" 
+                 className="h-14 w-full rounded-2xl bg-white pl-14 pr-6 text-sm font-bold text-slate-900 border border-slate-100 transition-all focus:ring-4 focus:ring-blue-100 focus:outline-none shadow-sm" 
                  placeholder="Locate patient by name, biometric ID or UUID..." 
                  value={searchQuery}
                  onChange={e => setSearchQuery(e.target.value)}
@@ -314,7 +314,7 @@ export default function PatientsPage() {
             </div>
           </div>
 
-          <div className="p-0 overflow-x-auto custom-scrollbar">
+          <div className="p-0 table-scroll-container">
            {isLoading ? (
              <div className="p-20 flex flex-col items-center justify-center text-slate-300 gap-4">
                 <Loader2 size={40} className="animate-spin" />
@@ -378,7 +378,7 @@ export default function PatientsPage() {
                                      {patient.name.charAt(0)}
                                   </div>
                                   <div className="flex flex-col">
-                                     <span className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-tight italic">{patient.name}</span>
+                                     <span className="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-tight">{patient.name}</span>
                                      <div className="flex items-center gap-2 mt-1">
                                        <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-black text-slate-500 uppercase tracking-tighter">
                                           {patient.patient_id_manual || patient._id.slice(-8)}
@@ -485,7 +485,7 @@ export default function PatientsPage() {
                                      {doctor.name.charAt(0)}
                                   </div>
                                   <div className="flex flex-col">
-                                     <span className="text-xl font-black text-slate-900 italic tracking-tight">{doctor.name}</span>
+                                     <span className="text-base font-black text-slate-900 tracking-tight">{doctor.name}</span>
                                      <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] mt-1">
                                        {doctor.specialization || 'General Practitioner'}
                                      </span>
@@ -494,27 +494,27 @@ export default function PatientsPage() {
                             </td>
                             <td className="px-10 py-8">
                                <div className="flex flex-col">
-                                 <span className="text-4xl font-black italic text-slate-900 tracking-tighter">{drPatients.length}</span>
-                                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Registered</span>
+                                 <span className="text-2xl font-black text-slate-900 tracking-tight">{drPatients.length}</span>
+                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Registered</span>
                                </div>
                             </td>
                             <td className="px-10 py-8">
                                <div className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-rose-50/50 border border-rose-100">
-                                  <span className="text-2xl font-black text-rose-600 italic tracking-tighter">{riskPatients.length}</span>
-                                  <span className="text-[11px] font-black text-rose-400 uppercase tracking-widest">Complex Cases</span>
+                                  <span className="text-2xl font-black text-rose-600 tracking-tight">{riskPatients.length}</span>
+                                  <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Complex Cases</span>
                                </div>
                             </td>
                             <td className="px-10 py-8">
                                <div className="flex flex-col">
-                                  <span className="text-2xl font-black text-emerald-600 italic tracking-tighter">{normalPatients}</span>
-                                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Standard Records</span>
+                                  <span className="text-2xl font-black text-emerald-600 tracking-tight">{normalPatients}</span>
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Standard Records</span>
                                </div>
                             </td>
                             <td className="px-10 py-8">
                                <div className="w-full max-w-[140px]">
                                   <div className="flex justify-between items-center mb-2">
-                                     <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Concentration</span>
-                                     <span className="text-[11px] font-black text-rose-600 italic">{ratio.toFixed(0)}%</span>
+                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Concentration</span>
+                                     <span className="text-[10px] font-black text-rose-600">{ratio.toFixed(0)}%</span>
                                   </div>
                                   <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                      <div className="bg-rose-500 h-full transition-all duration-1000" style={{ width: `${ratio}%` }} />
@@ -552,11 +552,11 @@ export default function PatientsPage() {
                  <ShieldCheck size={320} />
               </div>
               <div className="relative space-y-6">
-                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-[0.2em] border border-blue-600/30 italic">
+                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-[0.2em] border border-blue-600/30">
                     HIPAA Shield Active v2.0
                  </div>
-                 <h3 className="text-4xl font-black italic text-white leading-tight">Universal <span className="text-blue-500">Clinical Ledger</span></h3>
-                 <p className="text-white/50 text-base font-medium leading-relaxed max-w-md">
+                 <h3 className="section-title text-white leading-tight">Universal <span className="text-blue-400">Clinical Ledger</span></h3>
+                 <p className="text-white/60 text-sm font-bold leading-relaxed max-w-md">
                     Enterprise-grade patient records management with zero-leakage guarantees. Every entry is end-to-end encrypted and ready for privacy-preserving federated training.
                  </p>
                  <Button className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-blue-600/20"
@@ -573,16 +573,16 @@ export default function PatientsPage() {
               <div className="h-16 w-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-blue-100/50 group-hover:shadow-blue-200/50">
                  <BrainCircuit size={36} />
               </div>
-              <h4 className="text-2xl font-black italic text-slate-900">Training <span className="text-blue-600 underline decoration-blue-100 underline-offset-4">Contribution</span></h4>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest leading-relaxed max-w-sm">
+              <h4 className="text-xl font-black text-slate-900">Training <span className="text-blue-600 underline decoration-blue-100 underline-offset-4">Contribution</span></h4>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-relaxed max-w-sm">
                  Your clinical database fuels the collective intelligence of the global healthcare model. Every record helps optimize prediction accuracy across the network.
               </p>
            </div>
            
            <div className="flex items-center justify-between mt-8 pt-8 border-t border-slate-50">
               <div className="flex flex-col">
-                 <span className="text-xs font-black text-slate-900 italic">Network Connectivity</span>
-                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Status: OPTIMIZED</span>
+                 <span className="text-xs font-black text-slate-900">Network Connectivity</span>
+                 <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Status: OPTIMIZED</span>
               </div>
               <ArrowUpRight size={24} className="text-slate-200 group-hover:text-blue-600 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
            </div>

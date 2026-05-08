@@ -255,22 +255,22 @@ export default function AdminManagementPage() {
 
   return (
     <RoleGuard allowedRoles={['super_admin', 'admin']}>
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight">
+          <h1 className="page-title text-slate-900">
             User <span className="text-blue-600">Management</span>
           </h1>
-          <p className="mt-1 text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <UserCog size={14} className="text-blue-600" /> Add, Edit, Delete & Reset Passwords
+          <p className="mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <UserCog size={14} className="text-blue-600" /> Add, Edit, Delete &amp; Reset Passwords
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-11 px-5 border-2" onClick={() => { setShowChangeSelf(!showChangeSelf); setShowCreateForm(false); setEditingUser(null); setResetPasswordUser(null); }}>
-            <Lock size={16} className="mr-2" /> Change My Password
+        <div className="flex flex-wrap gap-3 shrink-0">
+          <Button variant="outline" className="h-10 md:h-11 px-4 md:px-5 border-2 text-xs" onClick={() => { setShowChangeSelf(!showChangeSelf); setShowCreateForm(false); setEditingUser(null); setResetPasswordUser(null); }}>
+            <Lock size={14} className="mr-2" /> Change My Password
           </Button>
-          <Button className="h-11 px-6 shadow-xl shadow-blue-200" onClick={() => { setShowCreateForm(!showCreateForm); setEditingUser(null); setResetPasswordUser(null); setShowChangeSelf(false); }}>
-            <Plus size={16} className="mr-2" /> New User
+          <Button className="h-10 md:h-11 px-4 md:px-6 shadow-xl shadow-blue-200 text-xs" onClick={() => { setShowCreateForm(!showCreateForm); setEditingUser(null); setResetPasswordUser(null); setShowChangeSelf(false); }}>
+            <Plus size={14} className="mr-2" /> New User
           </Button>
         </div>
       </div>
@@ -509,7 +509,7 @@ export default function AdminManagementPage() {
       )}
 
       {/* Search & Filter */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-600 focus:ring-0 outline-none" />

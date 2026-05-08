@@ -190,34 +190,34 @@ function AdminDashboard({ analytics, modelHealth, isSuperAdmin }: {
     .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.1]">
+          <h1 className="page-title text-slate-900">
             {isSuperAdmin ? 'System ' : 'Administrative '}
             <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
           </h1>
-          <p className="mt-3 text-sm font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Calendar size={16} className="text-blue-600" /> {isSuperAdmin ? 'Super Admin' : 'Admin'} Portal
+          <p className="mt-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+            <Calendar size={14} className="text-blue-600" /> {isSuperAdmin ? 'Super Admin' : 'Admin'} Portal
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 shrink-0">
           <Link href="/dashboard/model-governance">
-            <Button className="h-12 px-8 shadow-xl shadow-blue-200">Global Training <Zap size={18} className="ml-2" /></Button>
+            <Button className="h-10 md:h-12 px-5 md:px-8 shadow-xl shadow-blue-200 text-xs">Global Training <Zap size={16} className="ml-2" /></Button>
           </Link>
         </div>
       </div>
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Global Model Accuracy" value={`${globalAcc}%`} icon={BrainCircuit} trend={a.latest_round > 0 ? `Round ${a.latest_round}` : 'No rounds'} color="blue" />
         <StatCard label="Participating Nodes" value={a.total_hospitals.toString()} icon={Hospital} trend={`${a.total_users} users`} color="emerald" />
         <StatCard label="Aggregation Rounds" value={a.total_aggregation_rounds.toString()} icon={Layers} trend={`${a.total_training_jobs} jobs`} color="purple" />
         <StatCard label="Privacy Budget" value={`${mh.privacy_budget_used.toFixed(1)}ε`} icon={ShieldCheck} trend={`${privacyPercent.toFixed(0)}% used`} color={privacyPercent > 80 ? 'red' : 'emerald'} />
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Convergence Chart */}
         <Card className="lg:col-span-8 border-none shadow-2xl shadow-slate-100 overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 text-blue-100 opacity-20"><TrendingUp size={160} /></div>
@@ -231,7 +231,7 @@ function AdminDashboard({ analytics, modelHealth, isSuperAdmin }: {
               <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-100">Loss</span>
             </div>
           </CardHeader>
-          <CardContent className="h-[350px] w-full pt-8 -ml-8 relative">
+          <CardContent className="h-[280px] md:h-[350px] w-full pt-6 md:pt-8 -ml-4 md:-ml-8 relative overflow-hidden">
             {mh.accuracy_history.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={mh.accuracy_history}>
@@ -342,7 +342,7 @@ function AdminDashboard({ analytics, modelHealth, isSuperAdmin }: {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <QuickAction href="/dashboard/admin-management" icon={Users} title="User Management" desc="Add, edit, or remove users" color="blue" />
         <QuickAction href="/dashboard/model-governance" icon={BrainCircuit} title="Model Governance" desc="Review & aggregate training" color="purple" />
         <QuickAction href="/dashboard/blockchain" icon={ShieldCheck} title="Blockchain Audit" desc="Verify integrity trail" color="emerald" />
@@ -367,31 +367,30 @@ function HospitalDashboard({ jobs }: { jobs: TrainingJob[] }) {
   const activeDepts = hospital?.active_departments || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-           <div className="h-16 w-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-2xl border-4 border-blue-100 shadow-xl shadow-blue-100">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+           <div className="h-12 w-12 md:h-16 md:w-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl md:text-2xl border-4 border-blue-100 shadow-xl shadow-blue-100">
               {hospital?.name?.charAt(0).toUpperCase() || 'H'}
            </div>
            <div>
-              <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-[1.1]">
+              <h1 className="page-title text-slate-900">
                 {hospital?.name || 'Facility'} <span className="text-blue-600 underline decoration-blue-100 underline-offset-8">Intelligence.</span>
               </h1>
-              <div className="flex items-center gap-3 mt-3">
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                  <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100">{hospital?.organization_type || 'General Clinic'}</span>
-                 <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
-                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Calendar size={16} className="text-blue-600" /> Operational Status: <span className="text-emerald-600 font-black italic">Active Node</span>
+                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Calendar size={14} className="text-blue-600" /> <span className="text-emerald-600 font-black italic">Active Node</span>
                  </p>
               </div>
            </div>
         </div>
-        <Link href="/dashboard/data-upload">
-          <Button className="h-14 px-10 shadow-2xl shadow-blue-200 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest text-xs">Initiate Upload <Layers size={18} className="ml-2" /></Button>
+        <Link href="/dashboard/data-upload" className="shrink-0">
+          <Button className="h-11 md:h-14 px-6 md:px-10 shadow-2xl shadow-blue-200 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest text-xs">Initiate Upload <Layers size={16} className="ml-2" /></Button>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Local Model Accuracy" value={`${latestAcc}%`} icon={Activity} trend={completedJobs.length > 0 ? `${completedJobs.length} trained` : 'Not trained'} color="blue" />
         <StatCard label="Total Records" value={totalSamples.toLocaleString()} icon={Database} trend={`${jobs.length} jobs`} color="emerald" />
         <StatCard label="Submitted for Review" value={submittedCount.toString()} icon={Send} trend={submittedCount > 0 ? 'Awaiting admin' : 'None'} color="amber" />
@@ -549,13 +548,13 @@ function DoctorDashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-5">
-           <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 text-white flex items-center justify-center font-black text-2xl border-4 border-blue-100 shadow-xl shadow-blue-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+           <div className="h-12 w-12 md:h-16 md:w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 text-white flex items-center justify-center font-black text-xl md:text-2xl border-4 border-blue-100 shadow-xl shadow-blue-200">
               {user?.username?.charAt(0).toUpperCase()}
            </div>
            <div>
-              <h1 className="text-3xl font-black text-slate-900 leading-tight">
+              <h1 className="page-title text-slate-900">
                 Welcome back, <span className="text-blue-700 underline decoration-blue-100 underline-offset-4">Dr. {user?.username}</span>
               </h1>
               <div className="flex items-center gap-3 mt-1.5">
@@ -575,18 +574,18 @@ function DoctorDashboard() {
               </div>
            </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link href="/dashboard/patients">
-            <Button variant="outline" className="h-11 px-6 text-xs border-2 font-black border-slate-200 rounded-xl hover:bg-slate-50 transition-all">Patient Registry</Button>
+            <Button variant="outline" className="h-10 md:h-11 px-4 md:px-6 text-xs border-2 font-black border-slate-200 rounded-xl hover:bg-slate-50 transition-all">Patient Registry</Button>
           </Link>
           <Link href="/dashboard/predictions">
-            <Button className="h-11 px-8 text-xs bg-blue-700 text-white shadow-xl shadow-blue-200 hover:bg-blue-800 rounded-xl font-black uppercase tracking-widest">Execute Prediction <Zap size={14} className="ml-2" /></Button>
+            <Button className="h-10 md:h-11 px-5 md:px-8 text-xs bg-blue-700 text-white shadow-xl shadow-blue-200 hover:bg-blue-800 rounded-xl font-black uppercase tracking-widest">Execute Prediction <Zap size={14} className="ml-2" /></Button>
           </Link>
         </div>
       </div>
 
       {/* Doctor Stats */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Patients" value={s.total_patients.toString()} icon={Users} trend="Active records" color="blue" />
         <StatCard label="Critical Anomalies" value={s.anomaly_count.toString()} icon={AlertTriangle} trend="Immediate attention" color={s.anomaly_count > 0 ? 'red' : 'emerald'} />
         <StatCard label="AI Predictions" value={s.active_predictions.toString()} icon={BrainCircuit} trend="Recent analyses" color="purple" />

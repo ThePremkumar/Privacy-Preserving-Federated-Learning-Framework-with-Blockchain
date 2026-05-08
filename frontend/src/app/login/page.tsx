@@ -16,9 +16,11 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,12 +39,28 @@ export default function LoginPage() {
 
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { access_token } = response.data;
-      
-      // Store token in localStorage
+      const { access_token, user } = response.data;
+
+      // Store JWT token
       localStorage.setItem('auth_token', access_token);
-      
-      // Success - redirect to dashboard
+
+      // Update global auth context
+      if (user && setUser) {
+        setUser({
+          id: user.id,
+          username: user.username,
+          name: user.username,
+          role: user.role,
+          hospital_id: user.hospital_id ?? undefined,
+          hospital_name: user.hospital?.name ?? undefined,
+          email: user.email,
+          hospital: user.hospital ?? undefined,
+          department: user.department ?? undefined,
+          permissions: user.permissions ?? [],
+        });
+      }
+
+      // Redirect to dashboard
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);

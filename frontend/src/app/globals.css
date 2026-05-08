@@ -68,12 +68,31 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--foreground);
   font-feature-settings: "cv02","cv03","cv04","cv11";
+}
+
+/* ─── Responsive Heading Scale ─────────────── */
+.page-title {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+.page-title-xl {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+.section-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
 /* ─── Glassmorphism ─────────────────────────── */
@@ -319,19 +338,72 @@ body {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 50;
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.97);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid #e2e8f0;
-    padding: 8px 16px 20px;
+    padding: 8px 8px env(safe-area-inset-bottom, 16px);
     display: flex;
     justify-content: space-around;
     align-items: center;
   }
   .desktop-sidebar { display: none !important; }
-  main { padding-bottom: 90px !important; }
+  main {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  /* Prevent batch-selection bar from hiding behind bottom nav */
+  .batch-bar { bottom: 90px !important; }
 }
 @media (min-width: 768px) {
   .mobile-bottom-nav { display: none !important; }
+}
+
+/* ─── Responsive Table Container ───────────── */
+.table-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.table-scroll-container table {
+  min-width: 640px;
+}
+
+/* ─── Page Header Responsive ───────────────── */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .page-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+/* ─── Card Content Overflow ─────────────────── */
+.card-content-safe {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ─── Responsive Modal ──────────────────────── */
+@media (max-width: 640px) {
+  .modal-container {
+    margin: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    max-height: 90vh !important;
+    overflow-y: auto;
+  }
 }
 
 /* ─── Recharts Tooltip ──────────────────────── */
@@ -341,6 +413,38 @@ body {
   box-shadow: 0 20px 40px -8px rgba(0,0,0,0.1) !important;
   font-size: 12px !important;
   font-weight: 700 !important;
+}
+
+/* ─── Settings Security Row Responsive ──────── */
+.security-action-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+@media (min-width: 640px) {
+  .security-action-row {
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+}
+
+/* ─── Admin Table Overflow ───────────────────── */
+.admin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 24px;
+}
+.admin-table-wrapper table {
+  min-width: 540px;
+}
+
+/* ─── Patients Page Title Responsive ─────────── */
+@media (max-width: 640px) {
+  .patients-title { font-size: 2rem !important; }
+  .patients-subtitle { font-size: 1.25rem !important; }
 }
 
 /* ─── Focus Ring ────────────────────────────── */

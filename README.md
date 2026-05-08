@@ -130,12 +130,14 @@ The platform implements a complete **federated learning lifecycle** where hospit
 
 | Role | Username | Password | Hospital | Dashboard |
 |------|----------|----------|----------|-----------|
-| 👑 **Super Admin** | `superadmin` | `changeme` | — (Platform-wide) | Platform Governance, User Management, Model Governance, Aggregation |
+| 👑 **Super Admin** | `superadmin` | `superadmin123` | — (Platform-wide) | Platform Governance, User Management, Model Governance, Aggregation |
 | 👨‍💼 **Admin** | *(created by super admin)* | *(set at creation)* | — | Organizations, User Management, Model Review, Network Monitor |
-| 🏥 **Hospital Node (HIMSR)** | `himsr_node_1` | `node@1` | HIMSR, Hosur | Data Upload, Training, Model Participation, Doctor Management |
+| 🏥 **Hospital Node (HIMSR)** | `himsr_node_1` | `node@1` | Hosur Institute of Medical Sciences & Research, Hosur | Data Upload, Training, Model Participation, Doctor Management |
+| 🏥 **Hospital Node (Apollo)** | `apollo_node_1` | `node@1` | Apollo Hospitals, Chennai | Data Upload, Training, Model Participation, Doctor Management |
+| 🏥 **Hospital Node (AIIMS)** | `aiims_node_1` | `node@1` | AIIMS Delhi, New Delhi | Data Upload, Training, Model Participation, Doctor Management |
 | 🩺 **Doctor** | `Harish Raj` | `Harish` | HIMSR, Hosur | Patients Registry, Diagnostics, Clinical Docs |
 
-> **Note:** Hospital node accounts and the super admin account are auto-seeded on first startup. Admin and Doctor accounts must be created through the platform UI.
+> **Note:** All three hospital node accounts and the super admin account are auto-seeded on first startup. Admin and Doctor accounts must be created through the platform UI.
 
 ### Permission Matrix
 
@@ -506,7 +508,7 @@ npm run dev
 | `BLOCKCHAIN_URL` | `http://localhost:8545` | Ethereum node URL |
 | `SEED_ADMIN_USERNAME` | `superadmin` | Initial admin username |
 | `SEED_ADMIN_EMAIL` | `admin@healthconnect.io` | Initial admin email |
-| `SEED_ADMIN_PASSWORD` | `changeme` | Initial admin password |
+| `SEED_ADMIN_PASSWORD` | `superadmin123` | Initial admin password *(changed via `reset_password.py`)* |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8001/api/v1` | Frontend API base URL |
 
 ---
@@ -577,7 +579,7 @@ curl http://localhost:8001/api/v1/status/health
 # Login
 curl -X POST http://localhost:8001/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"superadmin","password":"changeme"}'
+  -d '{"username":"superadmin","password":"superadmin123"}'
 
 # Upload CSV (requires hospital token)
 curl -X POST http://localhost:8001/api/v1/data/upload-csv \
@@ -657,7 +659,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 📜 Changelog
-<!-- updated: 2026-05-04 -->
+<!-- updated: 2026-05-08 -->
+- **2026-05-08**: Updated Login Credentials table — added Apollo Hospitals and AIIMS Delhi hospital node accounts; aligned Doctor Panel "My Patients" typography with global design system.
 - **2026-05-04**: Implemented Blockchain Clinical Audit Trail for patient records and modernized Patient Registry UI.
 - **2026-05-04**: Added dataset naming convention, upload validation, and training readiness checks.
 - **2026-05-04**: Implemented Parquet caching and speed optimizations for training.
