@@ -16,8 +16,9 @@ import uuid
 import hashlib
 import json
 import time
-from app.core.blockchain import blockchain_service
 from app.services.blockchain.audit_service import ClinicalRecord
+from app.core.logic import calculate_composite_risk
+from app.core.mongodb import prediction_repo
 
 router = APIRouter(tags=["patients"])
 
@@ -241,9 +242,23 @@ async def list_patients(
         finally:
             db.close()
     
-    # Default: show all patients for hospital (or could be scoped to doctor only if preferred)
+    # Default: show all patients for hospital
     all_patients = await patient_repo.find_many({"hospital_id": hospital_id})
-    return [p for p in all_patients if p.get("status", "active") != "deleted"]
+    all_preds = await prediction_repo.find_many({"hospital_id": hospital_id})
+    
+    results = []
+    for p in all_patients:
+        if p.get("status", "active") == "deleted":
+            continue
+            
+        # Add composite risk info
+        patient_preds = [pr for pr in all_preds if pr.get("patient_id") == str(p.get("_id"))]
+        latest_ai_score = patient_preds[0].get("results", {}).get("risk_score") if patient_preds else None
+        
+        p["clinical_risk"] = calculate_composite_risk(p.get("medical_history", []), latest_ai_score)
+        results.append(p)
+        
+    return results
 
 class ReviewSubmit(BaseModel):
     status: str

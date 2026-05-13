@@ -9,8 +9,7 @@ from datetime import datetime, timedelta
 from app.core.dependencies import get_current_user, require_role
 from app.core.mongodb import patient_repo, prediction_repo
 from app.core.database import SessionLocal
-from app.core.db_models import DatasetUpload, TrainingJob
-
+from app.core.logic import calculate_composite_risk
 router = APIRouter(tags=["doctor"])
 
 @router.get("/summary")
@@ -69,14 +68,14 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
             else:
                 age_groups["75+"] += 1
             
-            # Risk assessment
-            history_count = len(p.get("medical_history", []))
-            if history_count > 3:
-                risk_dist["high"] += 1
-            elif history_count > 1:
-                risk_dist["moderate"] += 1
-            else:
-                risk_dist["low"] += 1
+            # Unified Risk Assessment
+            history = p.get("medical_history", [])
+            # Find latest prediction for this patient to factor into summary risk
+            patient_preds = [pr for pr in all_preds if pr.get("patient_id") == str(p.get("_id"))]
+            latest_ai_score = patient_preds[0].get("results", {}).get("risk_score") if patient_preds else None
+            
+            risk_info = calculate_composite_risk(history, latest_ai_score)
+            risk_dist[risk_info["level"].lower()] += 1
         
         # 6. Prediction type breakdown
         pred_types = {}
@@ -108,19 +107,21 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
             
             patient_trend.append({"month": month_name, "patients": count})
 
-        # 8. Recent patients (last 5)
-        recent_patients = sorted(all_patients, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
-        recent_patients_data = [
-            {
+        recent_patients_data = []
+        for p in recent_patients:
+            history = p.get("medical_history", [])
+            patient_preds = [pr for pr in all_preds if pr.get("patient_id") == str(p.get("_id"))]
+            latest_ai_score = patient_preds[0].get("results", {}).get("risk_score") if patient_preds else None
+            risk_info = calculate_composite_risk(history, latest_ai_score)
+            
+            recent_patients_data.append({
                 "id": str(p.get("_id")),
                 "name": p.get("name"),
                 "age": p.get("age"),
                 "gender": p.get("gender"),
-                "risk": "High" if len(p.get("medical_history", [])) > 3 else "Moderate" if len(p.get("medical_history", [])) > 1 else "Low",
+                "risk": risk_info["level"],
                 "symptoms": p.get("current_symptoms", "")
-            }
-            for p in recent_patients
-        ]
+            })
         
         return {
             "total_patients": total_patients,
@@ -307,12 +308,13 @@ async def generate_clinical_report(patient_id: str, current_user: Dict[str, Any]
     ai_predictions = [p for p in patient_preds if p.get("type") == "ai_prediction"]
     nlp_analyses = [p for p in patient_preds if p.get("type") == "nlp_analysis"]
     
-    # Calculate overall risk
+    # Calculate overall risk (Hybrid: AI + History)
     risk_scores = [p.get("results", {}).get("risk_score", 0) for p in ai_predictions]
-    avg_risk = sum(risk_scores) / len(risk_scores) if risk_scores else 0
+    ai_risk = sum(risk_scores) / len(risk_scores) if risk_scores else None
     
-    # Determine risk level
-    risk_level = "Low" if avg_risk < 4 else "Moderate" if avg_risk < 7 else "High"
+    risk_info = calculate_composite_risk(patient.get("medical_history", []), ai_risk)
+    risk_level = risk_info["level"]
+    avg_risk = risk_info["score"]
     
     # Build AI summary
     conditions = list(set([p.get("results", {}).get("prediction", "") for p in ai_predictions if p.get("results", {}).get("prediction")]))

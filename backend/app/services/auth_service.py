@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 import secrets
 import logging
+from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
 
@@ -86,13 +87,14 @@ class User:
     hospital_id: Optional[str] = None
     department_id: Optional[int] = None
     is_active: bool = True
+    is_first_login: bool = True
     created_at: datetime = None
     last_login: datetime = None
     permissions: List[Permission] = None
     hospital: Optional["Hospital"] = None
     department: Optional[Dict[str, Any]] = None
     specializations: Optional[List[str]] = None
-    department_ids: Optional[List[int]] = None
+    department_ids: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.created_at is None:
@@ -152,6 +154,7 @@ def _db_user_to_dataclass(db_user) -> User:
         hospital_id=db_user.hospital_id,
         department_id=db_user.department_id,
         is_active=db_user.is_active,
+        is_first_login=db_user.is_first_login,
         created_at=db_user.created_at,
         last_login=db_user.last_login,
         hospital=_db_hospital_to_dataclass(db_user.hospital) if db_user.hospital else None,
@@ -246,6 +249,7 @@ class AuthenticationService:
                 password_hash=hashed,
                 role=DBUserRole.SUPER_ADMIN,
                 is_active=True,
+                is_first_login=False,
             )
             db.add(admin)
             db.commit()
@@ -281,7 +285,7 @@ class AuthenticationService:
         hospital_id: str = None,
         department_id: int = None,
         specializations: List[str] = None,
-        department_ids: List[int] = None,
+        department_ids: List[str] = None,
     ) -> User:
         from app.core.db_models import User as DBUser, UserRole as DBUserRole
 
@@ -312,6 +316,8 @@ class AuthenticationService:
                 specializations=specializations,
                 department_ids=department_ids,
                 is_active=True,
+                is_first_login=True,
+                auto_password_expires_at=datetime.utcnow() + timedelta(hours=48),
             )
             db.add(db_user)
             db.commit()
@@ -341,10 +347,22 @@ class AuthenticationService:
             if not db_user or not db_user.is_active:
                 return None
 
+            if db_user.locked_until and db_user.locked_until > datetime.utcnow():
+                raise HTTPException(status_code=403, detail="Account is temporarily locked. Try again later.")
+
             if not self._verify_password(password, db_user.password_hash):
+                db_user.failed_login_attempts += 1
+                if db_user.failed_login_attempts >= 5:
+                    db_user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                db.commit()
                 return None
 
-            # Update last login
+            if db_user.is_first_login and db_user.auto_password_expires_at and db_user.auto_password_expires_at < datetime.utcnow():
+                raise HTTPException(status_code=403, detail="Auto-generated password has expired. Please contact admin.")
+
+            # Reset attempts on success
+            db_user.failed_login_attempts = 0
+            db_user.locked_until = None
             db_user.last_login = datetime.utcnow()
             db.commit()
 
@@ -365,9 +383,12 @@ class AuthenticationService:
                     "email": user.email,
                     "role": user.role.value,
                     "hospital_id": user.hospital_id,
+                    "is_first_login": user.is_first_login,
                     "permissions": [p.value for p in user.permissions],
                 },
             }
+        except HTTPException:
+            raise
         except Exception as exc:
             logger.error(f"authenticate error: {exc}")
             return None
@@ -384,6 +405,7 @@ class AuthenticationService:
             "username": user.username,
             "role": user.role.value,
             "hospital_id": user.hospital_id,
+            "is_first_login": user.is_first_login,
             "permissions": [p.value for p in user.permissions],
             "exp": datetime.utcnow() + self.token_expiry,
             "iat": datetime.utcnow(),

@@ -194,8 +194,8 @@ export default function AnalyticsPage() {
               <Clock size={12} className="text-slate-300" /> Auto-sync: 5m
             </span>
           </div>
-          <h1 className="text-5xl font-black italic tracking-tighter text-slate-900 leading-none">
-            Platform <span className="text-blue-600 underline decoration-blue-100 underline-offset-[12px]">Analytics</span>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight">
+            Platform <span className="text-blue-600">Analytics</span>
           </h1>
           <p className="text-sm font-bold text-slate-400 italic max-w-lg mt-4 leading-relaxed">
             Real-time telemetry from the federated learning network. Monitoring model health, node participation, and audit trails.

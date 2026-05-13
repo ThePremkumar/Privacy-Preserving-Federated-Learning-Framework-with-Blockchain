@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import random
+import argparse
 from datetime import datetime, timedelta
 
 def generate_correlated_data(row_count=55500):
@@ -38,12 +39,12 @@ def generate_correlated_data(row_count=55500):
     med_params = {
         "Arthritis": "Ibuprofen",
         "Hypertension": "Lipitor",
-        "Diabetes": "Aspirin", # Metformin not in original list, using Aspirin as placeholder or adding it
+        "Diabetes": "Aspirin",
         "Cancer": "Paracetamol",
         "Asthma": "Penicillin",
         "Obesity": "Aspirin"
     }
-    # User mentioned Metformin for Diabetes, I'll add it to the pool
+    
     if "Metformin" not in medications:
         medications.append("Metformin")
         med_params["Diabetes"] = "Metformin"
@@ -135,7 +136,6 @@ def generate_correlated_data(row_count=55500):
 
     df = pd.DataFrame(data)
     
-    # ── Verification ──────────────────────────────────────────────────────
     print("\nVerification of Injected Correlations:")
     print("-" * 40)
     print("Means by Medical Condition:")
@@ -144,8 +144,14 @@ def generate_correlated_data(row_count=55500):
     
     # Save
     output_path = "backend/data/healthcare_dataset.csv"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     print(f"\nSuccessfully generated {row_count} rows at {output_path}")
 
 if __name__ == "__main__":
-    generate_correlated_data()
+    parser = argparse.ArgumentParser(description="Generate synthetic healthcare data.")
+    parser.add_argument("--rows", type=int, default=55500, help="Number of rows to generate")
+    args = parser.parse_args()
+    
+    import os
+    generate_correlated_data(args.rows)

@@ -71,6 +71,7 @@ const superAdminNav: NavSection[] = [
     title: 'Platform Governance',
     items: [
       { name: 'Organizations', icon: Building2, href: '/dashboard/organizations' },
+      { name: 'Access Requests', icon: ShieldCheck, href: '/dashboard/access-requests', highlight: true },
       { name: 'User Management', icon: UserCog, href: '/dashboard/admin-management' },
       { name: 'Model Governance', icon: GitBranch, href: '/dashboard/model-governance' },
     ],
@@ -108,6 +109,7 @@ const adminNav: NavSection[] = [
     title: 'Administration',
     items: [
       { name: 'Organizations', icon: Building2, href: '/dashboard/organizations' },
+      { name: 'Access Requests', icon: ShieldCheck, href: '/dashboard/access-requests', highlight: true },
       { name: 'Model Governance', icon: GitBranch, href: '/dashboard/model-governance' },
     ],
   },
@@ -145,6 +147,13 @@ const hospitalAdminNav: NavSection[] = [
       { name: 'Doctor Management', icon: Stethoscope, href: '/dashboard/doctor-management' },
       { name: 'Patient Management', icon: Users, href: '/dashboard/patients' },
       { name: 'Patient Reviews', icon: ClipboardCheck, href: '/dashboard/patient-reviews', highlight: true },
+    ],
+  },
+  {
+    title: 'AI Diagnostics',
+    items: [
+      { name: 'Clinical Predictions', icon: BrainCircuit, href: '/dashboard/predictions' },
+      { name: 'Anomaly Alerts', icon: AlertTriangle, href: '/dashboard/anomalies', badge: '!', highlight: true },
     ],
   },
   {

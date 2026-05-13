@@ -34,7 +34,7 @@ class RegisterUserRequest(BaseModel):
     hospital_id: Optional[str] = None
     department_id: Optional[int] = None
     specializations: Optional[List[str]] = None
-    department_ids: Optional[List[int]] = None
+    department_ids: Optional[List[str]] = None
 
 class RegisterHospitalRequest(BaseModel):
     name: str
@@ -71,8 +71,14 @@ class UpdateHospitalRequest(BaseModel):
 class UpdateProfileRequest(BaseModel):
     email: EmailStr
 
+class ForceResetPasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
+
 # Authentication dependencies
-def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> User:
+def get_current_user_allow_uninitialized(credentials: HTTPAuthorizationCredentials = Security(security)) -> User:
+    """Get current authenticated user, allowing those who haven't changed their default password"""
     """Get current authenticated user"""
     token = credentials.credentials
     payload = auth_service.verify_token(token)
@@ -90,6 +96,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
             detail="User not found or inactive"
         )
     
+    return user
+
+def get_current_user(user: User = Depends(get_current_user_allow_uninitialized)) -> User:
+    """Get current authenticated user, blocking those who need to reset password"""
+    if user.is_first_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password reset required before accessing the platform"
+        )
     return user
 
 def require_permission(permission: Permission):
@@ -119,6 +134,77 @@ async def login(login_data: LoginRequest):
     except Exception as e:
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.post("/force-reset-password")
+async def force_reset_password(req: ForceResetPasswordRequest, current_user: User = Depends(get_current_user_allow_uninitialized)):
+    """Force reset password on first login"""
+    from app.core.database import SessionLocal
+    from app.core.db_models import User as DBUser
+    import re
+    
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="New passwords do not match")
+        
+    if req.current_password == req.new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+        
+    # Password policy: 8 chars, upper, lower, number, special
+    if len(req.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    if not re.search(r'[A-Z]', req.new_password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter")
+    if not re.search(r'[a-z]', req.new_password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one lowercase letter")
+    if not re.search(r'[0-9]', req.new_password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number")
+    if not re.search(r'[^A-Za-z0-9]', req.new_password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one special character")
+
+    db = SessionLocal()
+    try:
+        db_user = db.query(DBUser).filter(DBUser.id == current_user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        if not auth_service._verify_password(req.current_password, db_user.password_hash):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+            
+        db_user.password_hash = auth_service._hash_password(req.new_password)
+        db_user.is_first_login = False
+        db_user.password_changed_at = datetime.utcnow()
+        db.commit()
+        db.refresh(db_user)
+        
+        # Return new tokens
+        user = auth_service.get_user_by_id(current_user.id)
+        access_token = auth_service._generate_access_token(user)
+        refresh_token = auth_service._generate_refresh_token(user)
+        auth_service.refresh_tokens[refresh_token] = user.username
+        
+        return {
+            "message": "Your password has been set successfully. Welcome to the platform.",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": int(auth_service.token_expiry.total_seconds()),
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role.value,
+                "hospital_id": user.hospital_id,
+                "is_first_login": user.is_first_login,
+                "permissions": [p.value for p in user.permissions],
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Force reset password error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
 
 @router.post("/register")
 async def register_user(user_data: RegisterUserRequest, current_user: User = Depends(require_permission(Permission.MANAGE_USERS))):
@@ -279,7 +365,7 @@ async def delete_hospital(hospital_id: str, current_user: User = Depends(require
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @router.get("/me")
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
+async def get_current_user_info(current_user: User = Depends(get_current_user_allow_uninitialized)):
     """Get current user information with full hospital and department identity"""
     return {
         "id": current_user.id,
@@ -290,6 +376,7 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         "department_id": current_user.department_id,
         "specializations": current_user.specializations,
         "department_ids": current_user.department_ids,
+        "is_first_login": current_user.is_first_login,
         "hospital": {
             "id": current_user.hospital.id,
             "name": current_user.hospital.name,

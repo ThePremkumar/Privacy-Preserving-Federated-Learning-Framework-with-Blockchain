@@ -157,6 +157,9 @@ app.include_router(websockets_router, prefix="/api/v1", tags=["WebSockets"])
 from app.api.notifications import router as notifications_router
 app.include_router(notifications_router, prefix="/api/v1/notifications", tags=["Notifications"])
 
+from app.api.access_requests import router as access_requests_router
+app.include_router(access_requests_router, prefix="/api/v1/access-requests", tags=["Access Requests"])
+
 # Health check endpoints
 @app.get("/api/v1/status/health", tags=["System"])
 async def health_check():

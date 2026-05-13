@@ -46,8 +46,8 @@ export default function LandingPage() {
             <Link href="/login">
               <Button variant="ghost" className="hidden sm:inline-flex">Sign In</Button>
             </Link>
-            <Link href="/login">
-              <Button variant="primary">Access Platform</Button>
+            <Link href="/login?request=true">
+              <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white border-none shadow-md shadow-blue-200">Access Platform</Button>
             </Link>
           </div>
         </div>

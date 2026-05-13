@@ -52,7 +52,7 @@ export default function AnomaliesPage() {
   useEffect(() => { fetchAnomalies(); }, [fetchAnomalies]);
 
   return (
-    <RoleGuard allowedRoles={['doctor']}>
+    <RoleGuard allowedRoles={['doctor', 'hospital']}>
     <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>

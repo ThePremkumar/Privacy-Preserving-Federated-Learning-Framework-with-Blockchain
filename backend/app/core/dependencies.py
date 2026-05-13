@@ -32,12 +32,18 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
         "email": payload.get("email"),
         "role": payload.get("role"),
         "hospital_id": payload.get("hospital_id"),
-        "permissions": payload.get("permissions", [])
+        "permissions": payload.get("permissions", []),
+        "is_first_login": payload.get("is_first_login", False)
     }
 
 def require_role(allowed_roles: List[str]):
     """FastAPI dependency to enforce role-based access control."""
     async def role_checker(current_user: Dict[str, Any] = Depends(get_current_user)):
+        if current_user.get("is_first_login"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Password reset required before accessing the platform"
+            )
         if current_user.get("role") not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -49,6 +55,11 @@ def require_role(allowed_roles: List[str]):
 def require_permission(permission: str):
     """FastAPI dependency for granular permission checking."""
     async def permission_checker(current_user: Dict[str, Any] = Depends(get_current_user)):
+        if current_user.get("is_first_login"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Password reset required before accessing the platform"
+            )
         if permission not in current_user.get("permissions", []):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

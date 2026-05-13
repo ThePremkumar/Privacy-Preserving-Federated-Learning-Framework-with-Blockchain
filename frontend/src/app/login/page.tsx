@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   BrainCircuit, 
   ShieldCheck, 
@@ -11,20 +11,43 @@ import {
   Lock, 
   User, 
   Key, 
-  AlertCircle
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Info,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { AccessRequestModal } from '@/components/AccessRequestModal';
 
 export default function LoginPage() {
+  return (
+    <React.Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" /></div>}>
+      <LoginContent />
+    </React.Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const { setUser } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
   const [error, setError] = useState('');
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+  React.useEffect(() => {
+    if (searchParams.get('request') === 'true') {
+      setShowRequestModal(true);
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +80,16 @@ export default function LoginPage() {
           hospital: user.hospital ?? undefined,
           department: user.department ?? undefined,
           permissions: user.permissions ?? [],
+          is_first_login: user.is_first_login,
         });
       }
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect based on first login flag
+      if (user?.is_first_login) {
+        router.push('/force-password-reset');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.code === 'ERR_NETWORK') {
@@ -144,17 +172,33 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between px-1">
                       <label className="text-sm font-bold text-slate-900 uppercase tracking-widest">Secure Passcode</label>
-                      <Link href="#" className="text-xs font-bold text-blue-600 hover:underline px-1">Forgot Access?</Link>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setError('');
+                          setShowForgotModal(true);
+                        }}
+                        className="text-xs font-bold text-blue-600 hover:underline px-1"
+                      >
+                        Forgot Access?
+                      </button>
                     </div>
                     <div className="relative">
                       <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                       <input 
-                        type="password" 
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••••••" 
-                        className="h-14 w-full rounded-xl border-2 border-slate-100 bg-slate-50/50 pl-11 pr-4 font-semibold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+                        className="h-14 w-full rounded-xl border-2 border-slate-100 bg-slate-50/50 pl-11 pr-12 font-semibold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -174,7 +218,7 @@ export default function LoginPage() {
             <CardFooter className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/50 p-6 rounded-b-2xl">
               <p className="text-center text-sm font-semibold text-slate-500">
                 Unauthorized access is strictly monitored. <br />
-                Need institutional registration? <Link href="#" className="font-extrabold text-blue-600 hover:underline">Request Access</Link>
+                Need institutional registration? <button onClick={() => setShowRequestModal(true)} className="font-extrabold text-blue-600 hover:underline">Request Access</button>
               </p>
             </CardFooter>
           </Card>
@@ -185,6 +229,59 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Access Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative">
+            <button 
+              onClick={() => setShowForgotModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+            >
+              <X size={24} />
+            </button>
+            <div className="p-6 space-y-4">
+              <h3 className="text-2xl font-bold text-slate-900">
+                Account Access Assistance
+              </h3>
+              <p className="text-slate-600 leading-relaxed text-sm">
+                If you are unable to access your account, please reach out to our support team via email. Click the button below to open a pre-filled email in Gmail.
+              </p>
+              <div className="space-y-2">
+                <p className="text-slate-900 font-semibold text-sm">
+                  Kindly include the following details in your message:
+                </p>
+                <ul className="list-disc list-inside text-slate-700 space-y-1 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <li>Full Name</li>
+                  <li>Registered Username or User ID</li>
+                  <li>A brief description of your issue</li>
+                </ul>
+              </div>
+            </div>
+            <div className="p-6 pt-0 bg-white flex flex-col gap-4">
+              <a 
+                href="https://mail.google.com/mail/?view=cm&to=premkumar2462004@gmail.com&su=Account Access Assistance - Support Request&body=Full Name: %0AUsername / User ID: %0AIssue Description:"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-slate-200"
+              >
+                Contact Support
+              </a>
+              <p className="text-center text-xs font-medium text-slate-500">
+                Our team will respond to your request within 24 hours.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Access Modal */}
+      {showRequestModal && (
+        <AccessRequestModal onClose={() => {
+          setShowRequestModal(false);
+          router.replace('/login');
+        }} />
+      )}
     </div>
   );
 }

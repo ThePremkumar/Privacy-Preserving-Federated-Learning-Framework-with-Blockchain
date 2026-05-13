@@ -16,6 +16,8 @@ export interface Hospital {
   website?: string;
   phone?: string;
   organization_type?: string;
+  active_specializations?: string[];
+  active_departments?: string[];
 }
 
 export interface Department {
@@ -35,6 +37,8 @@ export interface User {
   hospital?: Hospital;
   department?: Department;
   permissions: string[];
+  is_first_login?: boolean;
+  department_ids?: string[];
 }
 
 interface AuthContextType {
@@ -73,7 +77,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: userData.email,
         hospital: userData.hospital,
         department: userData.department,
+        department_ids: userData.department_ids,
         permissions: userData.permissions || [],
+        is_first_login: userData.is_first_login,
       };
       setUser(mapped);
     } catch (error) {

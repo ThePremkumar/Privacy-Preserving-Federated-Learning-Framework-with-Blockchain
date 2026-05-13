@@ -311,7 +311,6 @@ export default function ClinicalReportsPage() {
             ) : (
               <div className="divide-y divide-slate-50">
                 {filteredPatients.map(p => {
-                  const risk = (p.medical_history?.length || 0) > 3 ? 'High' : (p.medical_history?.length || 0) > 1 ? 'Moderate' : 'Low';
                   return (
                     <div key={p._id} className="px-6 py-5 flex items-center justify-between hover:bg-blue-50/30 transition-colors group">
                       <div className="flex items-center gap-4">
@@ -327,10 +326,10 @@ export default function ClinicalReportsPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={cn("px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border",
-                          risk === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
-                          risk === 'Moderate' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                          p.clinical_risk?.level === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
+                          p.clinical_risk?.level === 'Moderate' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                           'bg-emerald-50 text-emerald-600 border-emerald-100'
-                        )}>{risk}</span>
+                        )}>{p.clinical_risk?.label || (p.clinical_risk?.level === 'High' ? 'Critical' : p.clinical_risk?.level === 'Moderate' ? 'Moderate' : 'Low')}</span>
                         <Button
                           size="sm"
                           className="h-10 font-black uppercase tracking-widest text-[10px] bg-slate-900 hover:bg-blue-600 shadow-lg"

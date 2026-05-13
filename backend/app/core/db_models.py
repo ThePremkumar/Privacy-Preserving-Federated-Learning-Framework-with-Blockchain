@@ -70,6 +70,13 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
     
+    # First-Time Login / Security
+    is_first_login = Column(Boolean, default=True)
+    password_changed_at = Column(DateTime, nullable=True)
+    auto_password_expires_at = Column(DateTime, nullable=True)
+    failed_login_attempts = Column(Integer, default=0)
+    locked_until = Column(DateTime, nullable=True)
+    
     # Relationships
     hospital = relationship("Hospital", back_populates="users")
     department = relationship("Department", back_populates="doctors", foreign_keys=[department_id])
@@ -234,3 +241,22 @@ class PatientReferralReview(Base):
     notification = relationship("Notification")
     reviewer = relationship("User", foreign_keys=[reviewed_by])
     sender = relationship("User", foreign_keys=[sent_by])
+
+
+class AccessRequest(Base):
+    __tablename__ = "access_requests"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    request_type = Column(String, nullable=False) # 'new_user' or 'new_hospital'
+    full_name = Column(String, nullable=True) # User's name or Contact Person Name
+    designation = Column(String, nullable=True) # Role
+    hospital_name = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    contact_number = Column(String, nullable=True)
+    email = Column(String, nullable=False)
+    num_users = Column(Integer, nullable=True) # For hospital
+    hospital_id = Column(String, nullable=True) # To link request to a hospital
+    reason = Column(String, nullable=True)
+    status = Column(String, default="pending") # pending, approved, rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

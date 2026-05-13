@@ -21,6 +21,9 @@ export function RoleGuard({ children, allowedRoles, fallbackUrl = '/dashboard' }
       if (!user) {
         // Not logged in
         router.push('/login');
+      } else if (user.is_first_login) {
+        // Force password reset first
+        router.push('/force-password-reset');
       } else if (!hasRole(allowedRoles)) {
         // Logged in but insufficient permissions
         setIsAuthorized(false);

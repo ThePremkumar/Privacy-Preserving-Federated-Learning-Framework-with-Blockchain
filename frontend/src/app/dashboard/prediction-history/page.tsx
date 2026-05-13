@@ -57,16 +57,16 @@ export default function PredictionHistoryPage() {
     const matchesSearch = patientName.toLowerCase().includes(searchQuery.toLowerCase()) || p.id?.toLowerCase().includes(searchQuery.toLowerCase());
     const score = p.results?.risk_score || 0;
     const matchesFilter = filterRisk === 'all' ||
-      (filterRisk === 'high' && score >= 7) ||
-      (filterRisk === 'moderate' && score >= 4 && score < 7) ||
+      (filterRisk === 'high' && score >= 7.5) ||
+      (filterRisk === 'moderate' && score >= 4 && score < 7.5) ||
       (filterRisk === 'low' && score < 4);
     return matchesSearch && matchesFilter;
   });
 
   const getRiskColor = (score: number) => {
-    if (score >= 7) return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', bar: 'bg-red-600', label: 'High Risk' };
-    if (score >= 4) return { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100', bar: 'bg-amber-500', label: 'Moderate' };
-    return { text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', bar: 'bg-emerald-500', label: 'Low Risk' };
+    if (score >= 7.5) return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100', bar: 'bg-red-600', label: 'Critical Risk' };
+    if (score >= 4.0) return { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100', bar: 'bg-amber-500', label: 'Moderate' };
+    return { text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', bar: 'bg-emerald-500', label: 'Nominal Risk' };
   };
 
   return (
@@ -88,7 +88,7 @@ export default function PredictionHistoryPage() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
         {[
           { label: 'Total Predictions', value: predictions.length, color: 'text-slate-900' },
-          { label: 'High Risk Alerts', value: predictions.filter(p => (p.results?.risk_score || 0) >= 7).length, color: 'text-red-600' },
+          { label: 'Critical Alerts', value: predictions.filter(p => (p.results?.risk_score || 0) >= 7.5).length, color: 'text-red-600' },
           { label: 'Avg AI Confidence', value: predictions.length ? `${Math.round(predictions.reduce((a, p) => a + (p.results?.confidence || 0), 0) / predictions.length)}%` : '0%', color: 'text-blue-600' },
           { label: 'Patients Tracked', value: new Set(predictions.map(p => p.patient_id)).size, color: 'text-emerald-600' },
         ].map((stat, i) => (

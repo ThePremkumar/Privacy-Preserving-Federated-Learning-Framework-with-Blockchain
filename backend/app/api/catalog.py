@@ -17,13 +17,13 @@ async def get_specialization_map():
 
 @router.get("/node-catalog")
 @router.get("/node-active")
-async def get_node_catalog(hospital_id: str = None, current_user: Any = Depends(get_current_user)):
+async def get_node_catalog(hospital_id: str = None, current_user: Dict[str, Any] = Depends(get_current_user)):
     """Get the active catalog for the current user's hospital node."""
     from app.core.database import SessionLocal
     from app.core.db_models import Hospital
     
     # Use provided hospital_id if admin/super_admin, otherwise force current_user's hospital
-    target_hospital_id = hospital_id if (current_user.role in ["admin", "super_admin"] and hospital_id) else current_user.hospital_id
+    target_hospital_id = hospital_id if (current_user.get("role") in ["admin", "super_admin"] and hospital_id) else current_user.get("hospital_id")
     
     if not target_hospital_id:
         return {"specializations": [], "departments": []}
