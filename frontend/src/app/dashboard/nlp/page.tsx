@@ -84,7 +84,7 @@ export default function NLPPage() {
                onChange={(e) => setSelectedPatientId(e.target.value)}
              >
                {patients.map(p => (
-                 <option key={p._id} value={p._id}>{p.name}</option>
+                 <option key={p._id} value={p._id}>{p.name} ({p.patient_id_manual || p._id.substring(0,8)})</option>
                ))}
              </select>
           </div>

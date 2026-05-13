@@ -364,6 +364,19 @@ export default function PatientsPage() {
                        <VitalsBadge icon={Heart} label="HR" value={p.heart_rate ? `${p.heart_rate}` : '74'} unit="BPM" color="bg-rose-50 text-rose-600" />
                     </div>
 
+                    {/* Symptoms display */}
+                    {p.current_symptoms && (
+                      <div className="py-3 px-4 bg-slate-50/50 rounded-2xl border border-slate-100/50 group-hover:bg-blue-50/50 transition-colors">
+                        <div className="flex items-center gap-2 mb-1">
+                           <Activity size={12} className="text-blue-500" />
+                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Clinical Presentation</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-700 line-clamp-1 italic tracking-tight">
+                          "{p.current_symptoms}"
+                        </p>
+                      </div>
+                    )}
+
                     {/* Bottom Section */}
                     <div className="flex items-center justify-between pt-2">
                        <div className="flex flex-col gap-1.5">
@@ -407,6 +420,7 @@ export default function PatientsPage() {
                        <th className="px-4 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Distributed Identity</th>
                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Neural Indices</th>
                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Risk Assessment</th>
+                       <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Presentation</th>
                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Node Sync</th>
                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ops</th>
                     </tr>
@@ -449,6 +463,11 @@ export default function PatientsPage() {
                             )}>
                                <ShieldAlert size={14} className={p.clinical_risk?.level === 'High' ? 'animate-pulse' : ''} />
                                {p.clinical_risk?.label || p.clinical_risk?.level}
+                            </div>
+                         </td>
+                         <td className="px-8 py-6">
+                            <div className="max-w-[200px]">
+                               <p className="text-[11px] font-bold text-slate-600 truncate italic">"{p.current_symptoms || 'No symptoms reported'}"</p>
                             </div>
                          </td>
                          <td className="px-8 py-6">

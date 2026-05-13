@@ -15,10 +15,15 @@ interface Round {
   round_number: number;
   global_accuracy: string | null;
   global_loss: string | null;
+  /** nodes_count from AggregationHistoryItem */
   num_participants: number;
+  /** derived from epsilon_total or nodes_count */
   privacy_budget_used: number;
+  /** date field from AggregationHistoryItem */
   created_at: string;
   blockchain_tx_hash?: string;
+  blockchain_status?: string;
+  total_samples?: number;
 }
 
 const MOCK_ROUNDS: Round[] = [
@@ -47,19 +52,42 @@ export default function ModelComparisonPage() {
   const [leftId, setLeftId] = useState<string>('');
   const [rightId, setRightId] = useState<string>('');
   const [rolling, setRolling] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isSuperAdmin = user?.role === 'super_admin';
 
   useEffect(() => {
-    api.get('/training/aggregation-history').then(res => {
-      if (Array.isArray(res.data) && res.data.length > 0) setRounds(res.data);
-    }).catch(() => {}).finally(() => {
-      setLoading(false);
-      setLeftId(MOCK_ROUNDS[MOCK_ROUNDS.length - 2]?.id || '');
-      setRightId(MOCK_ROUNDS[MOCK_ROUNDS.length - 1]?.id || '');
-    });
+    api.get('/training/aggregation-history')
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          // Map AggregationHistoryItem fields → local Round shape
+          const mapped: Round[] = res.data.map((r: any) => ({
+            id: r.id,
+            round_number: r.round_number,
+            global_accuracy: r.global_accuracy,
+            global_loss: r.global_loss,
+            num_participants: r.nodes_count ?? r.num_participants ?? 0,
+            privacy_budget_used: parseFloat(r.epsilon_total ?? r.privacy_budget_used ?? '1.0'),
+            created_at: r.date ?? r.created_at ?? '',
+            blockchain_tx_hash: r.blockchain_tx_hash,
+            blockchain_status: r.blockchain_status,
+            total_samples: r.total_samples,
+          }));
+          setRounds(mapped);
+          setLeftId(mapped[Math.min(1, mapped.length - 1)]?.id || '');
+          setRightId(mapped[0]?.id || '');
+        } else {
+          // Fallback: keep mock data, set selectors
+          setLeftId(MOCK_ROUNDS[MOCK_ROUNDS.length - 2]?.id || '');
+          setRightId(MOCK_ROUNDS[MOCK_ROUNDS.length - 1]?.id || '');
+        }
+      })
+      .catch(() => {
+        setLeftId(MOCK_ROUNDS[MOCK_ROUNDS.length - 2]?.id || '');
+        setRightId(MOCK_ROUNDS[MOCK_ROUNDS.length - 1]?.id || '');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const left  = rounds.find(r => r.id === leftId);
@@ -72,11 +100,40 @@ export default function ModelComparisonPage() {
     : null;
 
   async function handleRollback(round: Round) {
+    if (!confirm(`Roll back global model to Round #${round.round_number} (${round.global_accuracy ? (parseFloat(round.global_accuracy) * 100).toFixed(1) + '% acc' : 'N/A'})? This creates a new aggregation round restoring those weights.`))
+      return;
     setRolling(round.id);
-    await new Promise(r => setTimeout(r, 1200)); // simulate
-    setToast(`Global model rolled back to Round #${round.round_number}`);
-    setTimeout(() => setToast(null), 3500);
-    setRolling(null);
+    try {
+      const res = await api.post(`/training/aggregation-rounds/${round.id}/rollback`);
+      const d = res.data;
+      setToast({
+        msg: `Rolled back to Round #${d.rolled_back_to_round} — new Round #${d.new_round_number} (v${d.new_model_version}) created.`,
+        type: 'success',
+      });
+      // Refresh rounds list
+      const hist = await api.get('/training/aggregation-history');
+      if (Array.isArray(hist.data) && hist.data.length > 0) {
+        const mapped: Round[] = hist.data.map((r: any) => ({
+          id: r.id,
+          round_number: r.round_number,
+          global_accuracy: r.global_accuracy,
+          global_loss: r.global_loss,
+          num_participants: r.nodes_count ?? r.num_participants ?? 0,
+          privacy_budget_used: parseFloat(r.epsilon_total ?? r.privacy_budget_used ?? '1.0'),
+          created_at: r.date ?? r.created_at ?? '',
+          blockchain_tx_hash: r.blockchain_tx_hash,
+          blockchain_status: r.blockchain_status,
+          total_samples: r.total_samples,
+        }));
+        setRounds(mapped);
+      }
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || err?.message || 'Rollback failed.';
+      setToast({ msg: `Error: ${detail}`, type: 'error' });
+    } finally {
+      setRolling(null);
+      setTimeout(() => setToast(null), 5000);
+    }
   }
 
   const radarData = left && right ? [
@@ -102,9 +159,17 @@ export default function ModelComparisonPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       {toast && (
-        <div className="toast" style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999 }}>
-          <ShieldCheck size={18} className="text-teal-600 shrink-0" />
-          <p className="text-xs font-bold text-slate-700">{toast}</p>
+        <div
+          className={cn(
+            'toast flex items-center gap-2',
+            toast.type === 'error' ? 'border-red-200 bg-red-50' : 'border-teal-200 bg-teal-50'
+          )}
+          style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999, maxWidth: 420 }}
+        >
+          {toast.type === 'error'
+            ? <AlertCircle size={18} className="text-red-500 shrink-0" />
+            : <ShieldCheck size={18} className="text-teal-600 shrink-0" />}
+          <p className="text-xs font-bold text-slate-700">{toast.msg}</p>
         </div>
       )}
 

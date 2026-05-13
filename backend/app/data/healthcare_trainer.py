@@ -267,13 +267,23 @@ class HealthcareTrainer:
         """Full evaluation on held-out test set with per-class metrics."""
         test_loss, test_acc, preds, labels = self._evaluate(test_loader)
 
+        # Use labels= so the report never crashes when the test split
+        # is missing one or more classes from the full label set.
+        present_labels = sorted(set(np.concatenate([labels, preds]).astype(int)))
+        present_names = None
+        if class_names:
+            present_names = [
+                class_names[i] for i in present_labels if i < len(class_names)
+            ]
+
         report = classification_report(
             labels, preds,
-            target_names=class_names,
+            labels=present_labels,
+            target_names=present_names,
             output_dict=True,
             zero_division=0,
         )
-        cm = confusion_matrix(labels, preds).tolist()
+        cm = confusion_matrix(labels, preds, labels=present_labels).tolist()
         f1 = f1_score(labels, preds, average="weighted")
 
         result = {

@@ -21,7 +21,9 @@ class MongoRepository:
     
     def __init__(self, collection_name: str):
         self.collection_name = collection_name
-        self.db_path = f"./data/mongodb/{collection_name}.json"
+        # Use absolute path relative to the backend root to ensure data consistency
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.db_path = os.path.join(base_dir, "data", "mongodb", f"{collection_name}.json")
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         
         # Load data if exists
@@ -48,7 +50,14 @@ class MongoRepository:
         return item_id
 
     async def find_one(self, filter: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Find a single document by filter (simple EQUALS matching)"""
+        """Find a single document by filter (Reloads from disk to pick up script-seeded data)"""
+        if os.path.exists(self.db_path):
+            with open(self.db_path, "r") as f:
+                try:
+                    self.data = json.load(f)
+                except:
+                    pass
+        
         for doc in self.data.values():
             match = True
             for k, v in filter.items():
@@ -60,7 +69,14 @@ class MongoRepository:
         return None
 
     async def find_many(self, filter: Dict[str, Any] = None, limit: int = 100, sort: list = None) -> List[Dict[str, Any]]:
-        """Find multiple documents"""
+        """Find multiple documents (Reloads from disk to pick up script-seeded data)"""
+        if os.path.exists(self.db_path):
+            with open(self.db_path, "r") as f:
+                try:
+                    self.data = json.load(f)
+                except:
+                    pass
+
         results = []
         for doc in self.data.values():
             if not filter:

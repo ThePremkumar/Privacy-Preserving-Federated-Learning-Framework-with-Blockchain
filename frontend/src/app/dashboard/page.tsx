@@ -555,7 +555,7 @@ function DoctorDashboard() {
            </div>
            <div>
               <h1 className="page-title text-slate-900">
-                Welcome back, <span className="text-blue-700 underline decoration-blue-100 underline-offset-4">Dr. {user?.username}</span>
+                Welcome back, <span className="text-blue-700 underline decoration-blue-100 underline-offset-4">Dr. {user?.full_name || user?.username}</span>
               </h1>
               <div className="flex items-center gap-3 mt-1.5">
                  <div className="flex items-center gap-2">

@@ -50,12 +50,30 @@ class SystemConfig(BaseModel):
 async def list_all_hospitals(
     current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin", "hospital", "doctor"])),
 ):
-    """List all registered hospitals with their identity and branding."""
+    """List all registered hospitals with their identity and branding, plus real-time stats."""
     db = SessionLocal()
     try:
         hospitals = db.query(db_models.Hospital).all()
-        return [
-            {
+        results = []
+        for h in hospitals:
+            # Get stats for this hospital
+            jobs = db.query(db_models.TrainingJob).filter(db_models.TrainingJob.hospital_id == h.id).all()
+            training_jobs = len(jobs)
+            approved_jobs = len([j for j in jobs if j.status in ['approved', 'aggregated']])
+            
+            # Privacy Budget Used
+            budget_used = sum(float(j.epsilon_used) for j in jobs if j.epsilon_used)
+            
+            # Contribution Score (Simple logic: 25% base if active + 75% based on participation)
+            # If no jobs, score is 0 unless we want a "readiness" score. 
+            # User says it should be 0 if not contributing.
+            contribution_score = 0
+            if training_jobs > 0:
+                contribution_score = min(100, int((approved_jobs / 10) * 100) if approved_jobs < 10 else 100)
+                # Or even simpler for now:
+                contribution_score = min(100, (approved_jobs * 10) + (training_jobs * 2))
+
+            results.append({
                 "id": h.id,
                 "name": h.name,
                 "short_name": h.short_name,
@@ -69,9 +87,13 @@ async def list_all_hospitals(
                 "phone": h.phone,
                 "department_count": h.department_count,
                 "created_at": h.created_at.isoformat() if h.created_at else None,
-            }
-            for h in hospitals
-        ]
+                "training_jobs": training_jobs,
+                "approved_jobs": approved_jobs,
+                "privacy_budget_used": budget_used,
+                "contribution_score": contribution_score,
+                "status": "active" if training_jobs > 0 else "idle"
+            })
+        return results
     finally:
         db.close()
 

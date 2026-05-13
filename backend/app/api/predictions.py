@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
+import logging
+
+logger = logging.getLogger(__name__)
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -52,53 +55,67 @@ async def run_ai_prediction(request: PredictionRequest, current_user: Dict[str, 
     
     if os.path.exists(model_path):
         try:
-            checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
+            checkpoint = torch.load(model_path, map_location=torch.device('cpu'), weights_only=False)
             input_dim = checkpoint['num_features']
             num_classes = checkpoint['num_classes']
             class_names = checkpoint.get('class_names', class_names)
             
-            # Reconstruct model architecture from checkpoint metadata
-            hidden_dims = checkpoint.get('hidden_dims', [256, 128, 64, 32])
+            # Reconstruct model architecture from checkpoint metadata (matching trainer.py default)
+            hidden_dims = checkpoint.get('hidden_dims', [512, 256, 128, 64])
             model = HealthcareMLP(input_dim=input_dim, num_classes=num_classes, hidden_dims=hidden_dims)
             model.load_state_dict(checkpoint['model_state_dict'])
             model.eval()
             
-            # 3. Map patient data to features
-            # Heuristic mapping for real-time inference matching the training schema
-            age = float(patient.get("age", 40))
-            gender = 1.0 if patient.get("gender") == "Male" else 0.0
-            
-            # Parse blood pressure
-            bp_systolic = 120.0
-            bp_diastolic = 80.0
-            bp = patient.get("blood_pressure", "120/80")
-            if "/" in bp:
-                try:
-                    parts = bp.split("/")
-                    bp_systolic = float(parts[0])
-                    bp_diastolic = float(parts[1])
-                except: pass
-            
-            sugar = float(patient.get("sugar_level", 100))
-            heart_rate = float(patient.get("heart_rate", 72))
-            temp = float(patient.get("temperature", 36.6))
-            history_count = float(len(patient.get("medical_history", [])))
-            
-            # Construct feature vector
+            # 3. Map patient data to features (Full 30-feature mapping for Global Model)
             features = np.zeros(input_dim)
-            features[0] = age / 100.0
-            features[1] = gender
-            features[2] = bp_systolic / 200.0
-            features[3] = bp_diastolic / 120.0
-            features[4] = sugar / 300.0
-            features[5] = heart_rate / 150.0
-            features[6] = (temp - 30.0) / 15.0
-            features[7] = history_count / 10.0
             
-            # Simulated noise for other dimensions
-            if input_dim > 8:
-                np.random.seed(int(hashlib.sha256(request.patient_id.encode()).hexdigest(), 16) % 10**8)
-                features[8:] = np.random.randn(input_dim - 8) * 0.01
+            # Basic Features
+            features[0] = float(patient.get("age", 40)) / 100.0
+            features[1] = 1.0 if patient.get("gender") == "Male" else 0.0
+            
+            # Blood Type One-Hot (Indices 2-9)
+            blood_types = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+            bt = patient.get("blood_type", "O+")
+            if bt in blood_types:
+                features[2 + blood_types.index(bt)] = 1.0
+                
+            # Insurance One-Hot (Indices 10-14)
+            insurances = ["Aetna", "Blue Cross", "Cigna", "Medicare", "UnitedHealthcare"]
+            ins = patient.get("insurance", "Medicare")
+            if ins in insurances:
+                features[10 + insurances.index(ins)] = 1.0
+                
+            # Numerical Values
+            features[15] = float(patient.get("billing_amount", 5000)) / 50000.0
+            features[16] = float(patient.get("room_number", 101)) / 500.0
+            
+            # Admission Type One-Hot (Indices 17-19)
+            adm_types = ["Emergency", "Elective", "Urgent"]
+            at = patient.get("admission_type", "Emergency")
+            if at in adm_types:
+                features[17 + adm_types.index(at)] = 1.0
+                
+            # Medication One-Hot (Indices 20-24)
+            meds = ["Aspirin", "Ibuprofen", "Paracetamol", "Penicillin", "Lipitor"]
+            m = patient.get("medication", "Aspirin")
+            if m in meds:
+                features[20 + meds.index(m)] = 1.0
+                
+            # Test Results Ordinal (Index 25)
+            tr_map = {"Normal": 0.0, "Inconclusive": 0.5, "Abnormal": 1.0}
+            features[25] = tr_map.get(patient.get("test_results", "Normal"), 0.0)
+            
+            # Admission Date Parts (Indices 26-28)
+            features[26] = 6.0 / 12.0 # Month
+            features[27] = 3.0 / 7.0  # Day of week
+            features[28] = 2.0 / 4.0  # Quarter
+            
+            # Length of Stay (Index 29)
+            features[29] = float(patient.get("length_of_stay", 5)) / 30.0
+            
+            # Add small noise for variations
+            np.random.seed(int(hashlib.sha256(request.patient_id.encode()).hexdigest(), 16) % 10**8)
+            features += np.random.randn(input_dim) * 0.001
             
             input_tensor = torch.FloatTensor(features).unsqueeze(0)
             
@@ -109,10 +126,10 @@ async def run_ai_prediction(request: PredictionRequest, current_user: Dict[str, 
                 prediction = class_names[pred_idx]
                 
                 # Risk calculation
-                base_risk = float(probs[0][pred_idx])
-                risk_multipliers = {"Cancer": 1.5, "Hypertension": 1.2, "Diabetes": 1.1}
-                risk_score = min(base_risk * 10 * risk_multipliers.get(prediction, 1.0), 10.0)
                 confidence = float(probs[0][pred_idx])
+                # Combine model confidence with clinical markers (Test Results, Age)
+                risk_score = (confidence * 6.0) + (features[25] * 3.0) + (features[0] * 1.0)
+                risk_score = min(max(risk_score, 1.0), 10.0)
                 
         except Exception as e:
             logger.error(f"Prediction inference failed: {str(e)}")
@@ -146,11 +163,19 @@ async def run_ai_prediction(request: PredictionRequest, current_user: Dict[str, 
 @router.post("/analyze-note")
 async def analyze_medical_note(request: AnalysisRequest, current_user: Dict[str, Any] = Depends(require_role(["doctor"]))):
     """Perform NLP analysis on a clinical note and store the results"""
-    analysis = nlp_service.analyze_medical_note(request.clinical_note)
+    # Fetch patient for context
+    patient = await patient_repo.find_one({"_id": request.patient_id})
+    patient_context = {
+        "name": patient.get("name") if patient else "Unknown",
+        "patient_id_manual": patient.get("patient_id_manual") if patient else "N/A"
+    }
+    
+    analysis = nlp_service.analyze_medical_note(request.clinical_note, patient_context=patient_context)
     
     # Store in MongoDB (Predictions collection)
     record = {
         "patient_id": request.patient_id,
+        "patient_name": patient.get("name") if patient else "Unknown",
         "doctor_id": current_user.get("user_id"),
         "hospital_id": current_user.get("hospital_id"),
         "type": "nlp_analysis",

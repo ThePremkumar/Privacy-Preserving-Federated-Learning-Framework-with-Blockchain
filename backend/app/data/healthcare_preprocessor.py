@@ -512,15 +512,27 @@ class HealthcareDataProcessor:
         """
         Split data and create train/val/test DataLoaders.
         """
+        # Safety check for stratification: ensure all classes in y have at least 2 members
+        class_counts = pd.Series(y).value_counts()
+        can_stratify = (class_counts >= 2).all() and len(y) > num_classes
+        if not can_stratify:
+            logger.warning("Disabling stratification due to insufficient samples in some classes.")
+
         # First split: train+val  vs  test
         X_trainval, X_test, y_trainval, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=42, stratify=y
+            X, y, test_size=test_size, random_state=42, stratify=y if can_stratify else None
         )
 
         # Second split: train  vs  val
         relative_val = val_size / (1 - test_size)
+        
+        # Check if we can still stratify the trainval set
+        class_counts_tv = pd.Series(y_trainval).value_counts()
+        can_stratify_tv = (class_counts_tv >= 2).all() and len(y_trainval) > num_classes
+        
         X_train, X_val, y_train, y_val = train_test_split(
-            X_trainval, y_trainval, test_size=relative_val, random_state=42, stratify=y_trainval
+            X_trainval, y_trainval, test_size=relative_val, random_state=42, 
+            stratify=y_trainval if can_stratify_tv else None
         )
 
         def _make_loader(X_np, y_np, shuffle):

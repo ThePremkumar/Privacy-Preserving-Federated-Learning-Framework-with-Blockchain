@@ -33,21 +33,27 @@ export default function NetworkMapPage() {
       try {
         const res = await api.get('/admin/hospitals');
         // Map backend hospital data to HospitalNode interface
-        const mappedNodes: HospitalNode[] = res.data.map((h: any) => ({
-          id: h.id,
-          name: h.name,
-          city: h.city,
-          state: h.state,
-          lat: h.lat || 20.5937 + (Math.random() * 10 - 5), // Fallback to random if no lat
-          lng: h.lng || 78.9629 + (Math.random() * 10 - 5), // Fallback to random if no lng
-          status: 'active', // Mock status for now, could be dynamic
-          lastSeen: 'Live',
-          trainingJobs: 0,
-          approvedJobs: 0,
-          privacyBudgetUsed: 0,
-          contributionScore: 75,
-          isActive: true
-        }));
+        const mappedNodes: HospitalNode[] = res.data.map((h: any) => {
+          // Add a tiny random jitter to prevent overlapping
+          const jitterLat = (Math.random() - 0.5) * 0.005;
+          const jitterLng = (Math.random() - 0.5) * 0.005;
+          
+          return {
+            id: h.id,
+            name: h.name,
+            city: h.city,
+            state: h.state,
+            lat: (h.lat || 20.5937 + (Math.random() * 10 - 5)) + jitterLat,
+            lng: (h.lng || 78.9629 + (Math.random() * 10 - 5)) + jitterLng,
+            status: h.status || 'active',
+            lastSeen: 'Live',
+            trainingJobs: h.training_jobs || 0,
+            approvedJobs: h.approved_jobs || 0,
+            privacyBudgetUsed: h.privacy_budget_used || 0,
+            contributionScore: h.contribution_score || 0,
+            isActive: true
+          };
+        });
         setNodes(mappedNodes);
       } catch (err) { 
         console.error('Failed to fetch hospital nodes:', err); 

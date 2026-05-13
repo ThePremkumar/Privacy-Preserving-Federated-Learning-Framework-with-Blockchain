@@ -22,6 +22,7 @@ import uuid
 import numpy as np
 import ast
 import os
+import pandas as pd
 
 from app.core.dependencies import get_current_user, require_role
 from app.core.database import SessionLocal
@@ -192,16 +193,20 @@ async def analyze_csv(
             readiness_checks["info"].append(f"High volume dataset ({row_count} records). Estimated training time: {int(est_time)}s.")
 
         # CHECK 2: Column presence
-        target_detected = any(c['is_target'] for c in report.values())
+        target_detected = any(c.get('role') == 'target' for c in report.values())
         if not target_detected:
             readiness_checks["warnings"].append("No recognizable target column found. Verify your dataset contains a diagnosis or outcome column before training.")
         
-        feature_count = sum(1 for c in report.values() if not c['is_target'] and c['type'] != 'id')
+        feature_count = sum(1 for c in report.values() if c.get('role') not in ('target', 'drop') and c.get('role') != 'id')
         if feature_count < 5:
             readiness_checks["warnings"].append(f"Only {feature_count} features detected. Model may have insufficient signal.")
 
         # CHECK 3: Filename vs content consistency
-        node_slug = (hospital.short_name or hospital.name.split()[0]).lower().replace(" ", "") if 'hospital' in locals() else "unknown"
+        _hosp_obj = db.query(Hospital).filter(Hospital.id == upload.hospital_id).first()
+        if _hosp_obj:
+            node_slug = (_hosp_obj.short_name or _hosp_obj.name.split()[0]).lower().replace(" ", "")
+        else:
+            node_slug = "unknown"
         filename_slug = upload.filename.lower().split('_')[0] if '_' in upload.filename else ""
         if filename_slug and filename_slug != node_slug:
             readiness_checks["warnings"].append(f"Warning: Filename prefix '{filename_slug}' mismatch with node '{node_slug}'.")
@@ -326,7 +331,7 @@ async def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_
         model = HealthcareMLP(
             input_dim=processor.num_features,
             num_classes=processor.num_classes,
-            hidden_dims=[256, 128, 64, 32],
+            hidden_dims=[512, 256, 128, 64],
             dropout=0.3,
         )
         param_count = sum(p.numel() for p in model.parameters())
@@ -388,7 +393,7 @@ async def run_training_task(job_id: str, upload_id: str, hospital_id: str, user_
             },
             "model": {
                 "architecture": "HealthcareMLP",
-                "hidden_dims": [256, 128, 64, 32],
+                "hidden_dims": [512, 256, 128, 64],
                 "parameter_count": param_count,
                 "dropout": 0.3,
             },
@@ -647,9 +652,11 @@ async def run_org_training_task(job_id: str, hospital_id: str, user_id: str, bat
         patients = [p for p in patients if p.get("status", "active") != "deleted"]
         
         num_samples = len(patients)
-        if num_samples < 10: # Minimum samples for training
+        logger.info(f"Retrieved {num_samples} patients for hospital {hospital_id}")
+        
+        if num_samples < 5: # Reduced minimum for easier development
             job.status = "failed"
-            job.review_notes = f"Insufficient data: only {num_samples} records found for this scope (minimum 10 required)."
+            job.review_notes = f"Insufficient data: only {num_samples} records found for this scope (minimum 5 required)."
             db.commit()
             return
 
@@ -957,39 +964,81 @@ async def aggregate_models(
                 detail=f"Jobs {not_approved} are not in 'approved' status.",
             )
 
-        # ── FedAvg aggregation (Corrected Location 3) ──
-        total_samples = sum(j.num_samples for j in jobs)
-        if total_samples == 0:
-            total_samples = 1
+        # ── FedAvg aggregation ──────────────────────────────────────────────
+        # Group jobs by weight architecture (input shape of first layer).
+        # When datasets have different feature counts, the first-layer weight
+        # shape differs.  We aggregate only within shape-compatible groups and
+        # use the group with the most total samples as the new global model.
+        from collections import defaultdict
 
-        aggregated_weights = {}
-        
+        def _weight_signature(weights_obj):
+            """Return a hashable key representing the weight shapes."""
+            if isinstance(weights_obj, dict):
+                return tuple(np.array(v).shape for v in list(weights_obj.values())[:3])
+            else:
+                return tuple(np.array(v).shape for v in list(weights_obj)[:3])
+
+        # Parse all job weights up front
+        job_weights_map = {}  # job.id -> parsed weights
+        job_sig_map = {}      # job.id -> signature
         for job in jobs:
-            weights = json.loads(job.model_weights)
-            fraction = (job.num_samples or 1) / total_samples
-            
-            # Unwrap and convert all values to numpy arrays
-            for key, val in weights.items() if isinstance(weights, dict) else enumerate(weights):
-                # Handle cases where weights might be a list or a dict
+            try:
+                w = json.loads(job.model_weights)
+                job_weights_map[job.id] = w
+                job_sig_map[job.id] = _weight_signature(w)
+            except Exception as e:
+                logger.warning(f"Could not parse weights for job {job.id}: {e}")
+
+        # Find the dominant group (most total samples)
+        sig_samples = defaultdict(int)
+        for job in jobs:
+            if job.id in job_sig_map:
+                sig_samples[job_sig_map[job.id]] += (job.num_samples or 1)
+
+        if not sig_samples:
+            raise HTTPException(status_code=500, detail="No valid weights found in approved jobs.")
+
+        dominant_sig = max(sig_samples, key=lambda s: sig_samples[s])
+        compatible_jobs = [j for j in jobs if job_sig_map.get(j.id) == dominant_sig]
+        skipped = len(jobs) - len(compatible_jobs)
+        if skipped:
+            logger.warning(
+                f"Skipping {skipped} job(s) with incompatible weight shapes. "
+                f"Dominant shape: {dominant_sig}"
+            )
+
+        # FedAvg over compatible jobs only
+        compat_total_samples = sum(j.num_samples or 1 for j in compatible_jobs)
+        total_samples = sum(j.num_samples or 1 for j in jobs)
+        aggregated_weights = {}
+
+        for job in compatible_jobs:
+            weights = job_weights_map[job.id]
+            fraction = (job.num_samples or 1) / compat_total_samples
+
+            items = weights.items() if isinstance(weights, dict) else enumerate(weights)
+            for key, val in items:
                 if not isinstance(weights, dict):
-                    key = str(key) # convert index to string key for dict aggregation
-                
-                # Defensive unwrap — handle nested dict from bad serialization
+                    key = str(key)
                 if isinstance(val, dict):
                     if 'data' in val:
                         val = val['data']
-                    elif 'weight' in val: # fallback
+                    elif 'weight' in val:
                         val = val['weight']
-                
+
                 arr = np.array(val, dtype=np.float32)
-                
+
                 if key not in aggregated_weights:
                     aggregated_weights[key] = fraction * arr
                 else:
-                    # Pad if needed (unlikely with this structure but safe)
                     if aggregated_weights[key].shape != arr.shape:
-                        logger.warning(f"Shape mismatch for {key}: {aggregated_weights[key].shape} vs {arr.shape}")
+                        logger.warning(
+                            f"Shape mismatch for {key}: "
+                            f"{aggregated_weights[key].shape} vs {arr.shape} — skipping"
+                        )
+                        continue
                     aggregated_weights[key] += fraction * arr
+
 
         # Global weights as list for storage
         global_weights_list = {k: v.tolist() for k, v in aggregated_weights.items()}
@@ -1371,34 +1420,106 @@ async def verify_blockchain_status(
         db.close()
 
 
-# ===========================================================================
-# Admin / Super Admin: aggregation history
-# ===========================================================================
-
-@router.get("/aggregation-history")
-async def get_aggregation_history(
-    current_user: Dict[str, Any] = Depends(require_role(["super_admin", "admin"])),
+@router.post("/aggregation-rounds/{round_id}/rollback")
+async def rollback_to_round(
+    round_id: str,
+    current_user: Dict[str, Any] = Depends(require_role(["super_admin"])),
 ):
-    """Get all aggregation rounds."""
+    """
+    Roll back the global model to a previous aggregation round.
+    Loads the stored weights file for that round version and marks it
+    as the active model by creating a new AggregationRound record that
+    mirrors the target round's weights & metrics.
+    """
     db = SessionLocal()
     try:
-        rounds = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).all()
-        return [
-            {
-                "id": r.id,
-                "round_number": r.round_number,
-                "status": r.status,
-                "participating_hospitals": r.participating_hospitals.split(",") if r.participating_hospitals else [],
-                "total_samples": r.total_samples,
-                "global_accuracy": r.global_accuracy,
-                "global_loss": r.global_loss,
-                "global_weights_hash": r.global_weights_hash,
-                "blockchain_tx_hash": r.blockchain_tx_hash,
-                "epsilon_total": r.epsilon_total,
-                "created_at": r.created_at.isoformat() if r.created_at else "",
+        target = db.query(AggregationRound).filter(AggregationRound.id == round_id).first()
+        if not target:
+            raise HTTPException(status_code=404, detail="Aggregation round not found.")
+
+        # Verify the model file exists
+        model_path = os.path.join("data", "models", f"global_model_v{target.global_model_version}.json")
+        if not os.path.exists(model_path):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Model file for version {target.global_model_version} not found on disk. "
+                       f"Cannot roll back — the weights file may have been deleted."
+            )
+
+        # Determine next round/version numbers
+        last_round = db.query(AggregationRound).order_by(AggregationRound.round_number.desc()).first()
+        new_round_number = (last_round.round_number + 1) if last_round else 1
+        new_version = (last_round.global_model_version + 1) if last_round else 1
+
+        # Copy the model file under the new version number
+        new_model_path = os.path.join("data", "models", f"global_model_v{new_version}.json")
+        import shutil
+        shutil.copy2(model_path, new_model_path)
+
+        # Compute a fresh blockchain tx hash
+        rb_tx_hash = f"0x{hashlib.sha256(f'rollback_{round_id}_{datetime.utcnow().isoformat()}'.encode()).hexdigest()}"
+
+        # Create a rollback aggregation record
+        start_ts = datetime.utcnow()
+        rb_round = AggregationRound(
+            id=str(uuid.uuid4()),
+            round_number=new_round_number,
+            global_model_version=new_version,
+            initiated_by=current_user.get("user_id", "unknown"),
+            status="completed",
+            contributing_jobs=target.contributing_jobs,
+            contributing_nodes=target.contributing_nodes,
+            node_weights=target.node_weights,
+            total_samples=target.total_samples,
+            global_accuracy=target.global_accuracy,
+            global_loss=target.global_loss,
+            global_weights_hash=target.global_weights_hash,
+            blockchain_tx_hash=rb_tx_hash,
+            blockchain_status="confirmed",
+            privacy_epsilon=target.privacy_epsilon,
+            epsilon_total=target.epsilon_total,
+            notes=f"Rollback to Round #{target.round_number} (v{target.global_model_version}) by {current_user.get('username', 'superadmin')}",
+            started_at=start_ts,
+            completed_at=datetime.utcnow(),
+        )
+        rb_round.duration_seconds = int((rb_round.completed_at - rb_round.started_at).total_seconds())
+        db.add(rb_round)
+        db.commit()
+
+        # Audit log
+        from app.core.db_models import AuditLog
+        db.add(AuditLog(
+            user_id=current_user.get("user_id"),
+            action="model_rollback",
+            resource=f"round:{round_id}",
+            details={
+                "rolled_back_to_round": target.round_number,
+                "new_round": new_round_number,
+                "model_version": new_version,
             }
-            for r in rounds
-        ]
+        ))
+        db.commit()
+
+        logger.info(
+            f"Global model rolled back to Round #{target.round_number} "
+            f"(v{target.global_model_version}) by {current_user.get('username')}. "
+            f"New round: #{new_round_number}, new version: v{new_version}"
+        )
+
+        return {
+            "message": f"Global model successfully rolled back to Round #{target.round_number}.",
+            "new_round_number": new_round_number,
+            "new_model_version": new_version,
+            "rolled_back_to_round": target.round_number,
+            "accuracy": target.global_accuracy,
+            "blockchain_tx_hash": rb_tx_hash,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"rollback error: {exc}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))
     finally:
         db.close()
 
@@ -1429,25 +1550,22 @@ def _job_to_response(job: TrainingJob) -> TrainingJobResponse:
     )
 
 
-def _reconstruct_dataframe(db, upload_id: str, upload: DatasetUpload) -> "pd.DataFrame":
+def _reconstruct_dataframe(db, upload_id: str, upload: DatasetUpload) -> pd.DataFrame:
     """
     Re-build a pandas DataFrame from stored DatasetRecord rows.
     Falls back to loading the CSV directly from disk if available.
-    Uses CSV caching to avoid repeated DB reconstruction.
+    Uses parquet caching to avoid repeated DB reconstruction on subsequent runs.
     """
-    import pandas as pd
-    import os
-
-    # Speed Check 1: Check for local cache to avoid DB bottleneck
+    # ── Speed path: parquet cache ─────────────────────────────────────────
     cache_path = os.path.join("data", "exports", f"training_cache_{upload_id}.parquet")
     if os.path.exists(cache_path):
-        logger.info(f"Speed Optimization: Loading from cache {cache_path}")
+        logger.info(f"Cache hit: loading from {cache_path}")
         try:
             return pd.read_parquet(cache_path)
         except Exception as e:
-            logger.warning(f"Parquet cache read failed: {e}. Falling back to DB.")
+            logger.warning(f"Parquet cache read failed ({e}). Falling back to DB.")
 
-    # Try to reconstruct from DB records
+    # ── Reconstruct from DatasetRecord rows ───────────────────────────────
     records = (
         db.query(DatasetRecord)
         .filter(DatasetRecord.upload_id == upload_id)
@@ -1456,39 +1574,46 @@ def _reconstruct_dataframe(db, upload_id: str, upload: DatasetUpload) -> "pd.Dat
     )
 
     if records:
-        try:
-            # Batch process records for speed
-            import json
-            rows = []
-            for rec in records:
-                # Use a more efficient check
-                d = rec.data
-                if d.startswith('{'):
-                    rows.append(json.loads(d.replace("'", '"')))
-                else:
-                    rows.append(ast.literal_eval(d))
-            
-            if rows:
-                df = pd.DataFrame(rows)
-                logger.info(f"Reconstructed {len(df)} rows from DB records for upload {upload_id}")
-                
-                # Speed Check 1: Save to cache for subsequent jobs
+        rows = []
+        failed = 0
+        for rec in records:
+            try:
+                # ast.literal_eval is safe and handles all Python dict reprs
+                # including values with apostrophes (unlike json.loads after replace)
+                rows.append(ast.literal_eval(rec.data))
+            except Exception:
+                try:
+                    rows.append(json.loads(rec.data))
+                except Exception:
+                    failed += 1
+
+        if failed:
+            logger.warning(f"{failed}/{len(records)} rows failed to parse for upload {upload_id}")
+
+        if rows:
+            df = pd.DataFrame(rows)
+            logger.info(f"Reconstructed {len(df)} rows from DB records for upload {upload_id}")
+            # Cache for next time
+            try:
                 os.makedirs(os.path.dirname(cache_path), exist_ok=True)
                 df.to_parquet(cache_path, index=False)
-                logger.info(f"Speed Optimization: Saved dataset to cache {cache_path}")
-                
-                return df
-        except Exception as e:
-            logger.warning(f"DB reconstruction failed, falling back to CSV: {e}")
+                logger.info(f"Saved dataset cache to {cache_path}")
+            except Exception as cache_err:
+                logger.warning(f"Could not save parquet cache: {cache_err}")
+            return df
+        logger.warning(f"No parseable rows for upload {upload_id} — falling back to CSV.")
 
-    # Fallback: load CSV from disk
-    csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "healthcare_dataset.csv")
+    # ── Disk fallback: healthcare_dataset.csv ────────────────────────────
+    csv_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "data", "healthcare_dataset.csv"
+    )
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
-        logger.info(f"Loaded {len(df)} rows from CSV file: {csv_path}")
+        logger.info(f"Fallback: loaded {len(df)} rows from {csv_path}")
         return df
 
-    raise ValueError(f"Could not reconstruct data for upload {upload_id}")
+    raise ValueError(f"Could not reconstruct data for upload {upload_id}: no DB records, cache, or fallback CSV found.")
 
 
 def _flatten_nested(lst) -> list:

@@ -11,5 +11,4695 @@
             "risk_score": 2.5,
             "confidence": 94.2
         }
+    },
+    "dcb666ad-c458-4b38-9551-72db48edbb3e": {
+        "patient_id": "dec23289-44b9-4354-b9f7-c7e4e7f76e51",
+        "patient_name": "Kamraj Nadar",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "ai_prediction",
+        "timestamp": "2026-05-13T11:44:40.020890",
+        "results": {
+            "prediction": "General Health Review",
+            "risk_score": 3.0,
+            "confidence": 85.0,
+            "model_type": "Global Federated Model (v2.1)",
+            "features_used": [
+                "age",
+                "gender",
+                "bp_systolic",
+                "bp_diastolic",
+                "sugar",
+                "heart_rate",
+                "temp",
+                "history"
+            ]
+        },
+        "_id": "dcb666ad-c458-4b38-9551-72db48edbb3e",
+        "created_at": "2026-05-13T11:44:40.020890"
+    },
+    "e1296036-8138-4139-a118-5c297820d011": {
+        "patient_id": "30bf6970-ace0-46a9-8a10-6ae15f64947f",
+        "patient_name": "Chitra R.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "ai_prediction",
+        "timestamp": "2026-05-13T11:44:48.244459",
+        "results": {
+            "prediction": "General Health Review",
+            "risk_score": 3.0,
+            "confidence": 85.0,
+            "model_type": "Global Federated Model (v2.1)",
+            "features_used": [
+                "age",
+                "gender",
+                "bp_systolic",
+                "bp_diastolic",
+                "sugar",
+                "heart_rate",
+                "temp",
+                "history"
+            ]
+        },
+        "_id": "e1296036-8138-4139-a118-5c297820d011",
+        "created_at": "2026-05-13T11:44:48.244459"
+    },
+    "921e8b73-ca8c-43e2-99b6-9d617518ff8c": {
+        "patient_id": "eaf8888f-25f0-4d82-b4c4-f7efeccc6bd2",
+        "patient_name": "Indira J.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "ai_prediction",
+        "timestamp": "2026-05-13T11:46:03.256204",
+        "results": {
+            "prediction": "General Health Review",
+            "risk_score": 3.0,
+            "confidence": 85.0,
+            "model_type": "Global Federated Model (v2.1)",
+            "features_used": [
+                "age",
+                "gender",
+                "bp_systolic",
+                "bp_diastolic",
+                "sugar",
+                "heart_rate",
+                "temp",
+                "history"
+            ]
+        },
+        "_id": "921e8b73-ca8c-43e2-99b6-9d617518ff8c",
+        "created_at": "2026-05-13T11:46:03.256204"
+    },
+    "dafd611e-1f56-4e37-9233-263d057c4db2": {
+        "patient_id": "1b7a6ca4-5a2c-494b-8dc7-a0be18526ad5",
+        "patient_name": "Shanthi B.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "ai_prediction",
+        "timestamp": "2026-05-13T11:47:44.453129",
+        "results": {
+            "prediction": "General Health Review",
+            "risk_score": 3.0,
+            "confidence": 85.0,
+            "model_type": "Global Federated Model (v2.1)",
+            "features_used": [
+                "age",
+                "gender",
+                "bp_systolic",
+                "bp_diastolic",
+                "sugar",
+                "heart_rate",
+                "temp",
+                "history"
+            ]
+        },
+        "_id": "dafd611e-1f56-4e37-9233-263d057c4db2",
+        "created_at": "2026-05-13T11:47:44.454127"
+    },
+    "1d11bae7-d58f-4e1e-a96b-583b357aa105": {
+        "patient_id": "48c64e8f-45a3-4cc3-b27b-2a10ae46b054",
+        "patient_name": "Rajesh B.",
+        "doctor_id": "76cde811-4251-44bd-b666-252c41217134",
+        "hospital_id": "hosp_himsr",
+        "type": "ai_prediction",
+        "timestamp": "2026-05-13T12:15:43.359191",
+        "results": {
+            "prediction": "Hypertension",
+            "risk_score": 1.38,
+            "confidence": 18.6,
+            "model_type": "Global Federated Model (v2.1)",
+            "features_used": [
+                "age",
+                "gender",
+                "bp_systolic",
+                "bp_diastolic",
+                "sugar",
+                "heart_rate",
+                "temp",
+                "history"
+            ]
+        },
+        "_id": "1d11bae7-d58f-4e1e-a96b-583b357aa105",
+        "created_at": "2026-05-13T12:15:43.359191"
+    },
+    "575a26de-7d7d-4e6c-b88b-47d3bf6a1f6c": {
+        "_id": "575a26de-7d7d-4e6c-b88b-47d3bf6a1f6c",
+        "patient_id": "7b4ca645-684b-4973-9822-dae64c4868a6",
+        "patient_name": "Prem Kumar",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Prem Kumar: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "fcad479e-74d9-4165-806e-7dfcb4726a9a": {
+        "_id": "fcad479e-74d9-4165-806e-7dfcb4726a9a",
+        "patient_id": "d701bffc-9155-4b98-b6bf-5c9d57526420",
+        "patient_name": "Muthuvel Karunanidhi",
+        "doctor_id": "dae0718e-1bd3-4f36-af39-c1f7c1b9a284",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T22:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Muthuvel Karunanidhi: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "52ccfaa4-e303-46c1-b7e7-957e23ba54e9": {
+        "_id": "52ccfaa4-e303-46c1-b7e7-957e23ba54e9",
+        "patient_id": "1a74f6a8-3628-4c35-99df-8a137cfdcd86",
+        "patient_name": "Selvi Jayalalithaa",
+        "doctor_id": "55126ab3-0cd4-4170-96b6-207745ec6cbf",
+        "hospital_id": "hosp_apollo",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Selvi Jayalalithaa: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "f2c34848-dcf7-4fa0-b7f2-a8be8cb8936c": {
+        "_id": "f2c34848-dcf7-4fa0-b7f2-a8be8cb8936c",
+        "patient_id": "177c1d5e-d14b-460c-b46e-ac093255ea66",
+        "patient_name": "Ramasamy Periyar",
+        "doctor_id": "c9e631be-e173-4378-bf14-646f65c965c8",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T21:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Ramasamy Periyar: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "47d4f8b2-4f0e-4e80-b400-434ebfe7e449": {
+        "_id": "47d4f8b2-4f0e-4e80-b400-434ebfe7e449",
+        "patient_id": "dec23289-44b9-4354-b9f7-c7e4e7f76e51",
+        "patient_name": "Kamraj Nadar",
+        "doctor_id": "c97f0522-5095-4bef-98e4-6fc645a27429",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Kamraj Nadar: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "c29bbfef-40c9-4872-99e5-28ae6d99de49": {
+        "_id": "c29bbfef-40c9-4872-99e5-28ae6d99de49",
+        "patient_id": "28eef2c9-c117-4f36-bb01-41037e30fd0a",
+        "patient_name": "Anbazhagan K.",
+        "doctor_id": "d4f5e51e-310c-4719-a813-8e8344243fa6",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T13:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Anbazhagan K.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "f93bb093-8a96-487a-88a4-468caf493942": {
+        "_id": "f93bb093-8a96-487a-88a4-468caf493942",
+        "patient_id": "a4c6613f-8f32-4899-a67e-57a776df861d",
+        "patient_name": "Senthamizhan Seeman",
+        "doctor_id": "6afb500e-2a03-4da2-98e3-7a46f45c9168",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T19:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Senthamizhan Seeman: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "099b7e9c-d9b0-4093-874c-15d84b86627f": {
+        "_id": "099b7e9c-d9b0-4093-874c-15d84b86627f",
+        "patient_id": "fdfa2286-caad-454b-af91-f879dc6c9502",
+        "patient_name": "Chitra S.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T13:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Chitra S.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "e28447b3-e466-4704-aa6d-bf0f653405b3": {
+        "_id": "e28447b3-e466-4704-aa6d-bf0f653405b3",
+        "patient_id": "48c64e8f-45a3-4cc3-b27b-2a10ae46b054",
+        "patient_name": "Rajesh B.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T04:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Rajesh B.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "246362c9-5e6b-4aa0-ad57-88c817daf632": {
+        "_id": "246362c9-5e6b-4aa0-ad57-88c817daf632",
+        "patient_id": "ec2c1d40-50fb-4159-b2fd-e7db5ff99f54",
+        "patient_name": "Karthik L.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik L.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "5032aba3-3fe7-4c2a-8527-040ef50b126c": {
+        "_id": "5032aba3-3fe7-4c2a-8527-040ef50b126c",
+        "patient_id": "1e4417fa-7f66-4df7-b8df-02ea76bb3495",
+        "patient_name": "Vijay S.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T11:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Vijay S.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "a933090a-cf93-4c7a-8213-132cf830c148": {
+        "_id": "a933090a-cf93-4c7a-8213-132cf830c148",
+        "patient_id": "1fc53421-c6ac-43d5-ba6b-a554c28ca42b",
+        "patient_name": "Balaji L.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T07:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Balaji L.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "60afabcf-52a2-4660-ad4f-66ed5dab0404": {
+        "_id": "60afabcf-52a2-4660-ad4f-66ed5dab0404",
+        "patient_id": "f649add4-4348-483a-b27b-14c35ae1cc16",
+        "patient_name": "Saritha C.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T17:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Saritha C.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "54779c4c-f113-4a96-9788-bb946e6ab2f0": {
+        "_id": "54779c4c-f113-4a96-9788-bb946e6ab2f0",
+        "patient_id": "235cc908-1f1a-47af-910c-4317292efa4b",
+        "patient_name": "Yamuna K.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Yamuna K.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "38b33986-9dec-4bc2-8294-d4cd7e5a2876": {
+        "_id": "38b33986-9dec-4bc2-8294-d4cd7e5a2876",
+        "patient_id": "30bf6970-ace0-46a9-8a10-6ae15f64947f",
+        "patient_name": "Chitra R.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T14:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Chitra R.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "5a15547f-10a4-4724-b384-5349577d9276": {
+        "_id": "5a15547f-10a4-4724-b384-5349577d9276",
+        "patient_id": "eaf8888f-25f0-4d82-b4c4-f7efeccc6bd2",
+        "patient_name": "Indira J.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Indira J.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "6c5f5e5f-3e65-4237-acd4-f3adcbae50bb": {
+        "_id": "6c5f5e5f-3e65-4237-acd4-f3adcbae50bb",
+        "patient_id": "1b7a6ca4-5a2c-494b-8dc7-a0be18526ad5",
+        "patient_name": "Shanthi B.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Shanthi B.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "73ed3355-ebd7-4925-b8ac-72cc5f3d090d": {
+        "_id": "73ed3355-ebd7-4925-b8ac-72cc5f3d090d",
+        "patient_id": "77f3a466-0177-46ce-92be-43a952854e20",
+        "patient_name": "Saritha T.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Saritha T.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "d5f527e5-1383-41a6-8bee-b84f255123a2": {
+        "_id": "d5f527e5-1383-41a6-8bee-b84f255123a2",
+        "patient_id": "6435448a-0105-4309-a23c-4d0d06e41d80",
+        "patient_name": "Latha J.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T22:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Latha J.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "a7ccd38b-bc81-465b-bd81-0a108dd2fdfb": {
+        "_id": "a7ccd38b-bc81-465b-bd81-0a108dd2fdfb",
+        "patient_id": "646d31ec-4e92-4491-9b7c-44a77a5fd58e",
+        "patient_name": "Vignesh K.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T19:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Vignesh K.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "b357a92e-a215-4b34-a20a-82f42fb1e804": {
+        "_id": "b357a92e-a215-4b34-a20a-82f42fb1e804",
+        "patient_id": "a8102c0d-4bba-47cc-ac8a-4b34b1634f5e",
+        "patient_name": "Dinesh K.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Dinesh K.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "97d7320a-f4f1-455c-90ff-4f8ce4c4a24a": {
+        "_id": "97d7320a-f4f1-455c-90ff-4f8ce4c4a24a",
+        "patient_id": "d02c56fe-16ca-4287-8982-6decf0892b83",
+        "patient_name": "Kavita S.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T05:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Kavita S.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "f70c0fef-9bfc-46d5-b19c-e2042ee03ea9": {
+        "_id": "f70c0fef-9bfc-46d5-b19c-e2042ee03ea9",
+        "patient_id": "c333cb39-bec1-4384-9990-0c8651bf75bf",
+        "patient_name": "Karthik P.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik P.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "ef01e20c-0653-40a2-a509-e942fc98d214": {
+        "_id": "ef01e20c-0653-40a2-a509-e942fc98d214",
+        "patient_id": "cd5f3026-6d07-45da-a098-ded9f749e9a5",
+        "patient_name": "Vignesh G.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T20:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Vignesh G.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "19ae7938-742b-4eb9-9ccc-4f44cfa37db5": {
+        "_id": "19ae7938-742b-4eb9-9ccc-4f44cfa37db5",
+        "patient_id": "046ceb07-cb78-468a-ac45-ae9ea6e36e34",
+        "patient_name": "Indira A.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T07:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Indira A.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "069e5975-0e67-4c8f-9b27-34d22c31dd05": {
+        "_id": "069e5975-0e67-4c8f-9b27-34d22c31dd05",
+        "patient_id": "2c466a8e-f902-40b5-bc22-fbe2b7b0d18a",
+        "patient_name": "Senthil L.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T07:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Senthil L.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "129ea621-e1d6-4a51-a7f4-030e2b38b27d": {
+        "_id": "129ea621-e1d6-4a51-a7f4-030e2b38b27d",
+        "patient_id": "2e97c765-c8b9-4138-8ff7-7217ab06c7f4",
+        "patient_name": "Manikandan B.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Manikandan B.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "f6db7481-9c28-4cd3-9b7d-f4d99d2e92fd": {
+        "_id": "f6db7481-9c28-4cd3-9b7d-f4d99d2e92fd",
+        "patient_id": "3d429324-5fc5-41e9-9bd0-96d110dd9a59",
+        "patient_name": "Murali N.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T13:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Murali N.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "eee4fbbe-0740-4be8-a0bb-56b3124605d9": {
+        "_id": "eee4fbbe-0740-4be8-a0bb-56b3124605d9",
+        "patient_id": "e3724c52-169d-4886-8874-87d3715bf571",
+        "patient_name": "Indira K.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Indira K.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "d54ee0da-4575-4a05-9ec1-7caf44856b94": {
+        "_id": "d54ee0da-4575-4a05-9ec1-7caf44856b94",
+        "patient_id": "9096bd39-a244-4530-9656-5cef3511b382",
+        "patient_name": "Suresh M.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Suresh M.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "dd41a48f-b039-40f2-a470-2135fdbd49a8": {
+        "_id": "dd41a48f-b039-40f2-a470-2135fdbd49a8",
+        "patient_id": "d0ae77d0-f339-46a5-8175-ad4b75364d7f",
+        "patient_name": "Arun G.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T20:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Arun G.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "d7f03a1d-d70c-4092-970c-0a12141e8215": {
+        "_id": "d7f03a1d-d70c-4092-970c-0a12141e8215",
+        "patient_id": "9e43434b-5729-4cff-8ead-443d46394aed",
+        "patient_name": "Hema J.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T02:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Hema J.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "adf480dd-5a3c-42e7-8f83-b1cfa63e61a4": {
+        "_id": "adf480dd-5a3c-42e7-8f83-b1cfa63e61a4",
+        "patient_id": "68580a31-6aaf-4e3b-af71-f6fe13f776ab",
+        "patient_name": "Balaji M.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Balaji M.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "ae846ecc-f7df-4ccb-a4c0-bbccbc086025": {
+        "_id": "ae846ecc-f7df-4ccb-a4c0-bbccbc086025",
+        "patient_id": "52fe14a5-60ee-427d-b05c-e445d32e8070",
+        "patient_name": "Latha B.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T05:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Latha B.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "53de50bc-7b6c-474c-956f-ca4499be900c": {
+        "_id": "53de50bc-7b6c-474c-956f-ca4499be900c",
+        "patient_id": "79d2f6ec-959a-4431-abec-25eac96aec89",
+        "patient_name": "Anjali M.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T04:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Anjali M.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "d6a0aa07-d33c-473c-be2b-7025d35761d0": {
+        "_id": "d6a0aa07-d33c-473c-be2b-7025d35761d0",
+        "patient_id": "c128ab83-206e-4f5a-82e8-92cb3570c761",
+        "patient_name": "Suresh J.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T01:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Suresh J.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "1a7cfc28-48ea-454b-a2e5-041690cafefb": {
+        "_id": "1a7cfc28-48ea-454b-a2e5-041690cafefb",
+        "patient_id": "d146e17e-196f-4bd1-bfd3-20a6868dbfc6",
+        "patient_name": "Arun B.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T01:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Arun B.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "8041ce1e-43e6-4d68-97c7-8d44bdb27398": {
+        "_id": "8041ce1e-43e6-4d68-97c7-8d44bdb27398",
+        "patient_id": "3f9d600e-d686-4cb1-a3a4-b3627180b75a",
+        "patient_name": "Rajesh A.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T06:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Rajesh A.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "65fa8e79-10b3-4a59-8900-9f8395c87d72": {
+        "_id": "65fa8e79-10b3-4a59-8900-9f8395c87d72",
+        "patient_id": "62bf64d1-2bab-46a4-86a6-2a39b70d7e23",
+        "patient_name": "Latha L.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T22:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Latha L.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "9c56c886-7076-46b4-ba97-71623ad9c8cf": {
+        "_id": "9c56c886-7076-46b4-ba97-71623ad9c8cf",
+        "patient_id": "6201105f-3aff-4cdb-b13f-e878acf42575",
+        "patient_name": "Eshwari S.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Eshwari S.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "fb94482e-3432-423e-ae98-f752cd81c9c5": {
+        "_id": "fb94482e-3432-423e-ae98-f752cd81c9c5",
+        "patient_id": "42fc070f-db36-4549-808c-8fac3d396cb1",
+        "patient_name": "Ganesh W.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T05:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Ganesh W.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "f6e26ab7-d81a-420e-be2f-05c5b1548acd": {
+        "_id": "f6e26ab7-d81a-420e-be2f-05c5b1548acd",
+        "patient_id": "d69386b4-51e7-4e50-9624-fa4518fc3af0",
+        "patient_name": "Yamuna J.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T06:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Yamuna J.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "7be6d2e7-82e3-40cb-bfc7-175e3569814f": {
+        "_id": "7be6d2e7-82e3-40cb-bfc7-175e3569814f",
+        "patient_id": "69e54665-7f5e-4b41-8c86-efc467da08ca",
+        "patient_name": "Chitra S.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Chitra S.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "aae34499-bc91-40bc-9a01-479f6ef2e271": {
+        "_id": "aae34499-bc91-40bc-9a01-479f6ef2e271",
+        "patient_id": "06cb43df-962a-4c5c-8b27-6314c393dae3",
+        "patient_name": "Manikandan S.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T15:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Manikandan S.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "edb96437-eede-4311-86ef-dbe94fb50ca8": {
+        "_id": "edb96437-eede-4311-86ef-dbe94fb50ca8",
+        "patient_id": "88cdb951-8e7c-4fd2-99d7-fd2543067d7e",
+        "patient_name": "Anjali N.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali N.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "0b3cec2a-bc63-4782-bdb4-ac0207f95ffd": {
+        "_id": "0b3cec2a-bc63-4782-bdb4-ac0207f95ffd",
+        "patient_id": "3113504f-67a6-4b4e-87b6-ede3fc9e5c2e",
+        "patient_name": "Priya C.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Priya C.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "0438b615-ce27-48df-8df5-94d53ffcd5fe": {
+        "_id": "0438b615-ce27-48df-8df5-94d53ffcd5fe",
+        "patient_id": "47d46976-0cb7-4a41-9aa4-6610bea04469",
+        "patient_name": "Dinesh T.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Dinesh T.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "46c522a6-980c-402c-94c9-b2486bd671ff": {
+        "_id": "46c522a6-980c-402c-94c9-b2486bd671ff",
+        "patient_id": "7ca3988d-a84f-4e7d-b3a6-39f2a88c5019",
+        "patient_name": "Murali B.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T12:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Murali B.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "437164ae-8588-49f6-8337-6975a55781b8": {
+        "_id": "437164ae-8588-49f6-8337-6975a55781b8",
+        "patient_id": "1b72d5ea-b08b-47f7-a2a2-7e362aee772b",
+        "patient_name": "Velu R.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Velu R.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "ddc79b50-e958-46d9-a0ad-b41ebbdd027b": {
+        "_id": "ddc79b50-e958-46d9-a0ad-b41ebbdd027b",
+        "patient_id": "7f78a753-a230-480a-8457-316cbc82100c",
+        "patient_name": "Karthik L.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik L.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "3a04d80d-afd5-4b8b-abc6-03c85275af94": {
+        "_id": "3a04d80d-afd5-4b8b-abc6-03c85275af94",
+        "patient_id": "781aa94d-ba5e-4282-b402-d05191c1e3d1",
+        "patient_name": "Arun R.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T19:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Arun R.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "beae5d95-517c-46ff-a37e-8b69c4a1bd62": {
+        "_id": "beae5d95-517c-46ff-a37e-8b69c4a1bd62",
+        "patient_id": "a705fdb1-ffe1-471a-bca5-f6af152d9f7d",
+        "patient_name": "Vignesh T.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Vignesh T.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "8aa5d9ac-c3cf-423c-8321-bf7dbc6d375a": {
+        "_id": "8aa5d9ac-c3cf-423c-8321-bf7dbc6d375a",
+        "patient_id": "6892ed45-9f69-44c2-ab5c-45ea29fbdfbe",
+        "patient_name": "Eshwari L.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Eshwari L.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "48430424-7ec8-4eb3-9f77-79101b13e8f5": {
+        "_id": "48430424-7ec8-4eb3-9f77-79101b13e8f5",
+        "patient_id": "b7979dc5-92b7-4203-ac7e-35918371920d",
+        "patient_name": "Nandhini N.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Nandhini N.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "92cc4911-a301-4dd1-990c-1c6d8856308f": {
+        "_id": "92cc4911-a301-4dd1-990c-1c6d8856308f",
+        "patient_id": "68e2b63e-e53b-4da7-a79a-b874cfa8014e",
+        "patient_name": "Murali R.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Murali R.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "9aaf7ef7-6806-4f6f-aaad-5d475cb91a61": {
+        "_id": "9aaf7ef7-6806-4f6f-aaad-5d475cb91a61",
+        "patient_id": "bccaf4c6-9387-4d55-a24d-1c3aa5d40870",
+        "patient_name": "Dinesh A.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Dinesh A.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "b002e8d7-24f0-4e60-be4e-6d6d41850bc1": {
+        "_id": "b002e8d7-24f0-4e60-be4e-6d6d41850bc1",
+        "patient_id": "b812b058-9b0f-437e-8d3d-fa086d47e7a1",
+        "patient_name": "Shanthi T.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T12:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Shanthi T.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "13f76b5a-aeef-4213-91bf-63e23d809003": {
+        "_id": "13f76b5a-aeef-4213-91bf-63e23d809003",
+        "patient_id": "2f878f07-c09b-40cc-8bcb-c68ed2b85b4f",
+        "patient_name": "Rajesh J.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T09:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Rajesh J.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "28d9a3c9-fe8b-450d-9511-6c2522f28065": {
+        "_id": "28d9a3c9-fe8b-450d-9511-6c2522f28065",
+        "patient_id": "e63f0cf6-afa1-4933-85c1-60d79f39fa30",
+        "patient_name": "Dinesh B.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Dinesh B.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "40850b61-7c77-4443-9f98-02479de4748c": {
+        "_id": "40850b61-7c77-4443-9f98-02479de4748c",
+        "patient_id": "f02fa13a-92d4-4637-958b-e0bf0b931556",
+        "patient_name": "Tamilselvan G.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T11:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Tamilselvan G.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "3183b35b-905c-4eaa-b7dd-df70430863fd": {
+        "_id": "3183b35b-905c-4eaa-b7dd-df70430863fd",
+        "patient_id": "42804f64-ccbd-4db8-8bda-7abef63d1530",
+        "patient_name": "Yamuna J.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T11:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Yamuna J.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "710614b3-5af5-4ed3-823f-0f694436b988": {
+        "_id": "710614b3-5af5-4ed3-823f-0f694436b988",
+        "patient_id": "7a9497a8-2848-45f8-9329-1398ea752e17",
+        "patient_name": "Ramesh N.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T16:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Ramesh N.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "f548337c-661d-4dbc-9cef-0c493ee62a24": {
+        "_id": "f548337c-661d-4dbc-9cef-0c493ee62a24",
+        "patient_id": "b1664a8c-4735-4182-9296-3ca9624e7135",
+        "patient_name": "Latha M.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T15:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Latha M.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "ffb30aa1-ae31-4e85-9485-6c3a7ad06c2f": {
+        "_id": "ffb30aa1-ae31-4e85-9485-6c3a7ad06c2f",
+        "patient_id": "623b2fd0-5cf9-4994-9738-d3d73b0ac51b",
+        "patient_name": "Vijay B.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Vijay B.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "e18bfcb0-5516-4b86-8440-eaf05509fe6a": {
+        "_id": "e18bfcb0-5516-4b86-8440-eaf05509fe6a",
+        "patient_id": "3ea3881d-2040-48dd-9be5-80b598c45298",
+        "patient_name": "Priya T.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Priya T.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "eb0d3af8-9e22-43dd-89c2-99bcf9e05328": {
+        "_id": "eb0d3af8-9e22-43dd-89c2-99bcf9e05328",
+        "patient_id": "3b815b7f-eb77-4cac-bce8-eaf25c3a3072",
+        "patient_name": "Yamuna W.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T10:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Yamuna W.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "fce95a62-6c9f-4cc0-86cc-c95a29061ac8": {
+        "_id": "fce95a62-6c9f-4cc0-86cc-c95a29061ac8",
+        "patient_id": "1c773e94-c478-45f4-a210-a89d125bb83b",
+        "patient_name": "Kavita G.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T06:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Kavita G.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "947c1225-05e8-4aeb-b478-21ac2212aa60": {
+        "_id": "947c1225-05e8-4aeb-b478-21ac2212aa60",
+        "patient_id": "2ac88cd0-d0c5-47bc-9860-e13cedc5b139",
+        "patient_name": "Kavita A.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T13:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Kavita A.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "fdc557d8-0305-4e6e-900c-18c53ee8d299": {
+        "_id": "fdc557d8-0305-4e6e-900c-18c53ee8d299",
+        "patient_id": "1237bcc9-e226-415e-81a7-e1cb6752952a",
+        "patient_name": "Jeeva C.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T17:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Jeeva C.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "231e7d59-a3d2-401a-b2e3-d0379b8348fa": {
+        "_id": "231e7d59-a3d2-401a-b2e3-d0379b8348fa",
+        "patient_id": "85ca1487-fd48-4d90-b2b3-ce123b0fe36a",
+        "patient_name": "Hema S.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Hema S.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "9ecf95d7-50b9-43e6-ac24-05cd21bb3ae5": {
+        "_id": "9ecf95d7-50b9-43e6-ac24-05cd21bb3ae5",
+        "patient_id": "df8b0df9-2431-4892-b1cc-45ad5632e339",
+        "patient_name": "Suresh L.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T20:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Suresh L.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "4ab5af6e-3a7d-4132-a706-bd584bef7b25": {
+        "_id": "4ab5af6e-3a7d-4132-a706-bd584bef7b25",
+        "patient_id": "23271b17-199d-4b1c-8437-8123f1f9424c",
+        "patient_name": "Hema R.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T01:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Hema R.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "73e55f41-0a65-4d8f-897c-e4dbbe5b1818": {
+        "_id": "73e55f41-0a65-4d8f-897c-e4dbbe5b1818",
+        "patient_id": "a158d8b5-359c-483b-9405-6b1c833c6618",
+        "patient_name": "Saritha L.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T09:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Saritha L.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "d0c59756-6a53-42de-b6a8-d340c1c95f1c": {
+        "_id": "d0c59756-6a53-42de-b6a8-d340c1c95f1c",
+        "patient_id": "08298d6d-65f8-42a1-bfd3-16d95bf402f9",
+        "patient_name": "Deepa A.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Deepa A.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "f3897f07-1dfe-4fad-b723-921f3226dea2": {
+        "_id": "f3897f07-1dfe-4fad-b723-921f3226dea2",
+        "patient_id": "ee0685d5-83f6-4708-9f56-276c8bae3c10",
+        "patient_name": "Tamilselvan R.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T15:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Tamilselvan R.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "7a5803f6-9f17-48ea-8939-f851f5f593d4": {
+        "_id": "7a5803f6-9f17-48ea-8939-f851f5f593d4",
+        "patient_id": "8da0357d-bd75-448a-baa5-deb196d58118",
+        "patient_name": "Priya Low Risk",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Priya Low Risk: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "7c958e51-bdeb-47dc-8674-d3e96121a0e4": {
+        "_id": "7c958e51-bdeb-47dc-8674-d3e96121a0e4",
+        "patient_id": "edfb464e-191f-4ebb-95b1-703384e8ab21",
+        "patient_name": "Anjali Moderate Risk",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T14:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Anjali Moderate Risk: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "db4ead1d-38e3-4eaf-9239-0dc64ce5b210": {
+        "_id": "db4ead1d-38e3-4eaf-9239-0dc64ce5b210",
+        "patient_id": "4d59f572-cd14-4eb1-ad95-93127572e487",
+        "patient_name": "Deepa High Risk",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T19:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Deepa High Risk: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "276e2b21-a1d1-44c4-a397-b47cdcd3de14": {
+        "_id": "276e2b21-a1d1-44c4-a397-b47cdcd3de14",
+        "patient_id": "2c215d02-9778-4d30-8a48-01c5c2e8d894",
+        "patient_name": "Priya Low Risk",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Priya Low Risk: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "0a408ec1-e897-4e63-8898-7b0bd5698093": {
+        "_id": "0a408ec1-e897-4e63-8898-7b0bd5698093",
+        "patient_id": "f18ef157-b9e0-47b7-81a2-226a6bc49547",
+        "patient_name": "Priya Moderate Risk",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Priya Moderate Risk: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "cd4cef69-5fa2-48f9-ad60-120a92b7d41f": {
+        "_id": "cd4cef69-5fa2-48f9-ad60-120a92b7d41f",
+        "patient_id": "d3b15c99-7286-45e1-a47a-3e0ff69d25d7",
+        "patient_name": "Rajesh High Risk",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T15:24:57.117437",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Rajesh High Risk: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "ed9587df-2334-4848-9cba-49ba36396848": {
+        "_id": "ed9587df-2334-4848-9cba-49ba36396848",
+        "patient_id": "af8dc4bd-dfd6-47a4-860c-ae47ed7ffaf4",
+        "patient_name": "Senthil Low Risk",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T10:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Senthil Low Risk: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "c57a027f-5d2f-4e8d-b250-0155bfa67025": {
+        "_id": "c57a027f-5d2f-4e8d-b250-0155bfa67025",
+        "patient_id": "a84f684b-225e-4233-9a49-de2438f36d5b",
+        "patient_name": "Deepa Moderate Risk",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T17:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Deepa Moderate Risk: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "9afede6a-0a3b-4487-b3b9-b59499d9288e": {
+        "_id": "9afede6a-0a3b-4487-b3b9-b59499d9288e",
+        "patient_id": "a29cd212-e47c-47df-a1af-f99e613a51d1",
+        "patient_name": "Rajesh High Risk",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T10:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Rajesh High Risk: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "664500f9-8d58-41d2-808f-448aef54e81a": {
+        "_id": "664500f9-8d58-41d2-808f-448aef54e81a",
+        "patient_id": "0e5911aa-fbff-4c36-b629-6e619ac870b2",
+        "patient_name": "Anjali Low Risk",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T00:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Anjali Low Risk: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "20379e55-d7e5-4c0c-94db-2a9877ef340a": {
+        "_id": "20379e55-d7e5-4c0c-94db-2a9877ef340a",
+        "patient_id": "19068a08-bfab-4e7e-96bf-8aff9a67d319",
+        "patient_name": "Karthik Moderate Risk",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T12:24:57.117437",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Karthik Moderate Risk: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "46a7e284-14c6-4f90-927d-8b0c370c536b": {
+        "_id": "46a7e284-14c6-4f90-927d-8b0c370c536b",
+        "patient_id": "0e6ab358-ae09-4256-a022-9a0d0a21addc",
+        "patient_name": "Priya High Risk",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T08:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Priya High Risk: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "ac522066-215e-46ff-80d3-9dc6d9909a3a": {
+        "_id": "ac522066-215e-46ff-80d3-9dc6d9909a3a",
+        "patient_id": "526eb200-8d5d-4a32-a044-686d6f47558b",
+        "patient_name": "Anjali Low Risk",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Anjali Low Risk: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "b315f536-c8cf-4fea-91d2-3bc7e3793577": {
+        "_id": "b315f536-c8cf-4fea-91d2-3bc7e3793577",
+        "patient_id": "629185ac-5b3c-4320-bf85-9b5fc465bd4c",
+        "patient_name": "Rajesh Moderate Risk",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T02:24:57.117437",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Rajesh Moderate Risk: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "0582e46b-c87e-4aee-b9d8-1c7b5cebe1bf": {
+        "_id": "0582e46b-c87e-4aee-b9d8-1c7b5cebe1bf",
+        "patient_id": "777a48f6-1297-4ee2-875e-bfc835488c9f",
+        "patient_name": "Deepa High Risk",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T20:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Deepa High Risk: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "5450a605-679f-425f-b8d2-e44f7f8b60ba": {
+        "_id": "5450a605-679f-425f-b8d2-e44f7f8b60ba",
+        "patient_id": "ddab1d8d-21ab-420a-8b0e-a0697e5e94f8",
+        "patient_name": "Rajesh Low Risk",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T16:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Rajesh Low Risk: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "e6c3f531-25ed-4ec3-bd90-302a432477b8": {
+        "_id": "e6c3f531-25ed-4ec3-bd90-302a432477b8",
+        "patient_id": "66a53441-85da-43b0-bb71-46f8035870c8",
+        "patient_name": "Senthil Moderate Risk",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T07:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Senthil Moderate Risk: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "98d50c1c-e1a2-411b-b6be-9ddc9adebb83": {
+        "_id": "98d50c1c-e1a2-411b-b6be-9ddc9adebb83",
+        "patient_id": "4e643c4a-541c-4025-918d-bc0978d25b36",
+        "patient_name": "Karthik High Risk",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T20:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Karthik High Risk: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "d9acef37-cb3e-4bee-8b50-28ca78629032": {
+        "_id": "d9acef37-cb3e-4bee-8b50-28ca78629032",
+        "patient_id": "f1269ce6-03c6-4ff4-8668-7d39bf12ec49",
+        "patient_name": "Deepa Low Risk",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Deepa Low Risk: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "5482bd05-1ba1-44e2-9f61-e1f62d63d973": {
+        "_id": "5482bd05-1ba1-44e2-9f61-e1f62d63d973",
+        "patient_id": "07027022-cf47-411f-8915-194d68492c24",
+        "patient_name": "Rajesh Moderate Risk",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Rajesh Moderate Risk: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "4dfd72e1-7272-4100-b583-a2d2489693b2": {
+        "_id": "4dfd72e1-7272-4100-b583-a2d2489693b2",
+        "patient_id": "ac73fd54-8c20-47d5-9db9-8758995fb981",
+        "patient_name": "Senthil High Risk",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Senthil High Risk: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "279c081a-c949-4a6d-b5e8-b0a01218f982": {
+        "_id": "279c081a-c949-4a6d-b5e8-b0a01218f982",
+        "patient_id": "9017e370-add3-4bf7-b203-4dd15030cc17",
+        "patient_name": "Rajesh Low Risk",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T13:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Rajesh Low Risk: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "c6d387a9-7ef8-4a71-a256-7697e3085ca1": {
+        "_id": "c6d387a9-7ef8-4a71-a256-7697e3085ca1",
+        "patient_id": "d8507c59-f569-4f24-9947-5af92314555b",
+        "patient_name": "Deepa Moderate Risk",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T02:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Deepa Moderate Risk: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "78d8db72-519c-4a83-ab51-7da2d8894522": {
+        "_id": "78d8db72-519c-4a83-ab51-7da2d8894522",
+        "patient_id": "e8cc1610-a364-42d3-b3ef-304493b042fe",
+        "patient_name": "Karthik High Risk",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Karthik High Risk: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "7de85796-696b-49e0-894b-ec223d9c9335": {
+        "_id": "7de85796-696b-49e0-894b-ec223d9c9335",
+        "patient_id": "5a0b515f-1913-496c-8ac8-e017cf67e315",
+        "patient_name": "Anjali Low Risk",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali Low Risk: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "d74e4b5a-e576-41cb-9ecc-df65249a7e37": {
+        "_id": "d74e4b5a-e576-41cb-9ecc-df65249a7e37",
+        "patient_id": "1f3bc4ee-53c4-41f8-903d-1a74e774108c",
+        "patient_name": "Rajesh Moderate Risk",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T09:24:57.119489",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Rajesh Moderate Risk: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "d0f8a0ac-f319-43fd-b9d6-b5f1be78001b": {
+        "_id": "d0f8a0ac-f319-43fd-b9d6-b5f1be78001b",
+        "patient_id": "c85185ec-1945-4d28-8445-7a2264fa509f",
+        "patient_name": "Rajesh High Risk",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Rajesh High Risk: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "efcd4620-b215-48d4-a8d5-6f5b09a5069d": {
+        "_id": "efcd4620-b215-48d4-a8d5-6f5b09a5069d",
+        "patient_id": "7bc9acd1-4831-4096-8252-bf44025684c5",
+        "patient_name": "Ganesh T.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Ganesh T.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "bfef3730-53d1-4708-b490-63994240fd20": {
+        "_id": "bfef3730-53d1-4708-b490-63994240fd20",
+        "patient_id": "c45937e0-c7f5-42de-96e7-4db4c2eed3b9",
+        "patient_name": "Murali M.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T09:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Murali M.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "33590d37-a509-414a-b5c0-da0176dd6722": {
+        "_id": "33590d37-a509-414a-b5c0-da0176dd6722",
+        "patient_id": "6d855d2b-955c-4e26-950a-ca9c0aace4c6",
+        "patient_name": "Manikandan N.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Manikandan N.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "d90aa5b4-81ad-4c5d-b0a5-9e211a2f2ab7": {
+        "_id": "d90aa5b4-81ad-4c5d-b0a5-9e211a2f2ab7",
+        "patient_id": "727112a2-7c42-4cbf-9080-a55bd5dfd275",
+        "patient_name": "Saritha J.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Saritha J.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "c611dcda-6562-49d4-910e-61cc54aa14ee": {
+        "_id": "c611dcda-6562-49d4-910e-61cc54aa14ee",
+        "patient_id": "e21918b0-a1e6-45af-b8e4-76a3bceeb1ad",
+        "patient_name": "Vignesh W.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T04:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Vignesh W.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "244b514d-8019-4798-88f6-05cb79c75080": {
+        "_id": "244b514d-8019-4798-88f6-05cb79c75080",
+        "patient_id": "787b0ad3-17d3-4f13-8d1e-901ecc6ca853",
+        "patient_name": "Arun G.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T19:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Arun G.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "27d0bb2b-62ee-4dd1-a8d7-16ccf5a44dbd": {
+        "_id": "27d0bb2b-62ee-4dd1-a8d7-16ccf5a44dbd",
+        "patient_id": "fb178bed-4e83-4d0d-849d-88ee241c5a3c",
+        "patient_name": "Hema P.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Hema P.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "60d05ffb-b662-4074-ae9f-531a4af964be": {
+        "_id": "60d05ffb-b662-4074-ae9f-531a4af964be",
+        "patient_id": "c894162a-4664-4896-a984-c8d8002f3bdb",
+        "patient_name": "Karthik N.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T04:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Karthik N.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "978026e8-c1b7-4592-8e73-19bcf072f756": {
+        "_id": "978026e8-c1b7-4592-8e73-19bcf072f756",
+        "patient_id": "b35b2d75-ed5c-42c4-88cc-8fa76f7f35df",
+        "patient_name": "Latha A.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T16:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Latha A.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "f4153612-6f4c-4301-aa4c-942aeb29d650": {
+        "_id": "f4153612-6f4c-4301-aa4c-942aeb29d650",
+        "patient_id": "3cde3638-8d12-4c8c-a73b-00b8ce7ad301",
+        "patient_name": "Eshwari K.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Eshwari K.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "9af1ff8b-09fa-40e5-b8e7-480f458b3017": {
+        "_id": "9af1ff8b-09fa-40e5-b8e7-480f458b3017",
+        "patient_id": "f9e7959f-73c9-42b2-bd35-8cb342b29230",
+        "patient_name": "Balaji M.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Balaji M.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "d0981c36-bfe3-48a8-81c7-ea560e4525f0": {
+        "_id": "d0981c36-bfe3-48a8-81c7-ea560e4525f0",
+        "patient_id": "aadacc44-d7fe-4a94-b1ea-cbce44693761",
+        "patient_name": "Yamuna W.",
+        "doctor_id": "e5aafe70-3558-47c3-931d-d8bfd48639c3",
+        "hospital_id": "hosp_himsr",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Yamuna W.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "c85cb37f-fa1b-4a49-8f39-080e1f12216a": {
+        "_id": "c85cb37f-fa1b-4a49-8f39-080e1f12216a",
+        "patient_id": "69af2063-24e0-491d-8dc7-c054300b39fb",
+        "patient_name": "Murali M.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T23:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Murali M.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "220c1558-a8d3-40aa-a9cd-bde8b68c996a": {
+        "_id": "220c1558-a8d3-40aa-a9cd-bde8b68c996a",
+        "patient_id": "91ef0fde-497c-4a38-b765-83a1bd031efa",
+        "patient_name": "Karthik P.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik P.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "d3870f0d-7d8c-4163-aec4-19d21db685f2": {
+        "_id": "d3870f0d-7d8c-4163-aec4-19d21db685f2",
+        "patient_id": "939b952b-950d-40cd-b5a4-03263a1ce98c",
+        "patient_name": "Suresh P.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T17:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Suresh P.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "8e44f716-42f7-429f-99f8-f46fd82c9b20": {
+        "_id": "8e44f716-42f7-429f-99f8-f46fd82c9b20",
+        "patient_id": "bc2bdfe1-6a63-448d-b93a-6024cab03bb2",
+        "patient_name": "Deepa S.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Deepa S.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "93e3975b-8274-48e2-ac4f-192079c5a8d2": {
+        "_id": "93e3975b-8274-48e2-ac4f-192079c5a8d2",
+        "patient_id": "2a001d0f-bf77-4c00-a47b-35fb8c7765d0",
+        "patient_name": "Vignesh M.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T06:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Vignesh M.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "a0eb2bc8-57b1-4784-a890-013a6027d91d": {
+        "_id": "a0eb2bc8-57b1-4784-a890-013a6027d91d",
+        "patient_id": "0f6ed78d-2684-433f-a8c2-a061772040d8",
+        "patient_name": "Vijay T.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Vijay T.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "2492d0c8-a8ab-49ca-afc8-92b096fbf03d": {
+        "_id": "2492d0c8-a8ab-49ca-afc8-92b096fbf03d",
+        "patient_id": "13d10d79-b139-4d18-8f57-2e58ad1dc8b3",
+        "patient_name": "Kavita P.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Kavita P.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "13ac8643-9710-4ad3-a84f-d1f27587e305": {
+        "_id": "13ac8643-9710-4ad3-a84f-d1f27587e305",
+        "patient_id": "9901a362-c0fb-4754-b626-61e31c72cf47",
+        "patient_name": "Kavita A.",
+        "doctor_id": "58e4aecc-6abd-468e-ba45-242b3c4b26f9",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T20:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Kavita A.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "06d36ffe-c823-461a-8a5e-26fdefc5b94e": {
+        "_id": "06d36ffe-c823-461a-8a5e-26fdefc5b94e",
+        "patient_id": "de12160a-9b18-4560-8403-dc056c4e9587",
+        "patient_name": "Saritha V.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Saritha V.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "34c64c51-1e96-46e0-9765-38458674de1a": {
+        "_id": "34c64c51-1e96-46e0-9765-38458674de1a",
+        "patient_id": "4ff45d0d-480d-48e6-9e45-5d652c7170cd",
+        "patient_name": "Rajesh M.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T13:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Rajesh M.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "7f12436a-51fc-4e24-a179-4a15b8c203a2": {
+        "_id": "7f12436a-51fc-4e24-a179-4a15b8c203a2",
+        "patient_id": "3608314e-835a-4757-a611-8125445e9ccc",
+        "patient_name": "Velu R.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Velu R.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "d5713d43-34ea-42ef-b0a6-b1645c1bc849": {
+        "_id": "d5713d43-34ea-42ef-b0a6-b1645c1bc849",
+        "patient_id": "09c91a32-66f0-42b3-a170-2b0beb871b99",
+        "patient_name": "Kavita V.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T07:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Kavita V.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "cda912c7-4400-4fc5-92af-69d22d6d2370": {
+        "_id": "cda912c7-4400-4fc5-92af-69d22d6d2370",
+        "patient_id": "bcfba302-b6ad-4774-a325-7188d19861fc",
+        "patient_name": "Priya N.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Priya N.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "fa2abf08-e381-450c-9170-64b3f22a6fe1": {
+        "_id": "fa2abf08-e381-450c-9170-64b3f22a6fe1",
+        "patient_id": "cc7cce23-a8f9-4dcb-be9b-7e0173e7855e",
+        "patient_name": "Dinesh A.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T13:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Dinesh A.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "33f6f526-2d3f-4306-9699-36ed8a3ca44c": {
+        "_id": "33f6f526-2d3f-4306-9699-36ed8a3ca44c",
+        "patient_id": "59725076-c51a-4eb1-9c96-79ca2d557fcb",
+        "patient_name": "Vignesh P.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Vignesh P.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "eb6409bd-8e33-4f4b-9bfa-a3adea9b3bbb": {
+        "_id": "eb6409bd-8e33-4f4b-9bfa-a3adea9b3bbb",
+        "patient_id": "f53a1a1f-4169-43b3-af17-65dd5817cfdc",
+        "patient_name": "Tamilselvan P.",
+        "doctor_id": "97a1c7b2-e4dc-4929-89f0-e70865e00b89",
+        "hospital_id": "hosp_mmc_madurai",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Tamilselvan P.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "47256f1e-0810-4587-be34-6218fe424571": {
+        "_id": "47256f1e-0810-4587-be34-6218fe424571",
+        "patient_id": "85ecd84e-757c-441e-aaf2-820b3181f3c1",
+        "patient_name": "Vijay M.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T06:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Vijay M.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "7be99a92-4940-4413-ac0b-d545d071e52d": {
+        "_id": "7be99a92-4940-4413-ac0b-d545d071e52d",
+        "patient_id": "edb1cd99-c5cf-4a2e-9c6f-3dd18d4523b3",
+        "patient_name": "Ganesh B.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Ganesh B.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "ab0f9ad7-4b40-4e05-b519-ca49313961b5": {
+        "_id": "ab0f9ad7-4b40-4e05-b519-ca49313961b5",
+        "patient_id": "0b638747-79e4-4067-aa18-bf7e5d914381",
+        "patient_name": "Saritha C.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Saritha C.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "003e266b-cf0c-423d-8e68-fd361e310eca": {
+        "_id": "003e266b-cf0c-423d-8e68-fd361e310eca",
+        "patient_id": "72fddf74-a020-4c18-82ae-7ee944b886f1",
+        "patient_name": "Yamuna B.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T10:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Yamuna B.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "872be6f9-2e5c-42c4-a72b-645bc4296df8": {
+        "_id": "872be6f9-2e5c-42c4-a72b-645bc4296df8",
+        "patient_id": "8b418426-d22a-4cb6-a412-051a3be9cc7c",
+        "patient_name": "Anjali V.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T07:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali V.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "09b213a8-5050-4cca-8280-d84948865de2": {
+        "_id": "09b213a8-5050-4cca-8280-d84948865de2",
+        "patient_id": "e1777bc6-69bd-479f-b1eb-bea18a6301a3",
+        "patient_name": "Anjali A.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T01:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali A.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "bc6411ac-ae1e-48b4-8306-e373cf8a30bf": {
+        "_id": "bc6411ac-ae1e-48b4-8306-e373cf8a30bf",
+        "patient_id": "b086296c-521e-4b25-8b19-0cc7bc860d55",
+        "patient_name": "Anjali R.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali R.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "f07fd0f2-1f8e-4835-92d2-e50a76000ff3": {
+        "_id": "f07fd0f2-1f8e-4835-92d2-e50a76000ff3",
+        "patient_id": "d490681a-62d8-41e4-99c8-e6a2bb75512c",
+        "patient_name": "Jeeva V.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Jeeva V.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "2335018b-f91a-43d5-a27a-c2a89ce98efe": {
+        "_id": "2335018b-f91a-43d5-a27a-c2a89ce98efe",
+        "patient_id": "58ca968f-929e-436e-977d-e024870b5307",
+        "patient_name": "Karthik J.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T22:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik J.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "cf9d8714-8e47-4c31-be61-439b0fdaf6eb": {
+        "_id": "cf9d8714-8e47-4c31-be61-439b0fdaf6eb",
+        "patient_id": "9f53faf5-cdc2-45e5-beb4-38cc9d33fb56",
+        "patient_name": "Jeeva S.",
+        "doctor_id": "c065739a-ad24-4b15-b16f-44eea3787ff7",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T12:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Jeeva S.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "76e0a1ce-7d68-47b5-9ba2-ca1c11aade7d": {
+        "_id": "76e0a1ce-7d68-47b5-9ba2-ca1c11aade7d",
+        "patient_id": "82478a8f-5afd-4606-9cb2-a1f8d2cda362",
+        "patient_name": "Jeeva M.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T05:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Jeeva M.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "1848853b-a5b1-4ed0-8021-96b4cca36a52": {
+        "_id": "1848853b-a5b1-4ed0-8021-96b4cca36a52",
+        "patient_id": "93b9a7f2-a393-43b2-bd6c-5603e4d8984f",
+        "patient_name": "Jeeva N.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T01:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Jeeva N.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "58c748b5-a7df-4437-b34f-8b297f964974": {
+        "_id": "58c748b5-a7df-4437-b34f-8b297f964974",
+        "patient_id": "99321bb4-282a-4cd1-8b57-e4b3d28383d1",
+        "patient_name": "Rajesh R.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Rajesh R.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "a78eaf38-731a-4f1a-b19f-072a9a8d117e": {
+        "_id": "a78eaf38-731a-4f1a-b19f-072a9a8d117e",
+        "patient_id": "4af6e253-f07c-417d-934c-3be29b92954f",
+        "patient_name": "Yamuna S.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T02:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Yamuna S.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "f92ebd29-e11f-4014-a7a1-899d443790df": {
+        "_id": "f92ebd29-e11f-4014-a7a1-899d443790df",
+        "patient_id": "05f013f6-a24b-4937-91a3-1a916872f50e",
+        "patient_name": "Murali R.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Murali R.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "cb044090-104d-46be-b641-1f5413f185b1": {
+        "_id": "cb044090-104d-46be-b641-1f5413f185b1",
+        "patient_id": "de439400-a08f-4cf7-94db-02d9845a8fd6",
+        "patient_name": "Ramesh J.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Ramesh J.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "6c91ab5d-c3a4-44fc-b435-465d110be18a": {
+        "_id": "6c91ab5d-c3a4-44fc-b435-465d110be18a",
+        "patient_id": "b623b7f0-99bd-43af-8f7a-3242e6e56fb2",
+        "patient_name": "Shanthi C.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T09:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Shanthi C.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "e20563ec-fea3-496c-abde-53816fc24ee9": {
+        "_id": "e20563ec-fea3-496c-abde-53816fc24ee9",
+        "patient_id": "4098e676-380a-46cd-bde3-6273647ad18f",
+        "patient_name": "Velu S.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T20:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Velu S.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "f878981f-0093-490a-8f19-94c41cd755ca": {
+        "_id": "f878981f-0093-490a-8f19-94c41cd755ca",
+        "patient_id": "cfca25a5-7abc-4eb8-8e62-32c0e7c3bf05",
+        "patient_name": "Ramesh T.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Ramesh T.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "9026c33e-9c8c-4f57-9791-96ae123ee139": {
+        "_id": "9026c33e-9c8c-4f57-9791-96ae123ee139",
+        "patient_id": "7133595e-a087-42ca-b7e1-08ff8c6e9c77",
+        "patient_name": "Saritha P.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T12:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Saritha P.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "309e8a31-0516-4781-be48-d0d2bdd5f939": {
+        "_id": "309e8a31-0516-4781-be48-d0d2bdd5f939",
+        "patient_id": "35d634c8-8c45-4e9f-bfd2-f538d0c8b50b",
+        "patient_name": "Priya A.",
+        "doctor_id": "b872cd16-e7cd-4af4-a6fb-15b43f559239",
+        "hospital_id": "hosp_cmc_vellore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Priya A.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "0584380f-33c9-4292-b914-ee8e0e463c6a": {
+        "_id": "0584380f-33c9-4292-b914-ee8e0e463c6a",
+        "patient_id": "9804d822-8183-4507-8b46-a847e61d2f44",
+        "patient_name": "Jeeva R.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T23:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Jeeva R.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "ffb986e8-6920-43d7-8980-d0fd3f626695": {
+        "_id": "ffb986e8-6920-43d7-8980-d0fd3f626695",
+        "patient_id": "a43c7df8-3dd2-4fc3-8c65-3e3e8292dc81",
+        "patient_name": "Anjali C.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T02:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Anjali C.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "0b7ef4f7-8ac4-48eb-ac10-739ff459aa9a": {
+        "_id": "0b7ef4f7-8ac4-48eb-ac10-739ff459aa9a",
+        "patient_id": "29bb7dec-9ae6-4b40-8d25-3baab1c416a7",
+        "patient_name": "Karthik T.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Karthik T.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "2960c500-be6c-434a-86ec-1714e0343294": {
+        "_id": "2960c500-be6c-434a-86ec-1714e0343294",
+        "patient_id": "1b168028-386b-459a-9b4b-31d112371948",
+        "patient_name": "Uma A.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Uma A.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "708c3bd6-2fc5-402e-bcdd-06283b6d9738": {
+        "_id": "708c3bd6-2fc5-402e-bcdd-06283b6d9738",
+        "patient_id": "cac679ef-71e6-44d1-bac6-dc9f514f1aa1",
+        "patient_name": "Yamuna A.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T13:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Yamuna A.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "0250f597-c284-4c5b-93d6-e02f9be141df": {
+        "_id": "0250f597-c284-4c5b-93d6-e02f9be141df",
+        "patient_id": "d83266fc-c876-4fb1-980d-469683e1b18a",
+        "patient_name": "Murali A.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Murali A.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "0a578a33-fc52-40e4-8a93-f2ba484ca39d": {
+        "_id": "0a578a33-fc52-40e4-8a93-f2ba484ca39d",
+        "patient_id": "d06b31a5-027d-4bc6-bb4f-b2a6ba5d8681",
+        "patient_name": "Indira V.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Indira V.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "67f60b5b-19c9-4f81-80ed-2e6ae7f4a553": {
+        "_id": "67f60b5b-19c9-4f81-80ed-2e6ae7f4a553",
+        "patient_id": "c9187b3a-efa5-44d6-8580-cdab806f81a5",
+        "patient_name": "Nandhini J.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T17:24:57.119489",
+        "results": {
+            "symptoms": [
+                "None reported"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Nandhini J.: Detected symptoms: None reported. Patient status is consistent with Low Risk."
+        }
+    },
+    "909350a6-a478-495e-a7b4-5b9251368caa": {
+        "_id": "909350a6-a478-495e-a7b4-5b9251368caa",
+        "patient_id": "6c3b947d-b78c-4435-8f18-a90d6534617b",
+        "patient_name": "Karthik W.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T21:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Karthik W.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "28b929c5-6ff1-40f8-aa8d-9d4c6fe6c6b8": {
+        "_id": "28b929c5-6ff1-40f8-aa8d-9d4c6fe6c6b8",
+        "patient_id": "efaa76c7-cee0-403a-b840-3cfb91e1b228",
+        "patient_name": "Suresh K.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Suresh K.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "2926a241-8127-45f5-a034-584d54d8ba35": {
+        "_id": "2926a241-8127-45f5-a034-584d54d8ba35",
+        "patient_id": "eb0efc23-c239-4133-be17-55e5cfad162e",
+        "patient_name": "Nandhini T.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T19:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Nandhini T.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "84582ca9-a6ed-4563-933b-883586abd471": {
+        "_id": "84582ca9-a6ed-4563-933b-883586abd471",
+        "patient_id": "eeaa20a4-540a-4a7e-8ee3-dfbeed5ca568",
+        "patient_name": "Priya A.",
+        "doctor_id": "a2181dcf-61ef-4768-b74e-3eeea1d0db1b",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T14:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Priya A.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "d5efe5de-1902-47ae-9378-d48ad641f2b1": {
+        "_id": "d5efe5de-1902-47ae-9378-d48ad641f2b1",
+        "patient_id": "9ef4921f-a862-4808-b8f4-60657149b662",
+        "patient_name": "Yamuna S.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T05:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Yamuna S.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "2db8ff29-8be7-4d0f-bc8a-072226d0cda9": {
+        "_id": "2db8ff29-8be7-4d0f-bc8a-072226d0cda9",
+        "patient_id": "6acca633-a2b0-4f3f-ba85-da7671d694a1",
+        "patient_name": "Arun V.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T07:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Arun V.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "0d4980cc-453e-458c-b260-b96ce8ac03be": {
+        "_id": "0d4980cc-453e-458c-b260-b96ce8ac03be",
+        "patient_id": "035867d4-89cd-4bd3-8c79-4bf1a18f7fbf",
+        "patient_name": "Latha S.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Latha S.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "deb9f4b9-6818-472d-baf4-243599f3cd1f": {
+        "_id": "deb9f4b9-6818-472d-baf4-243599f3cd1f",
+        "patient_id": "cd03e161-2966-4e9d-8149-0ab8bbe88084",
+        "patient_name": "Eshwari T.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Eshwari T.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "3edd2a0e-46bf-47c6-910c-cec978a5c3c0": {
+        "_id": "3edd2a0e-46bf-47c6-910c-cec978a5c3c0",
+        "patient_id": "9a734942-e27b-46e5-8398-550cf0c3870f",
+        "patient_name": "Hema N.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T18:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Hema N.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "015eddd6-8bb4-427d-87c5-e44a6e0bd3ed": {
+        "_id": "015eddd6-8bb4-427d-87c5-e44a6e0bd3ed",
+        "patient_id": "3d2252b5-539b-4691-83c7-0f7f1074a93d",
+        "patient_name": "Ramesh C.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Palpitations"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Ramesh C.: Detected symptoms: Palpitations. Patient status is consistent with High Risk."
+        }
+    },
+    "feb7b3a4-3f69-4b90-803f-45bd6208bfd5": {
+        "_id": "feb7b3a4-3f69-4b90-803f-45bd6208bfd5",
+        "patient_id": "05556f47-acd8-44dc-84aa-5818675b6311",
+        "patient_name": "Senthil C.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T05:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 10,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Senthil C.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "698e62ae-485c-49ec-956a-cb32492d292b": {
+        "_id": "698e62ae-485c-49ec-956a-cb32492d292b",
+        "patient_id": "7b20c4e3-a716-4d65-885a-75784a8d8d4a",
+        "patient_name": "Nandhini R.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T22:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Nandhini R.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
+    },
+    "bec167b4-1fe1-4759-9c80-2c1f511e1861": {
+        "_id": "bec167b4-1fe1-4759-9c80-2c1f511e1861",
+        "patient_id": "91882244-55b8-45fa-8557-36dff62c0df7",
+        "patient_name": "Senthil L.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T12:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Senthil L.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "f50ab59a-75b2-4031-bf1b-0bc0d5068e6a": {
+        "_id": "f50ab59a-75b2-4031-bf1b-0bc0d5068e6a",
+        "patient_id": "956d4456-a611-4bb1-b0dc-4effdc733164",
+        "patient_name": "Hema J.",
+        "doctor_id": "b51aecb8-7311-4e17-8eba-5ebc9d0a4c90",
+        "hospital_id": "hosp_cmc_coimbatore",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T08:24:57.119489",
+        "results": {
+            "symptoms": [
+                "General checkup request"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 3,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Hema J.: Detected symptoms: General checkup request. Patient status is consistent with Normal Risk."
+        }
+    },
+    "f5e41e9b-52a2-4830-ab04-b499ec6a7e95": {
+        "_id": "f5e41e9b-52a2-4830-ab04-b499ec6a7e95",
+        "patient_id": "d3ad1d8d-7c36-448b-83c7-d08135843031",
+        "patient_name": "Arun A.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Occasional headache"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Arun A.: Detected symptoms: Occasional headache. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "39e30fe2-9abc-44ec-8697-b365582ad536": {
+        "_id": "39e30fe2-9abc-44ec-8697-b365582ad536",
+        "patient_id": "2ca3f2d1-4be9-4343-bddb-2841212b6b8a",
+        "patient_name": "Dinesh C.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Dinesh C.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "59d6d174-1ec2-46f9-93fb-7a5ae6e2f546": {
+        "_id": "59d6d174-1ec2-46f9-93fb-7a5ae6e2f546",
+        "patient_id": "de924264-949b-4d89-833c-578257b2d2a7",
+        "patient_name": "Shanthi T.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T10:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Shanthi T.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "de0f0674-7a98-425a-8870-3cc19a6df943": {
+        "_id": "de0f0674-7a98-425a-8870-3cc19a6df943",
+        "patient_id": "7d9f3395-d906-497d-8a12-68e9286ec33e",
+        "patient_name": "Saritha R.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T06:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Saritha R.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "46e72cc4-ca9e-4abe-82e5-d83fe95fbde1": {
+        "_id": "46e72cc4-ca9e-4abe-82e5-d83fe95fbde1",
+        "patient_id": "d5cb2e62-61df-43e4-b0f8-9dd05e9892d1",
+        "patient_name": "Eshwari A.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Follow-up visit"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 1,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Eshwari A.: Detected symptoms: Follow-up visit. Patient status is consistent with Low Risk."
+        }
+    },
+    "212cf97a-dbf5-4fbd-b632-571940195f16": {
+        "_id": "212cf97a-dbf5-4fbd-b632-571940195f16",
+        "patient_id": "11aef1cf-dd0e-45ac-b3fd-47b26c676acd",
+        "patient_name": "Indira R.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T05:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Acute chest pain"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Indira R.: Detected symptoms: Acute chest pain. Patient status is consistent with High Risk."
+        }
+    },
+    "bb0ad39f-8883-4c2e-b0ba-586bad6b3054": {
+        "_id": "bb0ad39f-8883-4c2e-b0ba-586bad6b3054",
+        "patient_id": "bbfef7a8-ff5f-4fa3-b62d-2bed9052e700",
+        "patient_name": "Nandhini K.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T11:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Persistent dry cough"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Nandhini K.: Detected symptoms: Persistent dry cough. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "a48acfaf-2236-4086-9daf-abda0e989d5c": {
+        "_id": "a48acfaf-2236-4086-9daf-abda0e989d5c",
+        "patient_id": "a5b6ef0a-232a-482d-9edd-644acb156f31",
+        "patient_name": "Ganesh J.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T06:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Ganesh J.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "527f62c7-f17a-418d-8bbb-c8f9dd51fc8f": {
+        "_id": "527f62c7-f17a-418d-8bbb-c8f9dd51fc8f",
+        "patient_id": "8f4f2431-2746-49e4-96cb-7b99ab11f3a7",
+        "patient_name": "Kavita M.",
+        "doctor_id": "fc0029c6-056b-4a99-bbf9-01e574e1a0cd",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 7,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Kavita M.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "7c668154-3d37-43cb-9f3f-67bfaf60a705": {
+        "_id": "7c668154-3d37-43cb-9f3f-67bfaf60a705",
+        "patient_id": "674c853a-f850-4799-a8ab-c0d10fa67cd3",
+        "patient_name": "Karthik C.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T16:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Routine screening"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Low"
+            },
+            "summary": "Clinical assessment for Karthik C.: Detected symptoms: Routine screening. Patient status is consistent with Low Risk."
+        }
+    },
+    "09b0766e-90f5-4d44-826d-b6719c35f64e": {
+        "_id": "09b0766e-90f5-4d44-826d-b6719c35f64e",
+        "patient_id": "e8829425-ded2-427c-adaf-b28955356fef",
+        "patient_name": "Anjali B.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T07:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Mild abdominal pain"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 6,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Anjali B.: Detected symptoms: Mild abdominal pain. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "82213e35-7133-41f5-b6fa-0eacad8df7d2": {
+        "_id": "82213e35-7133-41f5-b6fa-0eacad8df7d2",
+        "patient_id": "17233b86-1231-44c1-8878-3a6349a9d1ac",
+        "patient_name": "Vignesh B.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T09:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Slight throat irritation"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 2,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Vignesh B.: Detected symptoms: Slight throat irritation. Patient status is consistent with Normal Risk."
+        }
+    },
+    "7dd8634f-7bb8-495b-b058-c7411592b88f": {
+        "_id": "7dd8634f-7bb8-495b-b058-c7411592b88f",
+        "patient_id": "c1ceceb3-f6e7-4166-8b0f-c5898c5b692b",
+        "patient_name": "Tamilselvan B.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T10:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Recurrent fatigue"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 5,
+                "risk_level": "Moderate"
+            },
+            "summary": "Clinical assessment for Tamilselvan B.: Detected symptoms: Recurrent fatigue. Patient status is consistent with Moderate Risk."
+        }
+    },
+    "22eff7e4-d673-4aa4-9449-600133d0d780": {
+        "_id": "22eff7e4-d673-4aa4-9449-600133d0d780",
+        "patient_id": "26f37cf6-54ee-461a-b740-36b57e099441",
+        "patient_name": "Murali L.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T04:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Severe shortness of breath"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Murali L.: Detected symptoms: Severe shortness of breath. Patient status is consistent with High Risk."
+        }
+    },
+    "ff18704d-297d-4cf8-92e5-882af5d9a5c8": {
+        "_id": "ff18704d-297d-4cf8-92e5-882af5d9a5c8",
+        "patient_id": "14b4b384-aff5-4e91-8eca-1717f40f6457",
+        "patient_name": "Karthik N.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-12T03:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 8,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Karthik N.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "7d49470b-8cca-4cae-bb23-b8982b6cad07": {
+        "_id": "7d49470b-8cca-4cae-bb23-b8982b6cad07",
+        "patient_id": "b2c59aac-1bcd-40c8-a079-d4234c83da80",
+        "patient_name": "Nandhini V.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-11T21:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Constant dizziness"
+            ],
+            "clinical_entities": [
+                "Hypertension"
+            ],
+            "sentiment": "NEGATIVE/DETERIORATING",
+            "risk_assessment": {
+                "is_emergency": true,
+                "urgency_score": 9,
+                "risk_level": "High"
+            },
+            "summary": "Clinical assessment for Nandhini V.: Detected symptoms: Constant dizziness. Patient status is consistent with High Risk."
+        }
+    },
+    "f430c9c4-718a-4a2e-ab00-bbd010fe0084": {
+        "_id": "f430c9c4-718a-4a2e-ab00-bbd010fe0084",
+        "patient_id": "992f3085-52c0-46a6-b281-d2444b9448d4",
+        "patient_name": "Anjali A.",
+        "doctor_id": "1d9bb6c5-4ba9-4824-affc-689fe33ca165",
+        "hospital_id": "hosp_stanley",
+        "type": "nlp_analysis",
+        "timestamp": "2026-05-13T00:24:57.119489",
+        "results": {
+            "symptoms": [
+                "Seasonal allergies"
+            ],
+            "clinical_entities": [
+                "Observation"
+            ],
+            "sentiment": "NEUTRAL/STABLE",
+            "risk_assessment": {
+                "is_emergency": false,
+                "urgency_score": 4,
+                "risk_level": "Normal"
+            },
+            "summary": "Clinical assessment for Anjali A.: Detected symptoms: Seasonal allergies. Patient status is consistent with Normal Risk."
+        }
     }
 }

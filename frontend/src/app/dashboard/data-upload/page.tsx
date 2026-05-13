@@ -191,24 +191,40 @@ export default function DataUploadPage() {
     try {
       const res = await api.post('/training/start', { upload_id: uploadId, epochs: 50, learning_rate: 0.001 });
       const jobId = res.data.id;
+      let staleRetries = 0;
       
-      // Start polling for this specific job
+      // Poll every 5s (training 67K rows × 50 epochs takes minutes)
       const pollInterval = setInterval(async () => {
         try {
           const statusRes = await api.get(`/training/job/${jobId}`);
           const jobData = statusRes.data;
           
-          if (jobData.status === 'completed' || jobData.status === 'failed') {
+          if (jobData.status === 'failed') {
             clearInterval(pollInterval);
             setTrainingResult(jobData);
             setIsTraining(false);
             fetchTrainingJobs();
+            return;
+          }
+
+          if (jobData.status === 'completed') {
+            // Guard against stale read: accuracy & samples should be non-zero
+            const hasResults = jobData.num_samples > 0 && jobData.accuracy && parseFloat(jobData.accuracy) > 0;
+            if (hasResults || staleRetries >= 3) {
+              clearInterval(pollInterval);
+              setTrainingResult(jobData);
+              setIsTraining(false);
+              fetchTrainingJobs();
+            } else {
+              // Backend just committed — wait one more cycle for DB to propagate
+              staleRetries++;
+            }
           }
         } catch (err) {
           clearInterval(pollInterval);
           setIsTraining(false);
         }
-      }, 3000); // Poll every 3 seconds
+      }, 5000); // Poll every 5 seconds — training takes minutes
 
     } catch (err: any) {
       setErrorMessage(err?.response?.data?.detail || 'Training failed.');

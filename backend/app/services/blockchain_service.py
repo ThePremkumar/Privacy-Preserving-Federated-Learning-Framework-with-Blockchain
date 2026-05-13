@@ -12,7 +12,7 @@ from dataclasses import asdict
 import hashlib
 
 from web3 import Web3
-# from web3.middleware import geth_poa_middleware (Web3 V7+ compatibility issue)
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.exceptions import TransactionNotFound, ContractLogicError
 
 from ..core.config import BLOCKCHAIN_CONFIG
@@ -38,7 +38,7 @@ class BlockchainService:
             self.web3 = Web3(Web3.HTTPProvider(BLOCKCHAIN_CONFIG["rpc_url"]))
             
             # Add POA middleware for private network
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
             
             # Check connection
             if not self.web3.is_connected():

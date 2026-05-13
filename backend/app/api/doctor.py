@@ -5,11 +5,14 @@ Doctor Operations API — Expanded with analytics, clinical reports, and patient
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 import logging
+logger = logging.getLogger(__name__)
 from datetime import datetime, timedelta
 from app.core.dependencies import get_current_user, require_role
 from app.core.mongodb import patient_repo, prediction_repo
 from app.core.database import SessionLocal
 from app.core.logic import calculate_composite_risk
+from app.core.db_models import DatasetUpload, TrainingJob, User, UserRole # Added missing imports
+
 router = APIRouter(tags=["doctor"])
 
 @router.get("/summary")
@@ -21,10 +24,22 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
     hospital_id = current_user.get("hospital_id")
     
     # 1. Get from MongoDB (Patients)
-    total_patients = await patient_repo.count_documents({"hospital_id": hospital_id})
-    all_patients = await patient_repo.find_many({"hospital_id": hospital_id})
+    # If doctor, show only their patients; if hospital, show all.
+    user_id = current_user.get("user_id")
+    is_doctor = current_user.get("role") == "doctor"
+    
+    patient_filter = {"hospital_id": hospital_id}
+    if is_doctor:
+        patient_filter["created_by"] = user_id
+        
+    total_patients = await patient_repo.count_documents(patient_filter)
+    all_patients = await patient_repo.find_many(patient_filter, limit=1000)
+    
+    # Define recent patients for the dashboard
+    recent_patients = sorted(all_patients, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
     
     # 2. Get from MongoDB (Predictions)
+    # Filter predictions by hospital for now
     recent_predictions = await prediction_repo.find_many(
         {"hospital_id": hospital_id},
         limit=5,
@@ -153,9 +168,16 @@ async def get_doctor_summary(current_user: Dict[str, Any] = Depends(require_role
 
 @router.get("/patients")
 async def get_doctor_patients(current_user: Dict[str, Any] = Depends(require_role(["doctor", "hospital"]))):
-    """List all patients assigned to the doctor's facility"""
+    """List all patients assigned to the doctor (if doctor) or facility (if hospital)"""
     hospital_id = current_user.get("hospital_id")
-    patients = await patient_repo.find_many({"hospital_id": hospital_id})
+    user_id = current_user.get("user_id")
+    is_doctor = current_user.get("role") == "doctor"
+    
+    patient_filter = {"hospital_id": hospital_id}
+    if is_doctor:
+        patient_filter["created_by"] = user_id
+        
+    patients = await patient_repo.find_many(patient_filter)
     return patients
 
 @router.get("/hospital-doctors")

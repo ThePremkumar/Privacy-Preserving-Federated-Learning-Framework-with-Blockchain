@@ -50,6 +50,23 @@ export function FilterExportPanel({
   const [toastMessage, setToastMessage] = useState('');
   const [exportMode, setExportMode] = useState<'detailed' | 'doctor_summary'>('detailed');
 
+  const doctorAnalytics = useMemo(() => {
+    const analytics: Record<string, { name: string, count: number, highRisk: number, normal: number }> = {};
+    
+    filteredPatients.forEach(p => {
+      const dId = p.doctor_id || 'unassigned';
+      const dName = p.doctor_name || 'Unassigned';
+      if (!analytics[dId]) {
+        analytics[dId] = { name: dName, count: 0, highRisk: 0, normal: 0 };
+      }
+      analytics[dId].count++;
+      if (p.risk_score > 7) analytics[dId].highRisk++;
+      else analytics[dId].normal++;
+    });
+    
+    return Object.values(analytics);
+  }, [filteredPatients]);
+
   if (!isOpen) return null;
 
   const setDateRange = (range: 'today' | 'week' | 'month' | 'year') => {
@@ -81,23 +98,6 @@ export function FilterExportPanel({
       : [...filters.symptoms, s];
     updateFilter('symptoms', next);
   };
-
-  const doctorAnalytics = useMemo(() => {
-    const analytics: Record<string, { name: string, count: number, highRisk: number, normal: number }> = {};
-    
-    filteredPatients.forEach(p => {
-      const dId = p.doctor_id || 'unassigned';
-      const dName = p.doctor_name || 'Unassigned';
-      if (!analytics[dId]) {
-        analytics[dId] = { name: dName, count: 0, highRisk: 0, normal: 0 };
-      }
-      analytics[dId].count++;
-      if (p.risk_score > 7) analytics[dId].highRisk++;
-      else analytics[dId].normal++;
-    });
-    
-    return Object.values(analytics);
-  }, [filteredPatients]);
 
   const runExport = async (type: 'pdf' | 'csv' | 'json') => {
     setExportingAs(type);

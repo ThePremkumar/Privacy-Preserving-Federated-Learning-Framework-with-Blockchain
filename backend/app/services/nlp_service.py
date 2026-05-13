@@ -38,8 +38,8 @@ class NLPService:
         self.positive_medical = {'improving', 'stable', 'responding', 'active', 'healthy', 'normal'}
         self.negative_medical = {'worsening', 'deteriorating', 'unresponsive', 'acute', 'severe', 'painful', 'critical'}
 
-    def analyze_medical_note(self, text: str) -> Dict[str, Any]:
-        """Perform complete NLP analysis on a clinical note"""
+    def analyze_medical_note(self, text: str, patient_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Perform complete NLP analysis on a clinical note with optional patient context"""
         text_lower = text.lower()
         
         symptoms = self.extract_symptoms(text_lower)
@@ -62,7 +62,7 @@ class NLPService:
                 "urgency_score": urgency_score,
                 "risk_level": "High" if urgency_score > 7 else "Moderate" if urgency_score > 4 else "Low"
             },
-            "summary": self._generate_summary(symptoms, entities, sentiment, tasks)
+            "summary": self._generate_summary(symptoms, entities, sentiment, tasks, patient_context)
         }
 
     def extract_symptoms(self, text: str) -> Set[str]:
@@ -108,7 +108,7 @@ class NLPService:
         score += min(2, len(symptoms))
         return min(10, score)
 
-    def _generate_summary(self, symptoms: Set[str], entities: Set[str], sentiment: str, tasks: List[Dict[str, str]]) -> str:
+    def _generate_summary(self, symptoms: Set[str], entities: Set[str], sentiment: str, tasks: List[Dict[str, str]], patient_context: Dict[str, Any] = None) -> str:
         if not symptoms and not entities and not tasks:
             return "No significant clinical entities or tasks detected."
             
@@ -116,7 +116,13 @@ class NLPService:
         ent_str = ", ".join(entities) if entities else "none"
         task_count = len(tasks)
         
-        summary = f"Detected symptoms: {sym_str}. Relevant clinical entities: {ent_str}. Patient status is {sentiment}."
+        prefix = ""
+        if patient_context:
+            name = patient_context.get("name", "Unknown Patient")
+            pid = patient_context.get("patient_id_manual", "Unknown ID")
+            prefix = f"Clinical assessment for {name} ({pid}): "
+            
+        summary = f"{prefix}Detected symptoms: {sym_str}. Relevant clinical entities: {ent_str}. Patient status is {sentiment}."
         if task_count > 0:
             summary += f" Extracted {task_count} follow-up tasks."
             
